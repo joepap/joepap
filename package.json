@@ -1,0 +1,26 @@
+{
+  "name": "local36-checkin",
+  "version": "1.0.0",
+  "description": "IAFF Local 36 ratification meeting check-in app — LAN-only, privacy-first",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node scripts/seed.js --wipe",
+    "test": "node --test test/*.test.js",
+    "certs": "bash scripts/make-certs.sh"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "bwip-js": "^4.11.2",
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "zxing-wasm": "^3.1.0"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

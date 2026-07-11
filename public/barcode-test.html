@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF417 Camera Test</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  #log { font-family: ui-monospace, Menlo, monospace; font-size: .85rem; white-space: pre-wrap;
+         background: #0f172a; color: #a7f3d0; border-radius: 10px; padding: 12px; min-height: 120px; }
+</style>
+</head>
+<body>
+<header class="appbar"><h1>PDF417 CAMERA TEST (standalone)</h1>
+  <div class="spacer"></div>
+  <a href="/" style="color:#fff">check-in app &rarr;</a>
+</header>
+<main>
+  <section class="card">
+    <p>Verifies live PDF417 decoding on <strong>this device + browser</strong> before the event.
+    Use the seed barcodes (<code>seed-output/barcodes/</code>, printed or on another screen) or any
+    license — <strong>decoded data stays on this device and is shown only below.</strong></p>
+    <ul class="mt" style="margin-left:20px">
+      <li>Secure context (needed for camera): <strong id="secCtx">?</strong></li>
+      <li>getUserMedia available: <strong id="gum">?</strong></li>
+      <li>WASM module loaded: <strong id="wasm">?</strong></li>
+    </ul>
+    <button class="blue big mt" id="start">Start camera test</button>
+    <button class="ghost mt" id="stop" style="width:100%">Stop</button>
+    <video id="cam" muted playsinline class="mt"></video>
+    <h4 class="mt">Decode log</h4>
+    <div id="log">waiting…</div>
+  </section>
+</main>
+<script src="/js/aamva.js"></script>
+<script src="/js/camera.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var logEl = $('log');
+  function log(s) {
+    logEl.textContent = new Date().toLocaleTimeString() + '  ' + s + '\n' + logEl.textContent;
+  }
+
+  $('secCtx').textContent = window.isSecureContext ? 'YES' : 'NO — camera will fail; use the https:// URL';
+  $('gum').textContent = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? 'YES' : 'NO';
+  import('/vendor/zxing/reader.js').then(function () {
+    $('wasm').textContent = 'YES';
+  }).catch(function (e) { $('wasm').textContent = 'FAILED: ' + e.message; });
+
+  var frames = 0, t0 = 0;
+  $('start').onclick = function () {
+    frames = 0; t0 = Date.now();
+    log('starting camera…');
+    CameraScan.start({
+      video: $('cam'),
+      onDecoded: function (text) {
+        var dt = ((Date.now() - t0) / 1000).toFixed(1);
+        log('DECODED after ' + dt + 's (' + text.length + ' chars)');
+        var parsed = AAMVA.parse(text);
+        if (parsed) {
+          log('AAMVA parse OK: ' + parsed.lastName + ', ' + parsed.firstName +
+              (parsed.dob ? '  age ' + AAMVA.ageFromDob(parsed.dob) : '') +
+              (parsed.state ? '  ' + parsed.state : ''));
+        } else {
+          log('Decoded but NOT AAMVA. First 60 chars: ' + JSON.stringify(text.slice(0, 60)));
+        }
+        log('— restarting scan; point at another barcode or Stop —');
+        t0 = Date.now();
+        CameraScan.start({ video: $('cam'), onDecoded: arguments.callee, onError: function(){} });
+      },
+      onError: function () {}
+    }).then(function () {
+      log('camera live. Point at a PDF417 barcode (back of license).');
+    }).catch(function (e) {
+      log('CAMERA FAILED: ' + (e && e.message || e));
+    });
+  };
+  $('stop').onclick = function () { CameraScan.stop(); log('stopped.'); };
+})();
+</script>
+</body>
+</html>

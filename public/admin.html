@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local 36 Check-In — Admin</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="appbar">
+  <h1>LOCAL 36 &middot; ADMIN DASHBOARD</h1>
+  <div class="spacer"></div>
+  <a href="/" style="color:#fff;font-weight:700;text-decoration:none">&larr; Check-in screen</a>
+</header>
+
+<main>
+  <section class="card" id="pinCard">
+    <h3>Admin PIN</h3>
+    <div class="input-row">
+      <input type="password" id="pinBox" placeholder="Enter admin PIN" autocomplete="off">
+      <button class="primary" id="pinSave">Unlock</button>
+    </div>
+    <p class="muted small mt">Default PIN is 3636 — change it in Settings below or via ADMIN_PIN env var.</p>
+  </section>
+
+  <div id="adminBody" class="hidden">
+
+  <!-- Live stats -->
+  <section class="card">
+    <h3>Live counts <span class="muted small" id="statsTs"></span></h3>
+    <div class="stat-grid mt" id="statGrid"></div>
+    <h4 class="mt">By verification method</h4>
+    <div class="stat-grid mt" id="methodGrid"></div>
+    <h4 class="mt">Per station</h4>
+    <table class="data mt" id="stationTable"><thead>
+      <tr><th>Station</th><th>Check-ins</th><th>Last 10 min</th><th>Last activity</th></tr>
+    </thead><tbody></tbody></table>
+    <h4 class="mt">Recent check-ins (tap to void)</h4>
+    <table class="data mt" id="recentTable"><thead>
+      <tr><th>Time</th><th>Name</th><th>Member #</th><th>Station</th><th>Method</th><th>Ballot</th><th></th></tr>
+    </thead><tbody></tbody></table>
+  </section>
+
+  <!-- Void by search -->
+  <section class="card">
+    <h3>Void a check-in</h3>
+    <p class="muted small">Find the member on the check-in screen to see their check-in details, or void from the Recent list above. Voiding frees the member to be checked in again; it is logged.</p>
+  </section>
+
+  <!-- Roster import -->
+  <section class="card">
+    <h3>Roster import (ConnectPlus CSV)</h3>
+    <label>CSV file</label>
+    <input type="file" id="rosterFile" accept=".csv,text/csv">
+    <div id="mappingArea" class="hidden">
+      <h4 class="mt">Map columns</h4>
+      <p class="muted small">Pick which CSV column feeds each field. Use either Full name, or Last + First.</p>
+      <div class="stat-grid" id="mapGrid"></div>
+      <div class="mt">
+        <label><input type="checkbox" id="replaceExisting" checked style="width:20px;height:20px"> Replace existing roster (clears check-ins!)</label>
+      </div>
+      <button class="primary mt" id="doImport">Import roster</button>
+      <span id="importStatus" class="muted" style="margin-left:10px"></span>
+    </div>
+  </section>
+
+  <!-- Paper roll import -->
+  <section class="card">
+    <h3>Paper dues roll (optional second list)</h3>
+    <p class="muted small">Flags matching members with "on paper roll"; reports names it can't match.</p>
+    <input type="file" id="paperFile" accept=".csv,text/csv">
+    <div id="paperMapArea" class="hidden">
+      <div class="stat-grid" id="paperMapGrid"></div>
+      <button class="primary mt" id="doPaperImport">Import paper roll</button>
+      <span id="paperStatus" class="muted" style="margin-left:10px"></span>
+    </div>
+    <div id="paperUnmatched"></div>
+  </section>
+
+  <!-- Exports -->
+  <section class="card">
+    <h3>Exports</h3>
+    <div class="input-row">
+      <button class="blue" data-export="/api/export/checkins.csv">Check-in log</button>
+      <button class="blue" data-export="/api/export/contact-corrections.csv">Contact corrections</button>
+      <button class="blue" data-export="/api/export/notfound.csv">Not-found list</button>
+      <button class="blue" data-export="/api/export/access-granted.csv">Access granted</button>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="card">
+    <h3>Settings</h3>
+    <label for="staleDays">Info considered stale when "last updated" is older than (days) — blank email+phone is always stale</label>
+    <input type="number" id="staleDays" min="1">
+    <label for="ballotNumbering">Sequential ballot numbers</label>
+    <select id="ballotNumbering"><option value="on">On</option><option value="off">Off</option></select>
+    <label for="newPin">Change admin PIN (leave blank to keep)</label>
+    <input type="password" id="newPin" autocomplete="new-password">
+    <button class="primary mt" id="saveSettings">Save settings</button>
+    <span id="settingsStatus" class="muted" style="margin-left:10px"></span>
+  </section>
+
+  </div>
+</main>
+<script src="/js/admin.js"></script>
+</body>
+</html>

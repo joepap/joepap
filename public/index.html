@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Local 36 Check-In</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="appbar">
+  <h1>IAFF LOCAL 36 &middot; RATIFICATION CHECK-IN</h1>
+  <div class="spacer"></div>
+  <button class="station-chip" id="stationChip" title="Tap to change station">Station: &mdash;</button>
+</header>
+
+<main>
+  <!-- Search / scan entry -->
+  <section class="card" id="entryCard">
+    <div class="input-row">
+      <input type="search" id="searchBox" placeholder="Last name (2+ letters) or Last, First&hellip;"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="blue" id="cameraBtn">&#128247; Scan ID</button>
+    </div>
+    <div class="results" id="results"></div>
+    <div class="mt muted small" id="scanHint">
+      USB scanner ready &mdash; scan a license from anywhere on this page.
+    </div>
+    <div class="mt">
+      <button class="ghost" id="notFoundBtn">Not on roster&hellip;</button>
+    </div>
+  </section>
+
+  <!-- Member card -->
+  <section class="card hidden" id="memberCard"></section>
+
+  <!-- Not-found form -->
+  <section class="card hidden" id="notFoundCard">
+    <h3>Not on roster</h3>
+    <p class="muted">Log the name and send the member to the <strong>resolution table</strong>. Do not issue a ballot here.</p>
+    <label for="nfName">Name (as given)</label>
+    <input type="text" id="nfName" autocomplete="off">
+    <label for="nfNotes">Notes (dept ID #, claims, etc.)</label>
+    <input type="text" id="nfNotes" autocomplete="off">
+    <div class="input-row mt">
+      <button class="warn" id="nfSave">Log &amp; direct to resolution table</button>
+      <button class="ghost" id="nfCancel">Cancel</button>
+    </div>
+  </section>
+</main>
+
+<!-- Camera modal -->
+<div class="overlay dim hidden" id="cameraModal">
+  <div class="panel">
+    <div class="card">
+      <video id="cam" muted playsinline></video>
+      <p class="muted mt" id="camStatus">Point the camera at the barcode on the BACK of the license.</p>
+      <button class="ghost mt" id="cameraClose" style="width:100%">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Duplicate check-in: loud full-screen -->
+<div class="overlay red hidden" id="dupOverlay">
+  <div class="panel">
+    <h2>&#9888; ALREADY CHECKED IN</h2>
+    <div class="detail" id="dupDetail"></div>
+    <p style="margin:10px 0 20px">One member, one ballot. Send to the resolution table if they dispute this.</p>
+    <button class="big" id="dupClose" style="background:#fff;color:#7f1212">OK &mdash; back to check-in</button>
+  </div>
+</div>
+
+<!-- Success flash -->
+<div class="success-flash hidden" id="successFlash">
+  <div>
+    <h2 id="successName"></h2>
+    <div class="ballot" id="successBallot"></div>
+    <div style="font-size:1.2rem" id="successSub">Hand them their ballot</div>
+  </div>
+</div>
+
+<!-- Station setup -->
+<div class="overlay dim hidden" id="stationModal">
+  <div class="panel">
+    <div class="card">
+      <h3>Station setup</h3>
+      <label for="stationName">Station name / number</label>
+      <input type="text" id="stationName" placeholder="e.g. Table 2" autocomplete="off">
+      <label for="stationMethod">Default verification method for this station</label>
+      <select id="stationMethod">
+        <option value="license_scan">License scan (standard lane)</option>
+        <option value="portal_id">Portal + ID (green lane)</option>
+        <option value="dept_id">Department ID</option>
+        <option value="other">Other</option>
+      </select>
+      <button class="primary big mt" id="stationSave">Save station</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/aamva.js"></script>
+<script src="/js/wedge.js"></script>
+<script src="/js/camera.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
