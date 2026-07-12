@@ -48,12 +48,44 @@ One page. Print this.
 - **USB scanner**: just scan — from anywhere on the check-in page. Match appears, tap, confirm.
 - **Camera**: tap "Scan ID", point at the barcode on the BACK of the license.
 - **No scan?** Type 2+ letters of the last name. `smith, j` narrows by first name.
+- **Green ACTIVE pill** = eligible, issue ballot. **Red NOT ELIGIBLE** = no ballot without
+  a conversation. **Gray NO STATUS** = blank in NEP; send to the resolution table.
 - **Duplicate** = full red screen with original time/station. Do NOT issue a ballot;
   send disputes to the resolution table.
-- **Yellow "stale info" banner** = hand them a portal card; optionally key in new email/phone.
+- **Verify member info** (open on every card): read it back to the member, fix anything
+  wrong (name, email, phone, address, rank/assignment/platoon, appointment date,
+  paramedic), ask "are you getting our emails?", tap Save. Never blocks check-in;
+  a green "corrections already captured" note means another station already did it.
+- **Yellow portal banner** = hand them a portal card / help lane after check-in.
 - **Not on roster** = log the name via the button, send to resolution table. No ballot from the app.
 - **Help lane**: after getting the member portal access, tick "Portal access granted today"
   on their card, then check them in normally.
+
+## Question line (floor debate)
+
+A separate mini-site lets members scan a QR code and line up to speak; the moderator
+works the line from their phone. It runs on members' **cellular data**, so the mini
+needs internet at the venue (a phone hotspot works) — the check-in LAN stays offline
+and is never exposed.
+
+1. On the mini: `npm run queue`   (separate process, port 8090, own database)
+2. Expose it publicly (one time, needs Tailscale on the mini — already set up):
+   ```
+   tailscale funnel --bg 8090
+   ```
+   It prints the public URL, e.g. `https://claudemini.tailXXXX.ts.net`. HTTPS is automatic.
+3. **Projector**: open `<public-url>/display` on the projection laptop, paste the same
+   public URL when asked → big QR + live "N people in line" for the room.
+4. **Moderator's phone**: open `<public-url>/mod`, PIN `3636` (change with
+   `MOD_PIN=xxxx npm run queue`). Swipe right = done, left = skip, buttons work too,
+   undo available. "Clear entire line" resets before the meeting.
+5. **Members**: scan → enter full name → live "#7 — 6 people ahead of you" that
+   updates by itself; big green "You're NEXT" when they're up.
+
+If the funnel command errors: `tailscale funnel status`, or check Funnel is enabled for
+your tailnet at https://login.tailscale.com (Settings → Funnel). Without venue internet
+the queue can run on any internet-connected laptop instead — clone the repo there and
+repeat steps 1–2 on that machine.
 
 ## If things break
 

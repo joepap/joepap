@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "queue": "node queue-server.js",
     "seed": "node scripts/seed.js --wipe",
     "test": "node --test test/*.test.js",
     "certs": "bash scripts/make-certs.sh"

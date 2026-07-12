@@ -70,6 +70,9 @@ function memberPublic(m) {
   const active = db.prepare(
     'SELECT id, ts, station, verification_method, ballot_no FROM checkins WHERE member_id = ? AND voided_at IS NULL'
   ).get(m.id);
+  const lastCorrection = db.prepare(
+    'SELECT ts, station FROM contact_corrections WHERE member_id = ? ORDER BY id DESC LIMIT 1'
+  ).get(m.id);
   return {
     portal_status: m.portal_status || '',
     portal_ok: portalOk(m.portal_status),
@@ -79,6 +82,9 @@ function memberPublic(m) {
     rank: m.rank || '',
     platoon: m.platoon || '',
     assignment: m.assignment || '',
+    appt_date: m.appt_date || '',
+    paramedic: m.paramedic || '',
+    last_correction: lastCorrection || null,
     addr_street: m.addr_street || '',
     addr_street2: m.addr_street2 || '',
     addr_city: m.addr_city || '',
@@ -185,12 +191,12 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     const ins = db.prepare(`INSERT INTO members
       (member_no, last_name, first_name, middle_name, suffix, full_name,
        dues_status, dues_ok, email, phone, last_updated, info_stale,
-       portal_status, dept_id, dob, groups, rank, platoon, assignment,
+       portal_status, dept_id, dob, groups, rank, platoon, assignment, appt_date, paramedic,
        addr_street, addr_street2, addr_city, addr_state, addr_zip,
        norm_last, norm_first)
       VALUES (@member_no, @last_name, @first_name, @middle_name, @suffix, @full_name,
        @dues_status, @dues_ok, @email, @phone, @last_updated, @info_stale,
-       @portal_status, @dept_id, @dob, @groups, @rank, @platoon, @assignment,
+       @portal_status, @dept_id, @dob, @groups, @rank, @platoon, @assignment, @appt_date, @paramedic,
        @addr_street, @addr_street2, @addr_city, @addr_state, @addr_zip,
        @norm_last, @norm_first)`);
     let count = 0;
@@ -243,6 +249,8 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
         rank: get(rec, 'rank'),
         platoon: get(rec, 'platoon'),
         assignment: get(rec, 'assignment'),
+        appt_date: get(rec, 'appt_date'),
+        paramedic: get(rec, 'paramedic'),
         addr_street: get(rec, 'street'),
         addr_street2: get(rec, 'street2'),
         addr_city: get(rec, 'city'),
@@ -478,12 +486,12 @@ app.post('/api/members/:id/contact', (req, res) => {
     `INSERT INTO contact_corrections
      (member_id, email, phone, new_first_name, new_middle_name, new_last_name,
       new_street, new_street2, new_city, new_state, new_zip,
-      new_rank, new_platoon, new_assignment,
+      new_rank, new_platoon, new_assignment, new_appt_date, new_paramedic,
       receiving_emails, fix_email_group, station)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(m.id, b.email || '', b.phone || '', b.first_name || '', b.middle_name || '', b.last_name || '',
     b.street || '', b.street2 || '', b.city || '', b.state || '', b.zip || '',
-    b.rank || '', b.platoon || '', b.assignment || '',
+    b.rank || '', b.platoon || '', b.assignment || '', b.appt_date || '', b.paramedic || '',
     b.receiving_emails || '', b.fix_email_group ? 1 : 0, b.station || '');
   audit(db, 'contact_correction', `member ${m.id}`, b.station);
   res.json({ ok: true });
@@ -566,7 +574,7 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
             cc.email new_email, cc.phone new_phone,
             cc.new_first_name, cc.new_middle_name, cc.new_last_name,
             cc.new_street, cc.new_street2, cc.new_city, cc.new_state, cc.new_zip,
-            cc.new_rank, cc.new_platoon, cc.new_assignment,
+            cc.new_rank, cc.new_platoon, cc.new_assignment, cc.new_appt_date, cc.new_paramedic,
             cc.receiving_emails,
             CASE WHEN cc.fix_email_group = 1 THEN 'yes' ELSE '' END fix_email_group,
             m.groups current_groups, cc.ts, cc.station
@@ -576,7 +584,7 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
     ['member_no', 'last_name', 'first_name', 'old_email', 'old_phone',
      'new_email', 'new_phone', 'new_first_name', 'new_middle_name', 'new_last_name',
      'new_street', 'new_street2', 'new_city', 'new_state', 'new_zip',
-     'new_rank', 'new_platoon', 'new_assignment',
+     'new_rank', 'new_platoon', 'new_assignment', 'new_appt_date', 'new_paramedic',
      'receiving_emails', 'fix_email_group', 'current_groups', 'ts', 'station'], rows);
 });
 

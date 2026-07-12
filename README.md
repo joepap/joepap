@@ -84,6 +84,11 @@ public/admin.html    live counts, per-station throughput, method breakdown,
 public/barcode-test.html  standalone camera decode test for device shakedown
 scripts/seed.js      synthetic roster + printable practice barcodes
 scripts/make-certs.sh mkcert/openssl LAN certs
+queue-server.js      question-line queue for floor debate — SEPARATE process,
+public-queue/        port and database, exposed to the internet via Tailscale
+                     Funnel (members' phones are cellular); shares nothing with
+                     the ballot system. Member page / moderator page / projector
+                     QR display. See RUNBOOK.md "Question line".
 ```
 
 Check-ins record timestamp, station, `verification_method`

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Local 36 — Question Line</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: #f4f5f7; color: #1a2330; min-height: 100vh;
+         display: flex; flex-direction: column; align-items: center; }
+  header { background: #7f1212; color: #fff; width: 100%; padding: 14px 16px;
+           text-align: center; font-weight: 800; letter-spacing: .5px; }
+  main { width: 100%; max-width: 440px; padding: 24px 20px; }
+  .card { background: #fff; border: 1px solid #d8dee6; border-radius: 16px; padding: 24px;
+          box-shadow: 0 1px 4px rgba(16,24,40,.08); text-align: center; }
+  h2 { font-size: 1.25rem; margin-bottom: 14px; }
+  p.sub { color: #5c6b7f; margin-bottom: 18px; line-height: 1.4; }
+  input { width: 100%; font-size: 1.2rem; padding: 16px; border: 2px solid #d8dee6;
+          border-radius: 12px; text-align: center; }
+  input:focus { outline: 3px solid #93c5fd; border-color: #1d4ed8; }
+  button { width: 100%; margin-top: 14px; font-size: 1.15rem; font-weight: 700; padding: 16px;
+           border: none; border-radius: 12px; background: #b91c1c; color: #fff; cursor: pointer; }
+  button.ghost { background: transparent; color: #5c6b7f; border: 2px solid #d8dee6; }
+  .pos { font-size: 4.5rem; font-weight: 900; color: #b91c1c; line-height: 1.1; margin: 10px 0; }
+  .ahead { font-size: 1.3rem; color: #1a2330; margin-bottom: 6px; }
+  .youare { color: #5c6b7f; }
+  .next { background: #dcfce7; color: #15803d; border: 2px solid #4ade80; border-radius: 12px;
+          padding: 14px; font-weight: 800; font-size: 1.3rem; margin: 12px 0; }
+  .err { color: #b91c1c; font-weight: 600; margin-top: 10px; min-height: 1.2em; }
+  footer { color: #8b98a9; font-size: .8rem; padding: 16px; text-align: center; }
+</style>
+</head>
+<body>
+<header>IAFF LOCAL 36 &middot; QUESTION LINE</header>
+<main>
+  <div class="card" id="joinCard">
+    <h2>Want to speak?</h2>
+    <p class="sub">Enter your full name to get in line to ask a question or make a comment.
+      You'll see live how many people are ahead of you.</p>
+    <input type="text" id="name" placeholder="Full name" autocomplete="name" maxlength="60">
+    <button id="join">Get in line</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="card" id="statusCard" style="display:none">
+    <div class="youare" id="who"></div>
+    <div id="posWrap">
+      <div class="pos" id="pos">#—</div>
+      <div class="ahead" id="ahead"></div>
+    </div>
+    <div class="next" id="youreNext" style="display:none">You're NEXT — head to the microphone</div>
+    <p class="sub" id="hint">Keep this page open — it updates by itself.</p>
+    <button class="ghost" id="leave">Leave the line</button>
+  </div>
+</main>
+<footer>Runs on the union's own equipment &middot; your name is used only to call on you</footer>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var token = localStorage.getItem('q36token');
+  if (!token) {
+    token = 'q' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('q36token', token);
+  }
+  var timer = null;
+
+  function showJoin() {
+    clearInterval(timer);
+    $('joinCard').style.display = '';
+    $('statusCard').style.display = 'none';
+  }
+  function showStatus() {
+    $('joinCard').style.display = 'none';
+    $('statusCard').style.display = '';
+    poll();
+    clearInterval(timer);
+    timer = setInterval(poll, 4000);
+  }
+
+  function poll() {
+    fetch('/api/status?token=' + encodeURIComponent(token))
+      .then(function (r) { return r.json(); })
+      .then(function (s) {
+        if (!s.inLine) {
+          // Called on (or removed) — show a friendly done state once, then reset.
+          showJoin();
+          $('err').textContent = '';
+          return;
+        }
+        $('who').textContent = s.name;
+        $('pos').textContent = '#' + s.position;
+        $('ahead').textContent = s.ahead === 0 ? '' :
+          s.ahead + (s.ahead === 1 ? ' person' : ' people') + ' ahead of you';
+        var next = s.position === 1;
+        $('youreNext').style.display = next ? '' : 'none';
+        $('posWrap').style.display = next ? 'none' : '';
+        $('hint').textContent = next ? '' : 'Keep this page open — it updates by itself.';
+      })
+      .catch(function () { /* transient network blip; next poll retries */ });
+  }
+
+  $('join').onclick = function () {
+    var name = $('name').value.trim();
+    if (name.length < 2) { $('err').textContent = 'Please enter your full name.'; return; }
+    $('join').disabled = true;
+    fetch('/api/join', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, token: token })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      $('join').disabled = false;
+      if (d.error) { $('err').textContent = d.error; return; }
+      showStatus();
+    }).catch(function () {
+      $('join').disabled = false;
+      $('err').textContent = 'Connection problem — try again.';
+    });
+  };
+  $('name').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('join').click(); });
+
+  $('leave').onclick = function () {
+    fetch('/api/leave', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token })
+    }).then(showJoin);
+  };
+
+  // If this device is already in line (page reopened), resume the status view.
+  fetch('/api/status?token=' + encodeURIComponent(token))
+    .then(function (r) { return r.json(); })
+    .then(function (s) { if (s.inLine) showStatus(); });
+})();
+</script>
+</body>
+</html>

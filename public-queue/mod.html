@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Question Line — Moderator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: #f4f5f7; color: #1a2330; }
+  header { background: #7f1212; color: #fff; padding: 12px 16px; font-weight: 800;
+           display: flex; justify-content: space-between; align-items: center; }
+  header .counts { font-weight: 600; font-size: .9rem; opacity: .9; }
+  main { max-width: 520px; margin: 0 auto; padding: 14px; }
+  .pin { background: #fff; border: 1px solid #d8dee6; border-radius: 14px; padding: 20px; text-align: center; }
+  .pin input { font-size: 1.3rem; padding: 14px; width: 100%; text-align: center;
+               border: 2px solid #d8dee6; border-radius: 12px; }
+  .pin button { margin-top: 12px; width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 700;
+                border: none; border-radius: 12px; background: #15803d; color: #fff; }
+  .nowNext { background: #dcfce7; border: 2px solid #4ade80; border-radius: 14px; padding: 16px;
+             margin-bottom: 12px; }
+  .nowNext .lbl { color: #15803d; font-weight: 800; font-size: .8rem; letter-spacing: 1px; }
+  .nowNext .name { font-size: 1.8rem; font-weight: 900; }
+  .row { position: relative; overflow: hidden; border-radius: 14px; margin-bottom: 10px;
+         border: 1px solid #d8dee6; background: #fff; }
+  .row .under { position: absolute; inset: 0; display: flex; justify-content: space-between;
+                align-items: center; font-weight: 800; color: #fff; padding: 0 18px; }
+  .under .l { color: #fff; } .under .r { color: #fff; }
+  .row .face { position: relative; background: #fff; padding: 14px; display: flex;
+               align-items: center; gap: 12px; transition: transform .15s; touch-action: pan-y; }
+  .num { background: #e6e9ee; color: #5c6b7f; font-weight: 800; border-radius: 10px;
+         min-width: 42px; text-align: center; padding: 8px 0; }
+  .face .name { font-size: 1.2rem; font-weight: 700; flex: 1; }
+  .face .ts { color: #8b98a9; font-size: .75rem; }
+  .face button { border: none; border-radius: 10px; font-weight: 800; padding: 12px 14px;
+                 font-size: 1rem; cursor: pointer; }
+  .bDone { background: #dcfce7; color: #15803d; }
+  .bSkip { background: #fee2e2; color: #b91c1c; }
+  .resolved { opacity: .65; font-size: .9rem; padding: 8px 4px; display: flex; gap: 8px; align-items: center; }
+  .resolved .tag { font-weight: 800; font-size: .7rem; padding: 3px 8px; border-radius: 999px; }
+  .tag.done { background: #dcfce7; color: #15803d; } .tag.skipped { background: #fee2e2; color: #b91c1c; }
+  .resolved button { margin-left: auto; border: 1px solid #d8dee6; background: #fff; border-radius: 8px;
+                     padding: 6px 10px; font-size: .8rem; }
+  .empty { text-align: center; color: #8b98a9; padding: 30px 0; font-size: 1.05rem; }
+  h4 { margin: 16px 4px 8px; color: #5c6b7f; }
+  .resetBtn { width: 100%; margin-top: 18px; padding: 12px; border: 2px solid #d8dee6; background: transparent;
+              color: #8b98a9; border-radius: 12px; font-weight: 700; }
+  .hint { text-align: center; color: #8b98a9; font-size: .8rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+<header><span>QUESTION LINE</span><span class="counts" id="counts"></span></header>
+<main>
+  <div class="pin" id="pinCard">
+    <p style="margin-bottom:10px;font-weight:700">Moderator PIN</p>
+    <input type="password" id="pin" inputmode="numeric" autocomplete="off">
+    <button id="unlock">Unlock</button>
+  </div>
+
+  <div id="board" style="display:none">
+    <div class="nowNext" id="nowNext" style="display:none">
+      <div class="lbl">UP NEXT</div>
+      <div class="name" id="nextName"></div>
+    </div>
+    <div id="list"></div>
+    <h4 id="resolvedHdr" style="display:none">Recently handled</h4>
+    <div id="resolvedList"></div>
+    <div class="hint">Swipe right = done &middot; swipe left = skip &middot; or use the buttons</div>
+    <button class="resetBtn" id="reset">Clear entire line (start of meeting)</button>
+  </div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var pin = sessionStorage.getItem('q36modpin') || '';
+  var timer = null;
+
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ 'X-Mod-Pin': pin }, opts.headers || {});
+    if (opts.body) opts.headers['Content-Type'] = 'application/json';
+    return fetch(path, opts).then(function (r) {
+      if (r.status === 401) throw new Error('pin');
+      return r.json();
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function unlock() {
+    pin = $('pin').value.trim() || pin;
+    api('/api/mod/list').then(function () {
+      sessionStorage.setItem('q36modpin', pin);
+      $('pinCard').style.display = 'none';
+      $('board').style.display = '';
+      refresh();
+      clearInterval(timer);
+      timer = setInterval(refresh, 2500);
+    }).catch(function () { alert('Wrong PIN'); });
+  }
+  $('unlock').onclick = unlock;
+  $('pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
+  if (pin) { unlock(); }
+
+  function act(id, action) {
+    api('/api/mod/action', { method: 'POST', body: JSON.stringify({ id: id, action: action }) })
+      .then(refresh);
+  }
+
+  function attachSwipe(rowEl, id) {
+    var face = rowEl.querySelector('.face');
+    var startX = null, dx = 0;
+    face.addEventListener('touchstart', function (e) {
+      startX = e.touches[0].clientX; dx = 0;
+    }, { passive: true });
+    face.addEventListener('touchmove', function (e) {
+      if (startX == null) return;
+      dx = e.touches[0].clientX - startX;
+      face.style.transform = 'translateX(' + dx + 'px)';
+    }, { passive: true });
+    face.addEventListener('touchend', function () {
+      if (Math.abs(dx) > 90) act(id, dx > 0 ? 'done' : 'skip');
+      else face.style.transform = '';
+      startX = null;
+    });
+  }
+
+  function refresh() {
+    api('/api/mod/list').then(function (d) {
+      $('counts').textContent = d.counts.waiting + ' waiting · ' + d.counts.done + ' done';
+      var w = d.waiting;
+      $('nowNext').style.display = w.length ? '' : 'none';
+      if (w.length) $('nextName').textContent = w[0].name;
+      $('list').innerHTML = w.length ? '' : '<div class="empty">Line is empty.</div>';
+      w.forEach(function (e, i) {
+        var row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML =
+          '<div class="under" style="background:linear-gradient(90deg,#15803d 50%,#b91c1c 50%)">' +
+          '<span class="l">✓ done</span><span class="r">skip ✗</span></div>' +
+          '<div class="face"><div class="num">' + (i + 1) + '</div>' +
+          '<div><div class="name">' + esc(e.name) + '</div><div class="ts">' + esc(e.ts.slice(11, 16)) + '</div></div>' +
+          '<span style="flex:1"></span>' +
+          '<button class="bDone">✓</button><button class="bSkip">✗</button></div>';
+        row.querySelector('.bDone').onclick = function () { act(e.id, 'done'); };
+        row.querySelector('.bSkip').onclick = function () { act(e.id, 'skip'); };
+        attachSwipe(row, e.id);
+        $('list').appendChild(row);
+      });
+      $('resolvedHdr').style.display = d.resolved.length ? '' : 'none';
+      $('resolvedList').innerHTML = '';
+      d.resolved.forEach(function (e) {
+        var div = document.createElement('div');
+        div.className = 'resolved';
+        div.innerHTML = '<span class="tag ' + e.status + '">' + e.status.toUpperCase() + '</span> ' +
+          esc(e.name) + '<button>undo</button>';
+        div.querySelector('button').onclick = function () { act(e.id, 'undo'); };
+        $('resolvedList').appendChild(div);
+      });
+    }).catch(function () { /* poll again shortly */ });
+  }
+
+  $('reset').onclick = function () {
+    if (!confirm('Clear the ENTIRE line? This removes everyone.')) return;
+    api('/api/mod/reset', { method: 'POST', body: '{}' }).then(refresh);
+  };
+})();
+</script>
+</body>
+</html>

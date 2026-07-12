@@ -237,6 +237,11 @@
               'will be flagged when you save below.</div>';
     }
 
+    if (m.last_correction) {
+      html += '<div class="banner green">&#10003; Corrections already captured at ' +
+              esc(m.last_correction.ts) + ' (station ' + esc(m.last_correction.station) +
+              ') — no need to re-enter unless something else changed.</div>';
+    }
     // Verify & update — always expanded; saving never blocks check-in.
     html += '<details id="infoCheck" open>' +
       '<summary style="font-weight:700;font-size:1.05rem;padding:10px 0;cursor:pointer">' +
@@ -262,6 +267,12 @@
       '<div><label>Rank</label><input type="text" id="fixRank" value="' + esc(m.rank) + '"></div>' +
       '<div><label>Assignment</label><input type="text" id="fixAssignment" value="' + esc(m.assignment) + '"></div>' +
       '<div><label>Platoon</label><input type="text" id="fixPlatoon" value="' + esc(m.platoon) + '"></div></div>';
+    html += '<div class="input-row">' +
+      '<div><label>Appointment date</label><input type="text" id="fixApptDate" value="' + esc(m.appt_date) + '" placeholder="MM/DD/YYYY"></div>' +
+      '<div><label>Paramedic</label><select id="fixParamedic">' +
+        ['', 'Yes', 'No'].map(function (v) {
+          return '<option value="' + v + '"' + (m.paramedic === v ? ' selected' : '') + '>' + (v || '—') + '</option>';
+        }).join('') + '</select></div></div>';
     html += '<button class="blue mt" id="fixSave" style="width:100%">Save corrections</button>';
     html += '</details>';
 
@@ -346,6 +357,8 @@
         rank: changed(val('fixRank'), m.rank),
         assignment: changed(val('fixAssignment'), m.assignment),
         platoon: changed(val('fixPlatoon'), m.platoon),
+        appt_date: changed(val('fixApptDate'), m.appt_date),
+        paramedic: changed(val('fixParamedic'), m.paramedic),
         receiving_emails: emailYN || '',
         fix_email_group: fixGroup,
         station: station

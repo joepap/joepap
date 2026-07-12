@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan to Ask a Question</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: #7f1212; color: #fff; min-height: 100vh;
+         display: flex; flex-direction: column; align-items: center; justify-content: center;
+         text-align: center; padding: 4vh 20px; }
+  h1 { font-size: 5vmin; letter-spacing: .5px; margin-bottom: 1vh; }
+  p { font-size: 3vmin; opacity: .9; margin-bottom: 3vh; }
+  .qr { background: #fff; padding: 3vmin; border-radius: 3vmin; }
+  .qr img { display: block; width: 52vmin; height: 52vmin; image-rendering: pixelated; }
+  .count { margin-top: 3vh; font-size: 3.4vmin; font-weight: 700; }
+  .setup { position: fixed; inset: 0; background: #fff; color: #1a2330; display: flex;
+           align-items: center; justify-content: center; padding: 24px; }
+  .setup .box { max-width: 560px; }
+  .setup input { width: 100%; font-size: 1.1rem; padding: 14px; border: 2px solid #d8dee6;
+                 border-radius: 12px; margin: 12px 0; }
+  .setup button { padding: 14px 22px; font-size: 1.05rem; font-weight: 700; border: none;
+                  border-radius: 12px; background: #b91c1c; color: #fff; }
+</style>
+</head>
+<body>
+  <div class="setup" id="setup">
+    <div class="box">
+      <h2>Projector display setup</h2>
+      <p style="margin-top:8px;color:#5c6b7f">Paste the <strong>public URL</strong> members' phones
+        should open (the Tailscale Funnel address, e.g. <code>https://claudemini.tailXXXX.ts.net</code>).
+        This page then shows a big QR code for the room.</p>
+      <input type="text" id="url" placeholder="https://…">
+      <button id="go">Show QR</button>
+    </div>
+  </div>
+
+  <h1>QUESTIONS OR COMMENTS?</h1>
+  <p>Scan with your phone camera &middot; enter your name &middot; watch your place in line</p>
+  <div class="qr"><img id="qr" alt="QR code"></div>
+  <div class="count" id="count"></div>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var url = params.get('url') || localStorage.getItem('q36displayurl') || '';
+  var setup = document.getElementById('setup');
+
+  function start(u) {
+    localStorage.setItem('q36displayurl', u);
+    setup.style.display = 'none';
+    document.getElementById('qr').src = '/qr.png?url=' + encodeURIComponent(u);
+    function poll() {
+      fetch('/api/display-info').then(function (r) { return r.json(); }).then(function (d) {
+        document.getElementById('count').textContent =
+          d.waiting === 0 ? 'The line is open' :
+          d.waiting + (d.waiting === 1 ? ' person' : ' people') + ' in line';
+      }).catch(function () {});
+    }
+    poll(); setInterval(poll, 5000);
+  }
+
+  if (url) start(url);
+  document.getElementById('go').onclick = function () {
+    var u = document.getElementById('url').value.trim();
+    if (/^https?:\/\//.test(u)) start(u);
+  };
+})();
+</script>
+</body>
+</html>

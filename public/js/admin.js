@@ -25,9 +25,6 @@
   function unlock() {
     pin = $('pinBox').value.trim() || pin;
     // Validate against an admin-only endpoint.
-    api('/api/export/notfound.csv').then(function () {
-      return fetch('/api/config').then(function (r) { return r.json(); });
-    });
     fetch('/api/export/notfound.csv', { headers: { 'X-Admin-Pin': pin } }).then(function (r) {
       if (r.status === 200) {
         sessionStorage.setItem('admin36_pin', pin);
@@ -99,7 +96,8 @@
     ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)'],
     ['groups', 'Groups (email lists)'], ['street', 'Street address'], ['street2', 'Street address 2'],
     ['city', 'City'], ['state', 'State'], ['zip', 'Zip'],
-    ['rank', 'Rank'], ['platoon', 'Platoon'], ['assignment', 'Assignment / company']
+    ['rank', 'Rank'], ['platoon', 'Platoon'], ['assignment', 'Assignment / company'],
+    ['appt_date', 'Appointment date'], ['paramedic', 'Paramedic']
   ];
   // Mirror of the server's fallback rule — used only to pre-check the
   // good-standing boxes; the admin's final selection is what gets sent.
@@ -142,7 +140,9 @@
       zip: ['zip', 'zipcode', 'postalcode', 'postal'],
       rank: ['rank', 'dcfirerank', 'firerank'],
       platoon: ['platoon', 'shift'],
-      assignment: ['assignment', 'currentcompany', 'company', 'station', 'unit']
+      assignment: ['assignment', 'currentcompany', 'company', 'station', 'unit'],
+      appt_date: ['appointmentdate', 'apptdate', 'dateofappointment', 'hiredate'],
+      paramedic: ['paramedic', 'medic', 'als']
     };
     return (map[field] || []).indexOf(h) !== -1;
   }
