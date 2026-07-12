@@ -234,8 +234,8 @@
               'will be flagged when you save below.</div>';
     }
 
-    // Verify & update — shown for every member; saving never blocks check-in.
-    html += '<details id="infoCheck"' + (m.info_stale || m.portal_ok === false || m.email_list !== 'ok' ? ' open' : '') + '>' +
+    // Verify & update — always expanded; saving never blocks check-in.
+    html += '<details id="infoCheck" open>' +
       '<summary style="font-weight:700;font-size:1.05rem;padding:10px 0;cursor:pointer">' +
       'Verify member info &mdash; &ldquo;Is this all still correct? Are you getting our emails?&rdquo;</summary>';
     html += '<label>Are you receiving our emails?</label>' +
