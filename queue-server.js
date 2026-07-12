@@ -47,6 +47,14 @@ app.get('/', page('member.html'));
 app.get('/mod', page('mod.html'));
 app.get('/display', page('display.html'));
 
+// Shared union logo — same file the check-in app uses (public/logo.png).
+// 404s harmlessly until the file is dropped in place.
+app.get('/logo.png', (req, res) => {
+  const logo = path.join(__dirname, 'public', 'logo.png');
+  if (fs.existsSync(logo)) res.sendFile(logo);
+  else res.status(404).end();
+});
+
 function requireMod(req, res, next) {
   if ((req.get('X-Mod-Pin') || '') === MOD_PIN) return next();
   res.status(401).json({ error: 'PIN required' });

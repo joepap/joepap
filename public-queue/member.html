@@ -9,8 +9,12 @@
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
          background: #f4f5f7; color: #1a2330; min-height: 100vh;
          display: flex; flex-direction: column; align-items: center; }
-  header { background: #7f1212; color: #fff; width: 100%; padding: 14px 16px;
-           text-align: center; font-weight: 800; letter-spacing: .5px; }
+  header { background: #7f1212; color: #fff; width: 100%; padding: 12px 16px;
+           display: flex; align-items: center; justify-content: center; gap: 12px; }
+  header img { height: 42px; width: auto; }
+  header .org { text-align: left; line-height: 1.15; }
+  header .org .l1 { font-weight: 800; letter-spacing: .5px; }
+  header .org .l2 { font-size: .75rem; opacity: .85; font-weight: 600; }
   main { width: 100%; max-width: 440px; padding: 24px 20px; }
   .card { background: #fff; border: 1px solid #d8dee6; border-radius: 16px; padding: 24px;
           box-shadow: 0 1px 4px rgba(16,24,40,.08); text-align: center; }
@@ -32,7 +36,13 @@
 </style>
 </head>
 <body>
-<header>IAFF LOCAL 36 &middot; QUESTION LINE</header>
+<header>
+  <img src="/logo.png" alt="" onerror="this.style.display='none'">
+  <div class="org">
+    <div class="l1">IAFF LOCAL 36 &middot; QUESTION LINE</div>
+    <div class="l2">DC Firefighters Association</div>
+  </div>
+</header>
 <main>
   <div class="card" id="joinCard">
     <h2>Want to speak?</h2>
