@@ -75,6 +75,7 @@
     else chips += '<span class="flag green">OK</span>';
     if (dobMatch === true) chips += ' <span class="flag green">DOB &#10003;</span>';
     if (dobMatch === false) chips += ' <span class="flag red">DOB &#10007;</span>';
+    if (m.email_list === 'bad') chips += ' <span class="flag red">EMAIL</span>';
     if (m.portal_ok === false) chips += ' <span class="flag yellow">NO PORTAL</span>';
     else if (m.info_stale) chips += ' <span class="flag yellow">STALE INFO</span>';
     return chips;
@@ -218,17 +219,33 @@
               esc(m.portal_status) + ') — <strong>hand them a portal card</strong>' +
               ' or send to the help lane after check-in.</div>';
     }
-    if (m.info_stale) {
-      html += '<div class="banner yellow">&#9888; Contact info blank/stale — ' +
-              (m.portal_ok === false ? '' : '<strong>hand them a portal card</strong>. ') +
-              'Optionally capture corrections below (does not block check-in).</div>';
+    if (m.email_list === 'bad') {
+      html += '<div class="banner red">&#9993; Known email problem — they are in a no-email/returned-mail ' +
+              'group. Verify their email below; a group fix will be flagged for the office.</div>';
+    } else if (m.email_list === 'missing') {
+      html += '<div class="banner yellow">&#9993; Not in any email distribution group — a group fix ' +
+              'will be flagged when you save below.</div>';
     }
-    if (m.info_stale || m.portal_ok === false) {
-      html += '<div class="input-row">' +
-              '<input type="email" id="fixEmail" placeholder="New email (optional)" value="">' +
-              '<input type="tel" id="fixPhone" placeholder="New phone (optional)" value="">' +
-              '<button class="ghost" id="fixSave">Save</button></div>';
-    }
+
+    // Verify & update — shown for every member; saving never blocks check-in.
+    html += '<details id="infoCheck"' + (m.info_stale || m.portal_ok === false || m.email_list !== 'ok' ? ' open' : '') + '>' +
+      '<summary style="font-weight:700;font-size:1.05rem;padding:10px 0;cursor:pointer">' +
+      'Verify member info &mdash; &ldquo;Is this all still correct? Are you getting our emails?&rdquo;</summary>';
+    html += '<label>Are you receiving our emails?</label>' +
+      '<div class="method-grid" id="emailYN" style="grid-template-columns:1fr 1fr">' +
+      '<button data-v="yes">Yes</button><button data-v="no">No / not sure</button></div>';
+    html += '<div class="input-row">' +
+      '<div><label>Email</label><input type="email" id="fixEmail" value="' + esc(m.email) + '"></div>' +
+      '<div><label>Phone</label><input type="tel" id="fixPhone" value="' + esc(m.phone) + '"></div></div>';
+    html += '<div class="input-row">' +
+      '<div style="flex:2"><label>Street</label><input type="text" id="fixStreet" value="' + esc(m.addr_street) + '"></div>' +
+      '<div><label>Apt/Unit</label><input type="text" id="fixStreet2" value="' + esc(m.addr_street2) + '"></div></div>';
+    html += '<div class="input-row">' +
+      '<div style="flex:2"><label>City</label><input type="text" id="fixCity" value="' + esc(m.addr_city) + '"></div>' +
+      '<div><label>State</label><input type="text" id="fixState" value="' + esc(m.addr_state) + '"></div>' +
+      '<div><label>Zip</label><input type="text" id="fixZip" value="' + esc(m.addr_zip) + '"></div></div>';
+    html += '<button class="blue mt" id="fixSave" style="width:100%">Save corrections</button>';
+    html += '</details>';
 
     html += '<label style="margin-top:14px">Verification method</label><div class="method-grid" id="methodGrid">';
     Object.keys(METHOD_LABELS).forEach(function (k) {
@@ -263,7 +280,17 @@
       };
     });
 
-    if ($('fixSave')) $('fixSave').onclick = saveContactFix;
+    var emailYN = '';
+    Array.prototype.forEach.call($('emailYN').querySelectorAll('button'), function (b) {
+      b.onclick = function () {
+        emailYN = b.getAttribute('data-v');
+        Array.prototype.forEach.call($('emailYN').querySelectorAll('button'), function (x) {
+          x.classList.toggle('selected', x === b);
+        });
+        if (emailYN === 'no') $('infoCheck').setAttribute('open', '');
+      };
+    });
+    $('fixSave').onclick = function () { saveContactFix(emailYN); };
     if ($('accessGranted') && !m.access_granted_at) {
       $('accessGranted').onchange = function () {
         if (!this.checked) return;
@@ -276,16 +303,31 @@
     $('closeMember').onclick = closeMember;
   }
 
-  function saveContactFix() {
-    api('/api/members/' + currentMember.id + '/contact', {
+  function saveContactFix(emailYN) {
+    var m = currentMember;
+    var val = function (id) { return $(id) ? $(id).value.trim() : ''; };
+    var changed = function (v, old) { return v !== (old || '').trim() ? v : ''; };
+    // Flag a ConnectPlus group fix when they say they're not getting emails,
+    // or their groups already show a known problem.
+    var fixGroup = (emailYN === 'no') || m.email_list === 'bad' || m.email_list === 'missing';
+    api('/api/members/' + m.id + '/contact', {
       method: 'POST',
       body: JSON.stringify({
-        email: $('fixEmail').value.trim(),
-        phone: $('fixPhone').value.trim(),
+        // Only send fields the volunteer actually changed, so the export
+        // shows real corrections rather than every prefilled value.
+        email: changed(val('fixEmail'), m.email),
+        phone: changed(val('fixPhone'), m.phone),
+        street: changed(val('fixStreet'), m.addr_street),
+        street2: changed(val('fixStreet2'), m.addr_street2),
+        city: changed(val('fixCity'), m.addr_city),
+        state: changed(val('fixState'), m.addr_state),
+        zip: changed(val('fixZip'), m.addr_zip),
+        receiving_emails: emailYN || '',
+        fix_email_group: fixGroup,
         station: station
       })
     }).then(function () {
-      $('fixSave').textContent = 'Saved ✓';
+      $('fixSave').textContent = 'Saved ✓' + (fixGroup ? ' — email group flagged for the office' : '');
       $('fixSave').disabled = true;
     });
   }

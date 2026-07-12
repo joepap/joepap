@@ -111,8 +111,9 @@ async function main() {
 
   const ins = db.prepare(`INSERT INTO members
     (member_no, last_name, first_name, middle_name, suffix, full_name, dues_status, dues_ok,
-     email, phone, last_updated, info_stale, portal_status, dept_id, dob, norm_last, norm_first)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+     email, phone, last_updated, info_stale, portal_status, dept_id, dob, groups,
+     addr_street, addr_street2, addr_city, addr_state, addr_zip, norm_last, norm_first)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   const staleDays = 365;
   const pad2 = n => String(n).padStart(2, '0');
   db.transaction(() => {
@@ -123,11 +124,17 @@ async function main() {
       // and green-lane flow can be rehearsed.
       const portal = rnd() < 0.55 ? 'approved' : pick(['nonactive', 'invited', 'pending']);
       const dobIso = m.dob.y + '-' + pad2(m.dob.m) + '-' + pad2(m.dob.d);
+      // Mimic ConnectPlus email-distribution groups.
+      const r = rnd();
+      const groups = 'All Members, ' + (r < 0.7 ? 'Active Members'
+        : r < 0.85 ? 'Active Members - No Emails' : '2024 returned mail');
       ins.run(m.memberNo, m.last, m.first, m.middle, m.suffix,
         [m.first, m.middle, m.last].filter(Boolean).join(' ') + (m.suffix ? ' ' + m.suffix : ''),
         m.dues, /suspend|delinq|arrear/i.test(m.dues) ? 0 : 1,
         m.email, m.phone, m.lastUpdated, stale, portal, m.deptId,
-        rnd() < 0.5 ? dobIso : null,
+        rnd() < 0.5 ? dobIso : null, groups,
+        String(100 + Math.floor(rnd() * 9899)) + ' ' + pick(LAST).replace(/[^A-Za-z]/g, '') + ' St NW',
+        '', 'Washington', 'DC', '200' + pad2(Math.floor(rnd() * 20)),
         match.normalizeName(m.last), match.normalizeName(m.first));
     }
   })();

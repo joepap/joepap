@@ -58,6 +58,7 @@
         stat(s.not_found, 'Not found') +
         stat(s.access_granted_today, 'Access granted') +
         stat(s.contact_corrections, 'Contact fixes') +
+        stat(s.email_group_flags, 'Email-group flags') +
         stat(s.voided, 'Voided');
       $('methodGrid').innerHTML = (s.by_method || []).map(function (m) {
         return stat(m.c, METHOD_LABELS[m.verification_method] || m.verification_method);
@@ -94,7 +95,9 @@
     ['full_name', 'Full name'], ['last_name', 'Last name'], ['first_name', 'First name'],
     ['member_no', 'Member #'], ['dues_status', 'Dues status'], ['portal_status', 'Portal status'],
     ['email', 'Email'], ['phone', 'Phone'], ['last_updated', 'Last updated'],
-    ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)']
+    ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)'],
+    ['groups', 'Groups (email lists)'], ['street', 'Street address'], ['street2', 'Street address 2'],
+    ['city', 'City'], ['state', 'State'], ['zip', 'Zip']
   ];
   // Mirror of the server's fallback rule — used only to pre-check the
   // good-standing boxes; the admin's final selection is what gets sent.
@@ -125,7 +128,13 @@
       last_updated: ['lastupdated', 'updated', 'modified', 'lastmodified', 'datemodified'],
       dob: ['dateofbirth', 'dob', 'birthdate', 'birthday'],
       dept_id: ['pattag', 'pattagnumber', 'pattagno', 'fdid', 'deptid', 'departmentid',
-                'employeeid', 'employeenumber', 'badge', 'badgenumber', 'badgeno']
+                'employeeid', 'employeenumber', 'badge', 'badgenumber', 'badgeno'],
+      groups: ['groups', 'emailgroups', 'lists'],
+      street: ['streetaddress', 'street', 'address', 'addressline'],
+      street2: ['streetaddress2', 'street2', 'address2', 'addressline2', 'apt', 'unit'],
+      city: ['city', 'town'],
+      state: ['state', 'province'],
+      zip: ['zip', 'zipcode', 'postalcode', 'postal']
     };
     return (map[field] || []).indexOf(h) !== -1;
   }
@@ -275,12 +284,16 @@
     fetch('/api/config').then(function (r) { return r.json(); }).then(function (c) {
       $('staleDays').value = c.stale_days;
       $('ballotNumbering').value = c.ballot_numbering;
+      $('emailOkGroups').value = c.email_ok_groups || '';
+      $('emailBadGroups').value = c.email_bad_groups || '';
     });
   }
   $('saveSettings').onclick = function () {
     var body = {
       stale_days: $('staleDays').value,
-      ballot_numbering: $('ballotNumbering').value
+      ballot_numbering: $('ballotNumbering').value,
+      email_ok_groups: $('emailOkGroups').value,
+      email_bad_groups: $('emailBadGroups').value
     };
     var np = $('newPin').value.trim();
     if (np) body.admin_pin = np;

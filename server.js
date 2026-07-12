@@ -55,6 +55,17 @@ function ageFromIso(iso) {
   return age;
 }
 
+// 'ok' = in an email distribution group; 'bad' = in a known-problem group
+// (bounced / no-email); 'missing' = in neither; null = groups not imported.
+function emailListStatus(groupsRaw) {
+  if (!groupsRaw) return null;
+  const list = groupsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  const parse = key => (getConfig(db, key) || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (parse('email_bad_groups').some(g => list.includes(g))) return 'bad';
+  if (parse('email_ok_groups').some(g => list.includes(g))) return 'ok';
+  return 'missing';
+}
+
 function memberPublic(m) {
   const active = db.prepare(
     'SELECT id, ts, station, verification_method, ballot_no FROM checkins WHERE member_id = ? AND voided_at IS NULL'
@@ -63,6 +74,13 @@ function memberPublic(m) {
     portal_status: m.portal_status || '',
     portal_ok: portalOk(m.portal_status),
     dept_id: m.dept_id || '',
+    groups: m.groups || '',
+    email_list: emailListStatus(m.groups),
+    addr_street: m.addr_street || '',
+    addr_street2: m.addr_street2 || '',
+    addr_city: m.addr_city || '',
+    addr_state: m.addr_state || '',
+    addr_zip: m.addr_zip || '',
     age: ageFromIso(m.dob), // display-only; raw roster DOB is never sent
     id: m.id,
     member_no: m.member_no,
@@ -164,10 +182,14 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     const ins = db.prepare(`INSERT INTO members
       (member_no, last_name, first_name, middle_name, suffix, full_name,
        dues_status, dues_ok, email, phone, last_updated, info_stale,
-       portal_status, dept_id, dob, norm_last, norm_first)
+       portal_status, dept_id, dob, groups,
+       addr_street, addr_street2, addr_city, addr_state, addr_zip,
+       norm_last, norm_first)
       VALUES (@member_no, @last_name, @first_name, @middle_name, @suffix, @full_name,
        @dues_status, @dues_ok, @email, @phone, @last_updated, @info_stale,
-       @portal_status, @dept_id, @dob, @norm_last, @norm_first)`);
+       @portal_status, @dept_id, @dob, @groups,
+       @addr_street, @addr_street2, @addr_city, @addr_state, @addr_zip,
+       @norm_last, @norm_first)`);
     let count = 0;
     for (const rec of records) {
       let last = get(rec, 'last_name'), first = get(rec, 'first_name');
@@ -214,6 +236,12 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
         portal_status: get(rec, 'portal_status'),
         dept_id: get(rec, 'dept_id'),
         dob: toIsoDate(get(rec, 'dob')),
+        groups: get(rec, 'groups'),
+        addr_street: get(rec, 'street'),
+        addr_street2: get(rec, 'street2'),
+        addr_city: get(rec, 'city'),
+        addr_state: get(rec, 'state'),
+        addr_zip: get(rec, 'zip'),
         norm_last: match.normalizeName(last),
         norm_first: match.normalizeName(first)
       });
@@ -432,13 +460,23 @@ app.post('/api/checkin/:id/void', requireAdmin, (req, res) => {
 
 // ---------- member updates ----------
 
+// Verify-and-update: records whatever the member corrected at the table,
+// plus the "are you receiving our emails?" answer and whether their
+// ConnectPlus email group needs fixing. Applied to ConnectPlus after the
+// event via the corrections export — nothing here writes to NEP.
 app.post('/api/members/:id/contact', (req, res) => {
-  const { email, phone, station } = req.body || {};
+  const b = req.body || {};
   const m = db.prepare('SELECT id FROM members WHERE id = ?').get(req.params.id);
   if (!m) return res.status(404).json({ error: 'not found' });
-  db.prepare('INSERT INTO contact_corrections (member_id, email, phone, station) VALUES (?, ?, ?, ?)')
-    .run(m.id, email || '', phone || '', station || '');
-  audit(db, 'contact_correction', `member ${m.id}`, station);
+  db.prepare(
+    `INSERT INTO contact_corrections
+     (member_id, email, phone, new_street, new_street2, new_city, new_state, new_zip,
+      receiving_emails, fix_email_group, station)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(m.id, b.email || '', b.phone || '', b.street || '', b.street2 || '',
+    b.city || '', b.state || '', b.zip || '', b.receiving_emails || '',
+    b.fix_email_group ? 1 : 0, b.station || '');
+  audit(db, 'contact_correction', `member ${m.id}`, b.station);
   res.json({ ok: true });
 });
 
@@ -475,6 +513,7 @@ app.get('/api/stats', (req, res) => {
     not_found: one('SELECT COUNT(*) c FROM not_found').c,
     access_granted_today: one('SELECT COUNT(*) c FROM members WHERE access_granted_at IS NOT NULL').c,
     contact_corrections: one('SELECT COUNT(*) c FROM contact_corrections').c,
+    email_group_flags: one('SELECT COUNT(DISTINCT member_id) c FROM contact_corrections WHERE fix_email_group = 1').c,
     by_method: all(`SELECT verification_method, COUNT(*) c FROM checkins
                     WHERE voided_at IS NULL GROUP BY verification_method`),
     by_station: all(`SELECT station, COUNT(*) c,
@@ -515,12 +554,17 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
   const rows = db.prepare(
     `SELECT m.member_no, m.last_name, m.first_name,
             m.email old_email, m.phone old_phone,
-            cc.email new_email, cc.phone new_phone, cc.ts, cc.station
+            cc.email new_email, cc.phone new_phone,
+            cc.new_street, cc.new_street2, cc.new_city, cc.new_state, cc.new_zip,
+            cc.receiving_emails,
+            CASE WHEN cc.fix_email_group = 1 THEN 'yes' ELSE '' END fix_email_group,
+            m.groups current_groups, cc.ts, cc.station
      FROM contact_corrections cc JOIN members m ON m.id = cc.member_id ORDER BY cc.id`
   ).all();
   sendCsv(res, 'contact-corrections.csv',
     ['member_no', 'last_name', 'first_name', 'old_email', 'old_phone',
-     'new_email', 'new_phone', 'ts', 'station'], rows);
+     'new_email', 'new_phone', 'new_street', 'new_street2', 'new_city', 'new_state', 'new_zip',
+     'receiving_emails', 'fix_email_group', 'current_groups', 'ts', 'station'], rows);
 });
 
 app.get('/api/export/notfound.csv', requireAdmin, (req, res) => {
@@ -542,12 +586,14 @@ app.get('/api/export/access-granted.csv', requireAdmin, (req, res) => {
 app.get('/api/config', (req, res) => {
   res.json({
     stale_days: getConfig(db, 'stale_days'),
-    ballot_numbering: getConfig(db, 'ballot_numbering')
+    ballot_numbering: getConfig(db, 'ballot_numbering'),
+    email_ok_groups: getConfig(db, 'email_ok_groups'),
+    email_bad_groups: getConfig(db, 'email_bad_groups')
   });
 });
 
 app.post('/api/config', requireAdmin, (req, res) => {
-  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin'];
+  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'email_ok_groups', 'email_bad_groups'];
   for (const k of allowed) {
     if (req.body[k] !== undefined) setConfig(db, k, req.body[k]);
   }

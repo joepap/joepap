@@ -117,6 +117,10 @@
     <input type="number" id="staleDays" min="1">
     <label for="ballotNumbering">Sequential ballot numbers</label>
     <select id="ballotNumbering"><option value="on">On</option><option value="off">Off</option></select>
+    <label for="emailOkGroups">Email OK groups (comma list — membership means "on the email list")</label>
+    <input type="text" id="emailOkGroups">
+    <label for="emailBadGroups">Email PROBLEM groups (comma list — bounced / no-email / returned mail)</label>
+    <input type="text" id="emailBadGroups">
     <label for="newPin">Change admin PIN (leave blank to keep)</label>
     <input type="password" id="newPin" autocomplete="new-password">
     <button class="primary mt" id="saveSettings">Save settings</button>
