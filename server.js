@@ -194,7 +194,7 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     for (const rec of records) {
       let last = get(rec, 'last_name'), first = get(rec, 'first_name');
       let full = get(rec, 'full_name');
-      let suffix = '', middle = '';
+      let suffix = '', middle = get(rec, 'middle_name');
       if (!last && full) {
         // "Last, First Middle" or "First Middle Last"
         if (full.includes(',')) {

@@ -93,6 +93,7 @@
   // ---------- roster import ----------
   var FIELDS = [
     ['full_name', 'Full name'], ['last_name', 'Last name'], ['first_name', 'First name'],
+    ['middle_name', 'Middle name'],
     ['member_no', 'Member #'], ['dues_status', 'Member status'], ['portal_status', 'Portal status'],
     ['email', 'Email'], ['phone', 'Phone'], ['last_updated', 'Last updated'],
     ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)'],
@@ -106,20 +107,23 @@
 
   function buildMapGrid(gridEl, headers, fields) {
     gridEl.innerHTML = fields.map(function (f) {
+      var picked = false; // first matching header wins; never double-select
       return '<div><label>' + f[1] + '</label><select data-field="' + f[0] + '">' +
         '<option value="">— none —</option>' +
         headers.map(function (h) {
-          var sel = guess(f[0], h) ? ' selected' : '';
+          var sel = !picked && guess(f[0], h) ? (picked = true, ' selected') : '';
           return '<option value="' + esc(h) + '"' + sel + '>' + esc(h) + '</option>';
         }).join('') + '</select></div>';
     }).join('');
   }
   function guess(field, header) {
-    var h = header.toLowerCase().replace(/[^a-z]/g, '');
+    // Keep digits: "Street Address 2" must not collapse into "Street Address".
+    var h = header.toLowerCase().replace(/[^a-z0-9]/g, '');
     var map = {
       full_name: ['fullname', 'membername', 'name'],
       last_name: ['lastname', 'last', 'surname'],
       first_name: ['firstname', 'first', 'givenname'],
+      middle_name: ['middlename', 'middle', 'middleinitial', 'mi'],
       member_no: ['memberno', 'membernumber', 'memberid', 'cardno', 'iaffmembernumber', 'iaffnumber'],
       dues_status: ['duesstatus', 'dues', 'memberstatus', 'standing'],
       portal_status: ['status', 'portalstatus', 'accountstatus'],
