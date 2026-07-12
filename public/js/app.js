@@ -71,7 +71,8 @@
   function flagChips(m, dobMatch) {
     var chips = '';
     if (m.checked_in) chips += '<span class="flag red">CHECKED IN</span>';
-    else if (!m.dues_ok) chips += '<span class="flag red">DUES</span>';
+    else if (!m.dues_status) chips += '<span class="flag gray">NO STATUS</span>';
+    else if (!m.dues_ok) chips += '<span class="flag red">STATUS</span>';
     else chips += '<span class="flag green">OK</span>';
     if (dobMatch === true) chips += ' <span class="flag green">DOB &#10003;</span>';
     if (dobMatch === false) chips += ' <span class="flag red">DOB &#10007;</span>';
@@ -205,8 +206,14 @@
     html += '<div class="member-meta">Member #' + esc(m.member_no || '—') +
             (m.age != null ? ' &middot; age ' + m.age : '') +
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
-    html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
-            (m.dues_ok ? '&#10003; DUES: ' : '&#10007; DUES: ') + esc(m.dues_status || (m.dues_ok ? 'GOOD STANDING' : 'CHECK STATUS')) + '</div>';
+    if (m.dues_status) {
+      html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
+              (m.dues_ok ? '&#10003; STATUS: ' : '&#10007; STATUS: ') + esc(m.dues_status) + '</div>';
+    } else {
+      // No status imported — show neutral, never a false green.
+      html += '<div class="dues-pill" style="background:#e6e9ee;color:#5c6b7f;border:2px solid #d8dee6">' +
+              'NO STATUS ON FILE &mdash; verify eligibility manually</div>';
+    }
 
     if (m.checked_in) {
       html += '<div class="banner red">ALREADY CHECKED IN at ' + esc(m.checked_in.ts) +
