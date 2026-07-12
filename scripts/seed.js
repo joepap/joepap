@@ -67,7 +67,8 @@ function makeMember(i) {
   const dobYear = 1958 + Math.floor(rnd() * 45);
   const dobMonth = 1 + Math.floor(rnd() * 12);
   const dobDay = 1 + Math.floor(rnd() * 28);
-  return { first, middle, last, suffix, memberNo, dues, email, phone, lastUpdated,
+  const deptId = String(2000 + i); // fake pat tag number
+  return { first, middle, last, suffix, memberNo, dues, email, phone, lastUpdated, deptId,
     dob: { y: dobYear, m: dobMonth, d: dobDay } };
 }
 
@@ -110,8 +111,8 @@ async function main() {
 
   const ins = db.prepare(`INSERT INTO members
     (member_no, last_name, first_name, middle_name, suffix, full_name, dues_status, dues_ok,
-     email, phone, last_updated, info_stale, portal_status, dob, norm_last, norm_first)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+     email, phone, last_updated, info_stale, portal_status, dept_id, dob, norm_last, norm_first)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   const staleDays = 365;
   const pad2 = n => String(n).padStart(2, '0');
   db.transaction(() => {
@@ -125,7 +126,8 @@ async function main() {
       ins.run(m.memberNo, m.last, m.first, m.middle, m.suffix,
         [m.first, m.middle, m.last].filter(Boolean).join(' ') + (m.suffix ? ' ' + m.suffix : ''),
         m.dues, /suspend|delinq|arrear/i.test(m.dues) ? 0 : 1,
-        m.email, m.phone, m.lastUpdated, stale, portal, rnd() < 0.5 ? dobIso : null,
+        m.email, m.phone, m.lastUpdated, stale, portal, m.deptId,
+        rnd() < 0.5 ? dobIso : null,
         match.normalizeName(m.last), match.normalizeName(m.first));
     }
   })();
@@ -169,6 +171,16 @@ async function main() {
     fs.writeFileSync(path.join(bcDir, m.memberNo + '-' + m.last.replace(/[^A-Za-z]/g, '') + '.png'), png);
   }
   fs.writeFileSync(path.join(outDir, 'aamva-samples.txt'), lines.join('\n') + '\n');
+
+  // A few dept-ID style barcodes (Code 128 of the pat tag number) so the
+  // dept-ID scan path can be rehearsed too.
+  for (const m of members.slice(0, 6)) {
+    const png = await bwipjs.toBuffer({
+      bcid: 'code128', text: m.deptId, scale: 4, height: 12, padding: 20,
+      includetext: true, backgroundcolor: 'FFFFFF'
+    });
+    fs.writeFileSync(path.join(bcDir, 'deptid-' + m.deptId + '-' + m.last.replace(/[^A-Za-z]/g, '') + '.png'), png);
+  }
 
   console.log(`Wrote seed-output/roster.csv, paper-roll.csv, aamva-samples.txt and ${sample.length} barcode PNGs.`);
   console.log('Print the PNGs (or open on a phone) to rehearse camera + USB scanning.');

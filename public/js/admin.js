@@ -94,7 +94,7 @@
     ['full_name', 'Full name'], ['last_name', 'Last name'], ['first_name', 'First name'],
     ['member_no', 'Member #'], ['dues_status', 'Dues status'], ['portal_status', 'Portal status'],
     ['email', 'Email'], ['phone', 'Phone'], ['last_updated', 'Last updated'],
-    ['dob', 'Date of birth (optional)']
+    ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)']
   ];
   // Mirror of the server's fallback rule — used only to pre-check the
   // good-standing boxes; the admin's final selection is what gets sent.
@@ -123,7 +123,9 @@
       email: ['email', 'emailaddress'],
       phone: ['phone', 'cell', 'mobile', 'phonenumber', 'cellphone'],
       last_updated: ['lastupdated', 'updated', 'modified', 'lastmodified', 'datemodified'],
-      dob: ['dateofbirth', 'dob', 'birthdate', 'birthday']
+      dob: ['dateofbirth', 'dob', 'birthdate', 'birthday'],
+      dept_id: ['pattag', 'pattagnumber', 'pattagno', 'fdid', 'deptid', 'departmentid',
+                'employeeid', 'employeenumber', 'badge', 'badgenumber', 'badgeno']
     };
     return (map[field] || []).indexOf(h) !== -1;
   }
@@ -222,6 +224,40 @@
       $('paperStatus').textContent = '✓ flagged ' + r.body.flagged;
       $('paperUnmatched').innerHTML = r.body.unmatched.length
         ? '<div class="banner yellow mt">Unmatched names:<br>' + r.body.unmatched.map(esc).join('<br>') + '</div>'
+        : '';
+    });
+  };
+
+  // ---------- dept ID list ----------
+  $('deptFile').addEventListener('change', function () {
+    var f = this.files[0];
+    if (!f) return;
+    var fd = new FormData();
+    fd.append('file', f);
+    api('/api/import/preview', { method: 'POST', body: fd }).then(function (r) {
+      if (r.status !== 200) { alert(r.body.error || 'preview failed'); return; }
+      buildMapGrid($('deptMapGrid'), r.body.headers,
+        [['dept_id', 'Dept ID / pat tag'], ['member_no', 'Member #'],
+         ['full_name', 'Full name'], ['last_name', 'Last name'], ['first_name', 'First name']]);
+      $('deptMapArea').classList.remove('hidden');
+    });
+  });
+  $('doDeptImport').onclick = function () {
+    var f = $('deptFile').files[0];
+    if (!f) return;
+    var mapping = readMapping($('deptMapGrid'));
+    if (!mapping.dept_id) { alert('Map the Dept ID column.'); return; }
+    var fd = new FormData();
+    fd.append('file', f);
+    fd.append('mapping', JSON.stringify(mapping));
+    $('deptStatus').textContent = 'importing…';
+    api('/api/import/deptids', { method: 'POST', body: fd }).then(function (r) {
+      if (r.status !== 200) { $('deptStatus').textContent = 'failed: ' + (r.body.error || r.status); return; }
+      $('deptStatus').textContent = '✓ attached ' + r.body.updated + ' dept IDs';
+      $('deptUnmatched').innerHTML = r.body.unmatched.length
+        ? '<div class="banner yellow mt">Could not match (fix and re-import, or handle by name search):<br>' +
+          r.body.unmatched.slice(0, 50).map(esc).join('<br>') +
+          (r.body.unmatched.length > 50 ? '<br>…and ' + (r.body.unmatched.length - 50) + ' more' : '') + '</div>'
         : '';
     });
   };

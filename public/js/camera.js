@@ -85,7 +85,10 @@
         try {
           var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           var results = await mod.readBarcodes(imageData, {
-            formats: ['PDF417'],
+            // PDF417 = licenses; the rest cover department IDs and misc
+            // badges (1D linear formats + QR/DataMatrix/Aztec).
+            formats: opts.formats || ['PDF417', 'Code128', 'Code39', 'Code93',
+              'Codabar', 'ITF', 'QRCode', 'DataMatrix', 'Aztec'],
             tryHarder: true,
             tryInvert: true,
             binarizer: BINARIZERS[frameNo % BINARIZERS.length],
@@ -95,7 +98,7 @@
           frameNo++;
           if (opts.onFrame) opts.onFrame(frameNo);
           if (results.length && results[0].isValid && running) {
-            opts.onDecoded(results[0].text);
+            opts.onDecoded(results[0].text, results[0].format);
             return; // caller decides whether to restart
           }
         } catch (e) {

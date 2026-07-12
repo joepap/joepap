@@ -49,16 +49,17 @@
   }).catch(function (e) { $('wasm').textContent = 'FAILED: ' + e.message; });
 
   var t0 = 0;
-  function onDecoded(text) {
+  function onDecoded(text, format) {
     var dt = ((Date.now() - t0) / 1000).toFixed(1);
-    log('DECODED after ' + dt + 's (' + text.length + ' chars)');
+    log('DECODED ' + (format || '?') + ' after ' + dt + 's (' + text.length + ' chars)');
     var parsed = AAMVA.parse(text);
     if (parsed) {
       log('AAMVA parse OK: ' + parsed.lastName + ', ' + parsed.firstName +
           (parsed.dob ? '  age ' + AAMVA.ageFromDob(parsed.dob) : '') +
           (parsed.state ? '  ' + parsed.state : ''));
     } else {
-      log('Decoded but NOT AAMVA. First 60 chars: ' + JSON.stringify(text.slice(0, 60)));
+      log('Not a license (dept ID / badge?). Content: ' + JSON.stringify(text.slice(0, 60)) +
+          (text.length > 60 ? '…' : ''));
     }
     log('— restarting scan; point at another barcode or Stop —');
     startScan();

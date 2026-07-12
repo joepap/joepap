@@ -84,6 +84,21 @@
     <div id="paperUnmatched"></div>
   </section>
 
+  <!-- Dept ID / pat tag list -->
+  <section class="card">
+    <h3>Dept ID / pat tag list (optional)</h3>
+    <p class="muted small">A list mapping pat tag numbers to members (any spreadsheet with a
+      tag number + name or member #). Enables instant lookup when a department ID barcode is
+      scanned or its number is typed into search.</p>
+    <input type="file" id="deptFile" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <div id="deptMapArea" class="hidden">
+      <div class="stat-grid" id="deptMapGrid"></div>
+      <button class="primary mt" id="doDeptImport">Import dept IDs</button>
+      <span id="deptStatus" class="muted" style="margin-left:10px"></span>
+    </div>
+    <div id="deptUnmatched"></div>
+  </section>
+
   <!-- Exports -->
   <section class="card">
     <h3>Exports</h3>

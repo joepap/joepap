@@ -62,6 +62,7 @@ function memberPublic(m) {
   return {
     portal_status: m.portal_status || '',
     portal_ok: portalOk(m.portal_status),
+    dept_id: m.dept_id || '',
     age: ageFromIso(m.dob), // display-only; raw roster DOB is never sent
     id: m.id,
     member_no: m.member_no,
@@ -163,10 +164,10 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     const ins = db.prepare(`INSERT INTO members
       (member_no, last_name, first_name, middle_name, suffix, full_name,
        dues_status, dues_ok, email, phone, last_updated, info_stale,
-       portal_status, dob, norm_last, norm_first)
+       portal_status, dept_id, dob, norm_last, norm_first)
       VALUES (@member_no, @last_name, @first_name, @middle_name, @suffix, @full_name,
        @dues_status, @dues_ok, @email, @phone, @last_updated, @info_stale,
-       @portal_status, @dob, @norm_last, @norm_first)`);
+       @portal_status, @dept_id, @dob, @norm_last, @norm_first)`);
     let count = 0;
     for (const rec of records) {
       let last = get(rec, 'last_name'), first = get(rec, 'first_name');
@@ -211,6 +212,7 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
         email, phone, last_updated: lastUpdated,
         info_stale: computeStale(email, phone, lastUpdated, staleDays),
         portal_status: get(rec, 'portal_status'),
+        dept_id: get(rec, 'dept_id'),
         dob: toIsoDate(get(rec, 'dob')),
         norm_last: match.normalizeName(last),
         norm_first: match.normalizeName(first)
@@ -265,12 +267,65 @@ app.post('/api/import/paper', requireAdmin, upload.single('file'), (req, res) =>
   res.json({ flagged, unmatched });
 });
 
+// Dept ID / pat-tag list: fills members.dept_id by matching member number
+// or name. mapping: { dept_id (required), member_no?, full_name?,
+// last_name?, first_name? }
+app.post('/api/import/deptids', requireAdmin, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file' });
+  let mapping;
+  try { mapping = JSON.parse(req.body.mapping || '{}'); }
+  catch { return res.status(400).json({ error: 'bad mapping JSON' }); }
+  if (!mapping.dept_id) return res.status(400).json({ error: 'mapping needs dept_id' });
+  const { records } = tabular.parseUpload(req.file.buffer, req.file.originalname);
+  const all = db.prepare('SELECT id, norm_last, norm_first, member_no FROM members').all();
+  const byNo = new Map(all.filter(m => m.member_no).map(m => [String(m.member_no).trim(), m]));
+  const setId = db.prepare("UPDATE members SET dept_id = ?, updated_at = datetime('now') WHERE id = ?");
+  const unmatched = [];
+  let updated = 0;
+  db.transaction(() => {
+    for (const rec of records) {
+      const deptId = (rec[mapping.dept_id] || '').trim();
+      if (!deptId) continue;
+      const no = mapping.member_no ? (rec[mapping.member_no] || '').trim() : '';
+      if (no && byNo.has(no)) { setId.run(deptId, byNo.get(no).id); updated++; continue; }
+      const name = mapping.full_name ? (rec[mapping.full_name] || '').trim()
+        : [(rec[mapping.first_name] || ''), (rec[mapping.last_name] || '')].join(' ').trim();
+      if (!name) { unmatched.push(deptId + ' (no name)'); continue; }
+      let q;
+      if (name.includes(',')) {
+        const [l, f] = name.split(',', 2);
+        q = { lastName: l.trim(), firstName: (f || '').trim().split(/\s+/)[0] || '' };
+      } else {
+        const parts = name.split(/\s+/);
+        q = { lastName: parts[parts.length - 1], firstName: parts[0] };
+      }
+      let best = null, bestScore = 0, ties = 0;
+      for (const m of all) {
+        const s = match.scoreCandidate(q, m);
+        if (s > bestScore) { best = m; bestScore = s; ties = 1; }
+        else if (s === bestScore && s > 0) ties++;
+      }
+      // Require a strong, unambiguous match before attaching an ID.
+      if (best && bestScore >= 85 && ties === 1) { setId.run(deptId, best.id); updated++; }
+      else unmatched.push(name + ' (' + deptId + ')');
+    }
+  })();
+  audit(db, 'deptid_import', `updated ${updated}, unmatched ${unmatched.length}`, 'admin');
+  res.json({ updated, unmatched });
+});
+
 // ---------- lookup ----------
 
 // Type-ahead: last-name prefix (or "last, first"), min 2 chars.
 app.get('/api/search', (req, res) => {
   const q = (req.query.q || '').trim();
   if (q.length < 2) return res.json({ members: [] });
+  // Exact ID hits first: dept ID (pat tag) or member number, typed or
+  // scanned in. Runs before name parsing since pure numbers aren't names.
+  const idHit = db.prepare(
+    'SELECT * FROM members WHERE (dept_id != \'\' AND dept_id = ?) OR member_no = ? LIMIT 5'
+  ).all(q, q);
+  if (idHit.length) return res.json({ members: idHit.map(memberPublic), id_match: true });
   let lastPart = q, firstPart = '';
   if (q.includes(',')) [lastPart, firstPart] = q.split(',', 2).map(s => s.trim());
   const normLast = match.normalizeName(lastPart);
@@ -279,9 +334,9 @@ app.get('/api/search', (req, res) => {
   // Prefix match on any token of the normalized last name.
   const rows = db.prepare(
     `SELECT * FROM members
-     WHERE norm_last LIKE ? OR norm_last LIKE ? OR member_no = ?
+     WHERE norm_last LIKE ? OR norm_last LIKE ?
      ORDER BY norm_last, norm_first LIMIT 30`
-  ).all(normLast + '%', '% ' + normLast + '%', q);
+  ).all(normLast + '%', '% ' + normLast + '%');
   let out = rows;
   if (normFirst) out = rows.filter(m => m.norm_first.startsWith(normFirst) ||
     match.firstNameScore(normFirst, m.norm_first.split(' ')[0] || '') >= 85);
