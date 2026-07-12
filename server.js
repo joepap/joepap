@@ -538,7 +538,7 @@ function sendCsv(res, filename, headers, rows) {
 app.get('/api/export/checkins.csv', requireAdmin, (req, res) => {
   const rows = db.prepare(
     `SELECT c.ts, c.station, c.verification_method, c.method_note, c.ballot_no,
-            m.member_no, m.last_name, m.first_name, m.dues_status,
+            m.member_no, m.last_name, m.first_name, m.dues_status AS member_status,
             CASE WHEN m.access_granted_at IS NOT NULL THEN 'yes' ELSE '' END access_granted_today,
             CASE WHEN c.voided_at IS NOT NULL THEN 'VOID' ELSE '' END voided,
             c.voided_at, c.void_reason
@@ -546,7 +546,7 @@ app.get('/api/export/checkins.csv', requireAdmin, (req, res) => {
   ).all();
   sendCsv(res, 'checkins.csv',
     ['ts', 'station', 'verification_method', 'method_note', 'ballot_no', 'member_no',
-     'last_name', 'first_name', 'dues_status', 'access_granted_today', 'voided', 'voided_at', 'void_reason'],
+     'last_name', 'first_name', 'member_status', 'access_granted_today', 'voided', 'voided_at', 'void_reason'],
     rows);
 });
 

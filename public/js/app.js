@@ -208,7 +208,7 @@
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
     if (m.dues_status) {
       html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
-              (m.dues_ok ? '&#10003; STATUS: ' : '&#10007; STATUS: ') + esc(m.dues_status) + '</div>';
+              (m.dues_ok ? '&#10003; ' : '&#10007; NOT ELIGIBLE — ') + esc(m.dues_status.toUpperCase()) + '</div>';
     } else {
       // No status imported — show neutral, never a false green.
       html += '<div class="dues-pill" style="background:#e6e9ee;color:#5c6b7f;border:2px solid #d8dee6">' +

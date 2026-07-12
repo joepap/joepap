@@ -93,7 +93,7 @@
   // ---------- roster import ----------
   var FIELDS = [
     ['full_name', 'Full name'], ['last_name', 'Last name'], ['first_name', 'First name'],
-    ['member_no', 'Member #'], ['dues_status', 'Dues status'], ['portal_status', 'Portal status'],
+    ['member_no', 'Member #'], ['dues_status', 'Member status'], ['portal_status', 'Portal status'],
     ['email', 'Email'], ['phone', 'Phone'], ['last_updated', 'Last updated'],
     ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)'],
     ['groups', 'Groups (email lists)'], ['street', 'Street address'], ['street2', 'Street address 2'],
@@ -148,7 +148,8 @@
     if (!d) { $('duesValuesArea').classList.add('hidden'); return; }
     $('duesValuesArea').classList.remove('hidden');
     $('duesValues').innerHTML = d.map(function (v) {
-      var checked = BAD_DUES.test(v.value) ? '' : ' checked';
+      // Local 36 rule: only Active members vote — pre-check "Active" alone.
+      var checked = v.value.trim().toLowerCase() === 'active' ? ' checked' : '';
       return '<label style="display:block;font-weight:400;margin:6px 0">' +
         '<input type="checkbox" class="duesVal" value="' + esc(v.value) + '"' + checked +
         ' style="width:20px;height:20px;vertical-align:middle"> ' +
