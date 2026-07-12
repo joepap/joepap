@@ -76,6 +76,14 @@
     var BINARIZERS = ['LocalAverage', 'GlobalHistogram', 'FixedThreshold'];
     var frameNo = 0;
 
+    // Licenses carry small 1D barcodes (MD prints an inventory number in
+    // Code 128) NEXT TO the PDF417, and the 1D code often decodes first.
+    // With preferPdf417, a non-PDF417 hit is held for a grace period —
+    // if a PDF417 shows up it wins; if not (it's a real badge/dept ID),
+    // the held result is emitted.
+    var GRACE_MS = 3000;
+    var held = null;
+
     async function tick() {
       if (!running) return;
       if (video.readyState >= 2 && video.videoWidth) {
@@ -93,13 +101,25 @@
             tryInvert: true,
             binarizer: BINARIZERS[frameNo % BINARIZERS.length],
             textMode: 'Plain',   // raw control chars for AAMVA parsing
-            maxNumberOfSymbols: 1
+            maxNumberOfSymbols: 4
           });
           frameNo++;
           if (opts.onFrame) opts.onFrame(frameNo);
-          if (results.length && results[0].isValid && running) {
-            opts.onDecoded(results[0].text, results[0].format);
-            return; // caller decides whether to restart
+          if (running) {
+            var valid = results.filter(function (r) { return r.isValid; });
+            var pdf = valid.filter(function (r) { return r.format === 'PDF417'; })[0];
+            if (pdf) { opts.onDecoded(pdf.text, pdf.format); return; }
+            if (valid.length) {
+              if (!opts.preferPdf417) {
+                opts.onDecoded(valid[0].text, valid[0].format);
+                return;
+              }
+              if (!held) held = { text: valid[0].text, format: valid[0].format, t: Date.now() };
+            }
+            if (held && Date.now() - held.t > GRACE_MS) {
+              opts.onDecoded(held.text, held.format);
+              return;
+            }
           }
         } catch (e) {
           if (opts.onError) opts.onError(String(e && e.message || e));

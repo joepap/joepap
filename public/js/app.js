@@ -160,44 +160,21 @@
     $('camStatus').textContent = 'Starting camera…';
     CameraScan.start({
       video: $('cam'),
-      onDecoded: function (text, format) {
+      // PDF417 only: licenses carry extra small 1D barcodes (MD prints an
+      // inventory number in Code 128) that must not hijack the scan. Dept
+      // IDs are handled by USB scanner / typing the number into search.
+      formats: ['PDF417'],
+      onDecoded: function (text) {
         closeCamera();
-        // License PDF417 goes to the AAMVA flow; anything else (dept ID
-        // badges are 1D codes carrying just the pat tag number) is looked
-        // up as an exact ID.
-        if (format === 'PDF417' || text.indexOf('ANSI ') !== -1 || text.indexOf('AAMVA') !== -1) {
-          handleScanPayload(text);
-        } else {
-          handleIdScan(text, format);
-        }
+        handleScanPayload(text);
       },
       onError: function () { /* per-frame decode errors are normal */ }
     }).then(function () {
-      $('camStatus').textContent = 'Point at the license barcode or a dept ID barcode.';
+      $('camStatus').textContent = 'Point at the barcode on the BACK of the license.';
     }).catch(function (e) {
       $('camStatus').textContent = 'Camera failed: ' + (e && e.message || e);
     });
   };
-
-  function handleIdScan(text, format) {
-    var id = text.trim();
-    if (!id || id.length > 32) {
-      renderResults([], '<div class="banner yellow">Unrecognized barcode (' + esc(format || '?') + ').</div>');
-      return;
-    }
-    api('/api/search?q=' + encodeURIComponent(id)).then(function (r) {
-      var members = (r.body.members || []).map(function (m) { return { member: m }; });
-      var header = '<div class="banner blue">ID barcode scanned: <strong>' + esc(id) + '</strong></div>';
-      if (r.body.id_match && members.length) {
-        renderResults(members, header);
-        if (members.length === 1) openMember(members[0].member.id);
-      } else {
-        renderResults([], header +
-          '<div class="banner yellow">No member has this dept ID on file. ' +
-          'Search by last name instead — you can still check them in with method "Department ID".</div>');
-      }
-    });
-  }
   function closeCamera() {
     CameraScan.stop();
     $('cameraModal').classList.add('hidden');
