@@ -63,6 +63,12 @@
       <div class="name" id="nextName"></div>
     </div>
     <div id="list"></div>
+    <div style="display:flex;gap:8px;margin:14px 0">
+      <input type="text" id="addName" placeholder="Add someone without a phone…"
+             style="flex:1;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
+      <button id="addBtn" style="border:none;border-radius:12px;font-weight:800;padding:0 18px;
+              background:#1d4ed8;color:#fff;font-size:1.3rem">+</button>
+    </div>
     <h4 id="resolvedHdr" style="display:none">Recently handled</h4>
     <div id="resolvedList"></div>
     <div class="hint">Swipe right = done &middot; swipe left = skip &middot; or use the buttons</div>
@@ -163,6 +169,15 @@
       });
     }).catch(function () { /* poll again shortly */ });
   }
+
+  function addManual() {
+    var name = $('addName').value.trim();
+    if (name.length < 2) { $('addName').focus(); return; }
+    api('/api/mod/add', { method: 'POST', body: JSON.stringify({ name: name }) })
+      .then(function () { $('addName').value = ''; refresh(); });
+  }
+  $('addBtn').onclick = addManual;
+  $('addName').addEventListener('keydown', function (e) { if (e.key === 'Enter') addManual(); });
 
   $('reset').onclick = function () {
     if (!confirm('Clear the ENTIRE line? This removes everyone.')) return;

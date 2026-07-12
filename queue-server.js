@@ -146,6 +146,17 @@ app.post('/api/mod/action', requireMod, (req, res) => {
   res.json({ ok: true });
 });
 
+// Moderator: manually add someone who has no phone / can't scan. They
+// take their place at the end of the line like anyone else.
+app.post('/api/mod/add', requireMod, (req, res) => {
+  const name = String((req.body || {}).name || '').trim().slice(0, 60);
+  if (name.length < 2) return res.status(400).json({ error: 'Enter the full name.' });
+  const token = 'mod-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  const info = db.prepare('INSERT INTO entries (name, token) VALUES (?, ?)').run(name, token);
+  const entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(info.lastInsertRowid);
+  res.json({ ok: true, position: positionOf(entry) });
+});
+
 // Moderator: clear the whole line (start of meeting / testing).
 app.post('/api/mod/reset', requireMod, (req, res) => {
   db.exec('DELETE FROM entries');
