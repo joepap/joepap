@@ -32,9 +32,14 @@ npm run certs <LAN-IP>  # HTTPS certs (required for iPad camera scanning)
      seed generator sets an explicit white background.
    - The library is **vendored** at `public/vendor/zxing/` (43 KB JS + 1 MB
      wasm) so nothing is fetched from a CDN at the venue.
-   - iPad Safari camera decoding still needs an on-device check — that is what
-     `/barcode-test.html` is for. If a particular iPad struggles, the USB
-     scanner and type-ahead paths are first-class fallbacks, not degraded modes.
+   - **iPad Safari camera decoding: VERIFIED on-device** (2026-07-11) via
+     `/barcode-test.html` — a real Maryland license decoded repeatedly in
+     0–3 s at 1920×1080 after initial positioning, with correct AAMVA
+     name/age/state extraction. Use the same page to shake down each
+     additional iPad. USB scanner and type-ahead remain first-class
+     fallback paths.
+   - Laptop webcams (fixed focus) struggle with real licenses — expect the
+     camera lane to be iPads; laptops should use USB scanners or search.
 2. **AAMVA parsing**: `public/js/aamva.js` handles v01 (combined `DAA` name),
    v02–v03 (`DCT` packed given names), and v04+ (`DCS`/`DAC`/`DAD`), US
    (`MMDDCCYY`) and Canadian (`CCYYMMDD`) dates, keyboard-wedge mangling
