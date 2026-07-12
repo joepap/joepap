@@ -76,6 +76,9 @@ function memberPublic(m) {
     dept_id: m.dept_id || '',
     groups: m.groups || '',
     email_list: emailListStatus(m.groups),
+    rank: m.rank || '',
+    platoon: m.platoon || '',
+    assignment: m.assignment || '',
     addr_street: m.addr_street || '',
     addr_street2: m.addr_street2 || '',
     addr_city: m.addr_city || '',
@@ -182,12 +185,12 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     const ins = db.prepare(`INSERT INTO members
       (member_no, last_name, first_name, middle_name, suffix, full_name,
        dues_status, dues_ok, email, phone, last_updated, info_stale,
-       portal_status, dept_id, dob, groups,
+       portal_status, dept_id, dob, groups, rank, platoon, assignment,
        addr_street, addr_street2, addr_city, addr_state, addr_zip,
        norm_last, norm_first)
       VALUES (@member_no, @last_name, @first_name, @middle_name, @suffix, @full_name,
        @dues_status, @dues_ok, @email, @phone, @last_updated, @info_stale,
-       @portal_status, @dept_id, @dob, @groups,
+       @portal_status, @dept_id, @dob, @groups, @rank, @platoon, @assignment,
        @addr_street, @addr_street2, @addr_city, @addr_state, @addr_zip,
        @norm_last, @norm_first)`);
     let count = 0;
@@ -237,6 +240,9 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
         dept_id: get(rec, 'dept_id'),
         dob: toIsoDate(get(rec, 'dob')),
         groups: get(rec, 'groups'),
+        rank: get(rec, 'rank'),
+        platoon: get(rec, 'platoon'),
+        assignment: get(rec, 'assignment'),
         addr_street: get(rec, 'street'),
         addr_street2: get(rec, 'street2'),
         addr_city: get(rec, 'city'),
@@ -472,10 +478,12 @@ app.post('/api/members/:id/contact', (req, res) => {
     `INSERT INTO contact_corrections
      (member_id, email, phone, new_first_name, new_middle_name, new_last_name,
       new_street, new_street2, new_city, new_state, new_zip,
+      new_rank, new_platoon, new_assignment,
       receiving_emails, fix_email_group, station)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(m.id, b.email || '', b.phone || '', b.first_name || '', b.middle_name || '', b.last_name || '',
     b.street || '', b.street2 || '', b.city || '', b.state || '', b.zip || '',
+    b.rank || '', b.platoon || '', b.assignment || '',
     b.receiving_emails || '', b.fix_email_group ? 1 : 0, b.station || '');
   audit(db, 'contact_correction', `member ${m.id}`, b.station);
   res.json({ ok: true });
@@ -558,6 +566,7 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
             cc.email new_email, cc.phone new_phone,
             cc.new_first_name, cc.new_middle_name, cc.new_last_name,
             cc.new_street, cc.new_street2, cc.new_city, cc.new_state, cc.new_zip,
+            cc.new_rank, cc.new_platoon, cc.new_assignment,
             cc.receiving_emails,
             CASE WHEN cc.fix_email_group = 1 THEN 'yes' ELSE '' END fix_email_group,
             m.groups current_groups, cc.ts, cc.station
@@ -567,6 +576,7 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
     ['member_no', 'last_name', 'first_name', 'old_email', 'old_phone',
      'new_email', 'new_phone', 'new_first_name', 'new_middle_name', 'new_last_name',
      'new_street', 'new_street2', 'new_city', 'new_state', 'new_zip',
+     'new_rank', 'new_platoon', 'new_assignment',
      'receiving_emails', 'fix_email_group', 'current_groups', 'ts', 'station'], rows);
 });
 

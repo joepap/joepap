@@ -98,7 +98,8 @@
     ['email', 'Email'], ['phone', 'Phone'], ['last_updated', 'Last updated'],
     ['dob', 'Date of birth (optional)'], ['dept_id', 'Dept ID / pat tag (optional)'],
     ['groups', 'Groups (email lists)'], ['street', 'Street address'], ['street2', 'Street address 2'],
-    ['city', 'City'], ['state', 'State'], ['zip', 'Zip']
+    ['city', 'City'], ['state', 'State'], ['zip', 'Zip'],
+    ['rank', 'Rank'], ['platoon', 'Platoon'], ['assignment', 'Assignment / company']
   ];
   // Mirror of the server's fallback rule — used only to pre-check the
   // good-standing boxes; the admin's final selection is what gets sent.
@@ -138,7 +139,10 @@
       street2: ['streetaddress2', 'street2', 'address2', 'addressline2', 'apt', 'unit'],
       city: ['city', 'town'],
       state: ['state', 'province'],
-      zip: ['zip', 'zipcode', 'postalcode', 'postal']
+      zip: ['zip', 'zipcode', 'postalcode', 'postal'],
+      rank: ['rank', 'dcfirerank', 'firerank'],
+      platoon: ['platoon', 'shift'],
+      assignment: ['assignment', 'currentcompany', 'company', 'station', 'unit']
     };
     return (map[field] || []).indexOf(h) !== -1;
   }

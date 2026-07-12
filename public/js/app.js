@@ -205,6 +205,9 @@
             ', ' + esc(m.first_name) + (m.middle_name ? ' ' + esc(m.middle_name) : '') + '</div>';
     html += '<div class="member-meta">Member #' + esc(m.member_no || '—') +
             (m.age != null ? ' &middot; age ' + m.age : '') +
+            (m.rank ? ' &middot; ' + esc(m.rank) : '') +
+            (m.assignment ? ' &middot; ' + esc(m.assignment) : '') +
+            (m.platoon ? ' &middot; Platoon ' + esc(m.platoon) : '') +
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
     if (m.dues_status) {
       html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
@@ -255,6 +258,10 @@
       '<div style="flex:2"><label>City</label><input type="text" id="fixCity" value="' + esc(m.addr_city) + '"></div>' +
       '<div><label>State</label><input type="text" id="fixState" value="' + esc(m.addr_state) + '"></div>' +
       '<div><label>Zip</label><input type="text" id="fixZip" value="' + esc(m.addr_zip) + '"></div></div>';
+    html += '<div class="input-row">' +
+      '<div><label>Rank</label><input type="text" id="fixRank" value="' + esc(m.rank) + '"></div>' +
+      '<div><label>Assignment</label><input type="text" id="fixAssignment" value="' + esc(m.assignment) + '"></div>' +
+      '<div><label>Platoon</label><input type="text" id="fixPlatoon" value="' + esc(m.platoon) + '"></div></div>';
     html += '<button class="blue mt" id="fixSave" style="width:100%">Save corrections</button>';
     html += '</details>';
 
@@ -336,6 +343,9 @@
         city: changed(val('fixCity'), m.addr_city),
         state: changed(val('fixState'), m.addr_state),
         zip: changed(val('fixZip'), m.addr_zip),
+        rank: changed(val('fixRank'), m.rank),
+        assignment: changed(val('fixAssignment'), m.assignment),
+        platoon: changed(val('fixPlatoon'), m.platoon),
         receiving_emails: emailYN || '',
         fix_email_group: fixGroup,
         station: station
