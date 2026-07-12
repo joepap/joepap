@@ -4,3 +4,4 @@ certs/
 seed-output/
 *.log
 .DS_Store
+public/logo.png

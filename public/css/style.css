@@ -1,6 +1,7 @@
 :root {
-  --bg: #f4f5f7; --card: #ffffff; --ink: #1a2330; --muted: #5c6b7f;
+  --bg: #f2f0ec; --card: #ffffff; --ink: #16181d; --muted: #5c6b7f;
   --accent: #b91c1c; --accent-dark: #7f1212;
+  --black: #14161a; --gold: #d9a521; --gold-dim: #b8860b;
   --green: #15803d; --green-bg: #dcfce7;
   --red: #b91c1c; --red-bg: #fee2e2;
   --yellow: #a16207; --yellow-bg: #fef9c3;
@@ -14,15 +15,26 @@ body {
   background: var(--bg); color: var(--ink); min-height: 100vh;
 }
 header.appbar {
-  background: var(--accent-dark); color: #fff; padding: 10px 16px;
+  background: linear-gradient(180deg, #1b1e24 0%, var(--black) 100%);
+  color: #fff; padding: 12px 18px;
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  border-bottom: 4px solid var(--accent);
+  box-shadow: inset 0 -8px 0 -4px var(--gold);
 }
-header.appbar h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: .3px; }
-header.appbar .brand { display: flex; align-items: center; gap: 12px; }
-header.appbar .brand img { height: 40px; width: auto; border-radius: 50%; }
-header.appbar .brand .org { line-height: 1.15; }
-header.appbar .brand .org .l1 { font-weight: 800; font-size: 1.02rem; letter-spacing: .4px; }
-header.appbar .brand .org .l2 { font-size: .78rem; opacity: .85; font-weight: 600; letter-spacing: .3px; }
+header.appbar h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: .5px; }
+header.appbar .brand { display: flex; align-items: center; gap: 14px; }
+header.appbar .brand img {
+  height: 46px; width: auto; border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--gold);
+}
+header.appbar .brand .org { line-height: 1.2; }
+header.appbar .brand .org .l1 {
+  font-weight: 900; font-size: 1.08rem; letter-spacing: 1.2px; text-transform: uppercase;
+}
+header.appbar .brand .org .l2 {
+  font-size: .74rem; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase;
+  color: var(--gold);
+}
 header.appbar .spacer { flex: 1; }
 header.appbar .station-chip {
   background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.4);
@@ -33,7 +45,9 @@ main { max-width: 860px; margin: 0 auto; padding: 16px; }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: 14px;
   padding: 18px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(16,24,40,.06);
+  border-top: 3px solid var(--accent);
 }
+h3, h4 { letter-spacing: .4px; text-transform: uppercase; font-size: .95rem; color: #33404f; }
 
 button, .btn {
   appearance: none; border: none; border-radius: 12px; cursor: pointer;
