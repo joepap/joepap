@@ -110,17 +110,22 @@ async function main() {
 
   const ins = db.prepare(`INSERT INTO members
     (member_no, last_name, first_name, middle_name, suffix, full_name, dues_status, dues_ok,
-     email, phone, last_updated, info_stale, norm_last, norm_first)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+     email, phone, last_updated, info_stale, portal_status, dob, norm_last, norm_first)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   const staleDays = 365;
+  const pad2 = n => String(n).padStart(2, '0');
   db.transaction(() => {
     for (const m of members) {
       const stale = (!m.email && !m.phone) ||
         (Date.now() - new Date(m.lastUpdated).getTime()) / 86400000 > staleDays ? 1 : 0;
+      // Mimic ConnectPlus portal-account states so the check-in banners
+      // and green-lane flow can be rehearsed.
+      const portal = rnd() < 0.55 ? 'approved' : pick(['nonactive', 'invited', 'pending']);
+      const dobIso = m.dob.y + '-' + pad2(m.dob.m) + '-' + pad2(m.dob.d);
       ins.run(m.memberNo, m.last, m.first, m.middle, m.suffix,
         [m.first, m.middle, m.last].filter(Boolean).join(' ') + (m.suffix ? ' ' + m.suffix : ''),
         m.dues, /suspend|delinq|arrear/i.test(m.dues) ? 0 : 1,
-        m.email, m.phone, m.lastUpdated, stale,
+        m.email, m.phone, m.lastUpdated, stale, portal, rnd() < 0.5 ? dobIso : null,
         match.normalizeName(m.last), match.normalizeName(m.first));
     }
   })();

@@ -92,9 +92,14 @@
   // ---------- roster import ----------
   var FIELDS = [
     ['full_name', 'Full name'], ['last_name', 'Last name'], ['first_name', 'First name'],
-    ['member_no', 'Member #'], ['dues_status', 'Dues status'], ['email', 'Email'],
-    ['phone', 'Phone'], ['last_updated', 'Last updated']
+    ['member_no', 'Member #'], ['dues_status', 'Dues status'], ['portal_status', 'Portal status'],
+    ['email', 'Email'], ['phone', 'Phone'], ['last_updated', 'Last updated'],
+    ['dob', 'Date of birth (optional)']
   ];
+  // Mirror of the server's fallback rule — used only to pre-check the
+  // good-standing boxes; the admin's final selection is what gets sent.
+  var BAD_DUES = /(suspend|delinq|arrear|expell|lapsed|inactive|not.?in.?good|owe[sd]?|drop|deceased|resign|quit|alumni|blank)/i;
+  var lastPreview = null;
 
   function buildMapGrid(gridEl, headers, fields) {
     gridEl.innerHTML = fields.map(function (f) {
@@ -112,13 +117,32 @@
       full_name: ['fullname', 'membername', 'name'],
       last_name: ['lastname', 'last', 'surname'],
       first_name: ['firstname', 'first', 'givenname'],
-      member_no: ['memberno', 'membernumber', 'memberid', 'cardno', 'id'],
-      dues_status: ['duesstatus', 'dues', 'status', 'standing'],
+      member_no: ['memberno', 'membernumber', 'memberid', 'cardno', 'iaffmembernumber', 'iaffnumber'],
+      dues_status: ['duesstatus', 'dues', 'memberstatus', 'standing'],
+      portal_status: ['status', 'portalstatus', 'accountstatus'],
       email: ['email', 'emailaddress'],
       phone: ['phone', 'cell', 'mobile', 'phonenumber', 'cellphone'],
-      last_updated: ['lastupdated', 'updated', 'modified', 'lastmodified', 'datemodified']
+      last_updated: ['lastupdated', 'updated', 'modified', 'lastmodified', 'datemodified'],
+      dob: ['dateofbirth', 'dob', 'birthdate', 'birthday']
     };
     return (map[field] || []).indexOf(h) !== -1;
+  }
+
+  function renderDuesValues() {
+    var col = null;
+    Array.prototype.forEach.call($('mapGrid').querySelectorAll('select'), function (s) {
+      if (s.getAttribute('data-field') === 'dues_status') col = s.value;
+    });
+    var d = lastPreview && col && lastPreview.distincts && lastPreview.distincts[col];
+    if (!d) { $('duesValuesArea').classList.add('hidden'); return; }
+    $('duesValuesArea').classList.remove('hidden');
+    $('duesValues').innerHTML = d.map(function (v) {
+      var checked = BAD_DUES.test(v.value) ? '' : ' checked';
+      return '<label style="display:block;font-weight:400;margin:6px 0">' +
+        '<input type="checkbox" class="duesVal" value="' + esc(v.value) + '"' + checked +
+        ' style="width:20px;height:20px;vertical-align:middle"> ' +
+        esc(v.value) + ' <span class="muted">(' + v.count + ')</span></label>';
+    }).join('');
   }
   function readMapping(gridEl) {
     var mapping = {};
@@ -135,9 +159,14 @@
     fd.append('file', f);
     api('/api/import/preview', { method: 'POST', body: fd }).then(function (r) {
       if (r.status !== 200) { alert(r.body.error || 'preview failed'); return; }
+      lastPreview = r.body;
       buildMapGrid($('mapGrid'), r.body.headers, FIELDS);
       $('mappingArea').classList.remove('hidden');
       $('importStatus').textContent = r.body.total + ' rows detected';
+      renderDuesValues();
+      Array.prototype.forEach.call($('mapGrid').querySelectorAll('select'), function (s) {
+        if (s.getAttribute('data-field') === 'dues_status') s.onchange = renderDuesValues;
+      });
     });
   });
 
@@ -152,6 +181,13 @@
     fd.append('file', f);
     fd.append('mapping', JSON.stringify(mapping));
     fd.append('replace', $('replaceExisting').checked ? 'true' : 'false');
+    if (!$('duesValuesArea').classList.contains('hidden')) {
+      var good = [];
+      Array.prototype.forEach.call(document.querySelectorAll('.duesVal:checked'), function (c) {
+        good.push(c.value);
+      });
+      fd.append('dues_good_values', JSON.stringify(good));
+    }
     $('importStatus').textContent = 'importing…';
     api('/api/import/roster', { method: 'POST', body: fd }).then(function (r) {
       $('importStatus').textContent = r.status === 200

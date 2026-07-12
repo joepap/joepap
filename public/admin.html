@@ -49,13 +49,20 @@
 
   <!-- Roster import -->
   <section class="card">
-    <h3>Roster import (ConnectPlus CSV)</h3>
-    <label>CSV file</label>
-    <input type="file" id="rosterFile" accept=".csv,text/csv">
+    <h3>Roster import (ConnectPlus export — .xlsx or .csv)</h3>
+    <label>Roster file</label>
+    <input type="file" id="rosterFile" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
     <div id="mappingArea" class="hidden">
       <h4 class="mt">Map columns</h4>
-      <p class="muted small">Pick which CSV column feeds each field. Use either Full name, or Last + First.</p>
+      <p class="muted small">Pick which column feeds each field. Use either Full name, or Last + First.
+        "Portal status" enables the green-lane / portal-card flags; "Date of birth" (optional)
+        helps tell apart members with identical names during license scans.</p>
       <div class="stat-grid" id="mapGrid"></div>
+      <div id="duesValuesArea" class="hidden">
+        <h4 class="mt">Which dues statuses count as GOOD standing (green)?</h4>
+        <p class="muted small">Unchecked values show a red dues indicator at check-in.</p>
+        <div id="duesValues"></div>
+      </div>
       <div class="mt">
         <label><input type="checkbox" id="replaceExisting" checked style="width:20px;height:20px"> Replace existing roster (clears check-ins!)</label>
       </div>
@@ -68,7 +75,7 @@
   <section class="card">
     <h3>Paper dues roll (optional second list)</h3>
     <p class="muted small">Flags matching members with "on paper roll"; reports names it can't match.</p>
-    <input type="file" id="paperFile" accept=".csv,text/csv">
+    <input type="file" id="paperFile" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
     <div id="paperMapArea" class="hidden">
       <div class="stat-grid" id="paperMapGrid"></div>
       <button class="primary mt" id="doPaperImport">Import paper roll</button>

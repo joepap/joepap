@@ -68,12 +68,15 @@
     }
   });
 
-  function flagChips(m) {
+  function flagChips(m, dobMatch) {
     var chips = '';
     if (m.checked_in) chips += '<span class="flag red">CHECKED IN</span>';
     else if (!m.dues_ok) chips += '<span class="flag red">DUES</span>';
     else chips += '<span class="flag green">OK</span>';
-    if (m.info_stale) chips += ' <span class="flag yellow">STALE INFO</span>';
+    if (dobMatch === true) chips += ' <span class="flag green">DOB &#10003;</span>';
+    if (dobMatch === false) chips += ' <span class="flag red">DOB &#10007;</span>';
+    if (m.portal_ok === false) chips += ' <span class="flag yellow">NO PORTAL</span>';
+    else if (m.info_stale) chips += ' <span class="flag yellow">STALE INFO</span>';
     return chips;
   }
 
@@ -93,8 +96,9 @@
         '<div><div class="name">' + esc(m.last_name) + (m.suffix ? ' ' + esc(m.suffix) : '') +
         ', ' + esc(m.first_name) + (m.middle_name ? ' ' + esc(m.middle_name) : '') + '</div>' +
         '<div class="sub">#' + esc(m.member_no || '—') +
+        (m.age != null ? ' &middot; age ' + m.age : '') +
         (it.score ? ' &middot; match ' + it.score + '%' : '') + '</div></div>' +
-        '<div class="flag-wrap" style="margin-left:auto">' + flagChips(m) + '</div>';
+        '<div class="flag-wrap" style="margin-left:auto">' + flagChips(m, it.dob_match) + '</div>';
       btn.onclick = function () { openMember(m.id); };
       $('results').appendChild(btn);
     });
@@ -109,8 +113,9 @@
   // ---------- scan handling (wedge + camera share this) ----------
   function handleScanPayload(raw) {
     // PRIVACY: parse and discard. `raw` (which contains the license number)
-    // is not stored, logged, or sent anywhere. Only name fields go to the
-    // server for matching; DOB stays in this browser tab for display only.
+    // is not stored, logged, or sent anywhere. Name + DOB go to /api/match
+    // for candidate ranking only — the server uses DOB transiently in that
+    // request and never stores it.
     var parsed = AAMVA.parse(raw);
     raw = null;
     if (!parsed) {
@@ -125,7 +130,7 @@
       ' — confirm the match below</div>';
     api('/api/match', {
       method: 'POST',
-      body: JSON.stringify({ lastName: parsed.lastName, firstName: parsed.firstName })
+      body: JSON.stringify({ lastName: parsed.lastName, firstName: parsed.firstName, dob: parsed.dob })
     }).then(function (r) {
       var cands = (r.body.candidates || []);
       renderResults(cands, header);
@@ -193,6 +198,7 @@
     html += '<div class="member-name">' + esc(m.last_name) + (m.suffix ? ' ' + esc(m.suffix) : '') +
             ', ' + esc(m.first_name) + (m.middle_name ? ' ' + esc(m.middle_name) : '') + '</div>';
     html += '<div class="member-meta">Member #' + esc(m.member_no || '—') +
+            (m.age != null ? ' &middot; age ' + m.age : '') +
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
     html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
             (m.dues_ok ? '&#10003; DUES: ' : '&#10007; DUES: ') + esc(m.dues_status || (m.dues_ok ? 'GOOD STANDING' : 'CHECK STATUS')) + '</div>';
@@ -203,9 +209,17 @@
               (m.checked_in.ballot_no ? ' / Ballot #' + m.checked_in.ballot_no : '') + '</div>';
     }
 
+    if (m.portal_ok === false) {
+      html += '<div class="banner yellow">&#9888; No ConnectPlus portal access (status: ' +
+              esc(m.portal_status) + ') — <strong>hand them a portal card</strong>' +
+              ' or send to the help lane after check-in.</div>';
+    }
     if (m.info_stale) {
-      html += '<div class="banner yellow">&#9888; Contact info stale — <strong>hand them a portal card</strong>. ' +
+      html += '<div class="banner yellow">&#9888; Contact info blank/stale — ' +
+              (m.portal_ok === false ? '' : '<strong>hand them a portal card</strong>. ') +
               'Optionally capture corrections below (does not block check-in).</div>';
+    }
+    if (m.info_stale || m.portal_ok === false) {
       html += '<div class="input-row">' +
               '<input type="email" id="fixEmail" placeholder="New email (optional)" value="">' +
               '<input type="tel" id="fixPhone" placeholder="New phone (optional)" value="">' +

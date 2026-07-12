@@ -19,6 +19,7 @@ const multer = require('multer');
 
 const { open, getConfig, setConfig, audit } = require('./lib/db');
 const csv = require('./lib/csv');
+const tabular = require('./lib/tabular');
 const match = require('./lib/match');
 
 const db = open(process.env.DB_FILE);
@@ -36,11 +37,32 @@ function requireAdmin(req, res, next) {
   res.status(401).json({ error: 'admin PIN required' });
 }
 
+function portalOk(status) {
+  if (!status) return null; // portal status not imported
+  const okValues = (getConfig(db, 'portal_ok_values') || 'approved')
+    .split(',').map(s => s.trim().toLowerCase());
+  return okValues.includes(String(status).trim().toLowerCase());
+}
+
+function ageFromIso(iso) {
+  if (!iso) return null;
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d.getTime())) return null;
+  const n = new Date();
+  let age = n.getFullYear() - d.getFullYear();
+  if (n.getMonth() < d.getMonth() ||
+      (n.getMonth() === d.getMonth() && n.getDate() < d.getDate())) age--;
+  return age;
+}
+
 function memberPublic(m) {
   const active = db.prepare(
     'SELECT id, ts, station, verification_method, ballot_no FROM checkins WHERE member_id = ? AND voided_at IS NULL'
   ).get(m.id);
   return {
+    portal_status: m.portal_status || '',
+    portal_ok: portalOk(m.portal_status),
+    age: ageFromIso(m.dob), // display-only; raw roster DOB is never sent
     id: m.id,
     member_no: m.member_no,
     last_name: m.last_name,
@@ -74,34 +96,62 @@ function computeStale(email, phone, lastUpdated, staleDays) {
   return 0;
 }
 
-// Dues status text -> good/bad. Configurable-ish: anything matching these
-// patterns is "not in good standing"; everything else is green.
-const BAD_DUES = /(suspend|delinq|arrear|expell|lapsed|inactive|not.?in.?good|owe[sd]?)/i;
-function duesOk(status) { return BAD_DUES.test(status || '') ? 0 : 1; }
+// Dues status text -> good/bad. The import UI sends an explicit list of
+// which status values count as good (dues_good_values); this regex is only
+// the fallback default used to pre-check that list.
+const BAD_DUES = /(suspend|delinq|arrear|expell|lapsed|inactive|not.?in.?good|owe[sd]?|drop|deceased|resign|quit|alumni)/i;
+function duesOk(status, goodValues) {
+  if (Array.isArray(goodValues) && goodValues.length) {
+    return goodValues.some(v => v.trim().toLowerCase() === String(status || '').trim().toLowerCase()) ? 1 : 0;
+  }
+  return BAD_DUES.test(status || '') ? 0 : 1;
+}
+
+// Flexible date -> ISO (roster exports use M/D/YYYY or ISO-ish timestamps).
+function toIsoDate(s) {
+  s = (s || '').trim();
+  if (!s) return null;
+  let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);
+  if (m) return m[3] + '-' + m[1].padStart(2, '0') + '-' + m[2].padStart(2, '0');
+  m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  return null;
+}
 
 // ---------- roster import ----------
 
 // Step 1: preview headers + sample rows so the admin can map columns.
+// Accepts CSV or .xlsx. `distincts` lists value counts for low-cardinality
+// columns so the UI can offer "which values count as good standing".
 app.post('/api/import/preview', requireAdmin, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'no file' });
-  const { headers, records } = csv.parseWithHeaders(req.file.buffer.toString('utf8'));
-  res.json({ headers, sample: records.slice(0, 5), total: records.length });
+  const { headers, records } = tabular.parseUpload(req.file.buffer, req.file.originalname);
+  res.json({
+    headers,
+    sample: records.slice(0, 3),
+    total: records.length,
+    distincts: tabular.distincts(headers, records)
+  });
 });
 
 // Step 2: import with a column mapping.
 // mapping: { full_name?, last_name?, first_name?, member_no?, dues_status?,
-//            email?, phone?, last_updated? }  (values are CSV header names)
+//            email?, phone?, last_updated?, portal_status?, dob? }
+//            (values are column header names)
+// body.dues_good_values: JSON array of status values that count as good.
 app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'no file' });
-  let mapping;
+  let mapping, duesGood = null;
   try { mapping = JSON.parse(req.body.mapping || '{}'); }
   catch { return res.status(400).json({ error: 'bad mapping JSON' }); }
+  try { if (req.body.dues_good_values) duesGood = JSON.parse(req.body.dues_good_values); }
+  catch { return res.status(400).json({ error: 'bad dues_good_values JSON' }); }
   if (!mapping.full_name && !mapping.last_name) {
     return res.status(400).json({ error: 'mapping needs full_name or last_name' });
   }
   const replace = req.body.replace === 'true';
   const staleDays = parseInt(getConfig(db, 'stale_days'), 10) || 365;
-  const { records } = csv.parseWithHeaders(req.file.buffer.toString('utf8'));
+  const { records } = tabular.parseUpload(req.file.buffer, req.file.originalname);
 
   const get = (rec, key) => mapping[key] ? (rec[mapping[key]] || '').trim() : '';
 
@@ -113,10 +163,10 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     const ins = db.prepare(`INSERT INTO members
       (member_no, last_name, first_name, middle_name, suffix, full_name,
        dues_status, dues_ok, email, phone, last_updated, info_stale,
-       norm_last, norm_first)
+       portal_status, dob, norm_last, norm_first)
       VALUES (@member_no, @last_name, @first_name, @middle_name, @suffix, @full_name,
        @dues_status, @dues_ok, @email, @phone, @last_updated, @info_stale,
-       @norm_last, @norm_first)`);
+       @portal_status, @dob, @norm_last, @norm_first)`);
     let count = 0;
     for (const rec of records) {
       let last = get(rec, 'last_name'), first = get(rec, 'first_name');
@@ -157,9 +207,11 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
         member_no: get(rec, 'member_no'),
         last_name: last, first_name: first, middle_name: middle, suffix,
         full_name: full,
-        dues_status: dues, dues_ok: duesOk(dues),
+        dues_status: dues, dues_ok: duesOk(dues, duesGood),
         email, phone, last_updated: lastUpdated,
         info_stale: computeStale(email, phone, lastUpdated, staleDays),
+        portal_status: get(rec, 'portal_status'),
+        dob: toIsoDate(get(rec, 'dob')),
         norm_last: match.normalizeName(last),
         norm_first: match.normalizeName(first)
       });
@@ -178,7 +230,7 @@ app.post('/api/import/paper', requireAdmin, upload.single('file'), (req, res) =>
   let mapping;
   try { mapping = JSON.parse(req.body.mapping || '{}'); }
   catch { return res.status(400).json({ error: 'bad mapping JSON' }); }
-  const { records } = csv.parseWithHeaders(req.file.buffer.toString('utf8'));
+  const { records } = tabular.parseUpload(req.file.buffer, req.file.originalname);
   const all = db.prepare('SELECT id, norm_last, norm_first, member_no FROM members').all();
   const byNo = new Map(all.filter(m => m.member_no).map(m => [String(m.member_no).trim(), m]));
   const flag = db.prepare('UPDATE members SET on_paper_roll = 1, updated_at = datetime(\'now\') WHERE id = ?');
@@ -237,23 +289,30 @@ app.get('/api/search', (req, res) => {
 });
 
 // Fuzzy match for scanned IDs. Body: { lastName, firstName, dob? }.
-// dob is echoed back per-candidate as AGE ONLY for disambiguation and is
-// NEVER stored (privacy requirement).
+// The scanned dob is used TRANSIENTLY here to rank same-name members
+// against roster DOB (when the admin imported one) and is NEVER stored —
+// it exists only for the lifetime of this request (privacy requirement).
 app.post('/api/match', (req, res) => {
-  const { lastName, firstName } = req.body || {};
+  const { lastName, firstName, dob } = req.body || {};
   if (!lastName && !firstName) return res.status(400).json({ error: 'no name' });
   const q = { lastName: lastName || '', firstName: firstName || '' };
-  // Narrow by first letter(s) then score. Roster is a few hundred rows, so a
-  // full scan is also fine — keep it simple and scan all.
   const all = db.prepare('SELECT * FROM members').all();
   const scored = [];
   for (const m of all) {
-    const s = match.scoreCandidate(q, m);
-    if (s >= match.MATCH_THRESHOLD) scored.push([s, m]);
+    let s = match.scoreCandidate(q, m);
+    let dobMatch = null;
+    if (s > 0 && dob && m.dob) {
+      dobMatch = (m.dob === dob);
+      // Exact DOB agreement is a near-certain identity signal; disagreement
+      // on an otherwise-strong name match usually means a same-name relative.
+      s = dobMatch ? Math.min(100, s + 15) : s - 12;
+    }
+    if (s >= match.MATCH_THRESHOLD) scored.push([s, m, dobMatch]);
   }
   scored.sort((a, b) => b[0] - a[0]);
   res.json({
-    candidates: scored.slice(0, 8).map(([score, m]) => ({ score, member: memberPublic(m) }))
+    candidates: scored.slice(0, 8).map(([score, m, dobMatch]) =>
+      ({ score, dob_match: dobMatch, member: memberPublic(m) }))
   });
 });
 
