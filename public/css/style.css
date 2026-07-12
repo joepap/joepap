@@ -19,7 +19,7 @@ header.appbar {
 }
 header.appbar h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: .3px; }
 header.appbar .brand { display: flex; align-items: center; gap: 12px; }
-header.appbar .brand img { height: 40px; width: auto; }
+header.appbar .brand img { height: 40px; width: auto; border-radius: 50%; }
 header.appbar .brand .org { line-height: 1.15; }
 header.appbar .brand .org .l1 { font-weight: 800; font-size: 1.02rem; letter-spacing: .4px; }
 header.appbar .brand .org .l2 { font-size: .78rem; opacity: .85; font-weight: 600; letter-spacing: .3px; }
