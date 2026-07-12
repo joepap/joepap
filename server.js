@@ -470,12 +470,13 @@ app.post('/api/members/:id/contact', (req, res) => {
   if (!m) return res.status(404).json({ error: 'not found' });
   db.prepare(
     `INSERT INTO contact_corrections
-     (member_id, email, phone, new_street, new_street2, new_city, new_state, new_zip,
+     (member_id, email, phone, new_first_name, new_last_name,
+      new_street, new_street2, new_city, new_state, new_zip,
       receiving_emails, fix_email_group, station)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(m.id, b.email || '', b.phone || '', b.street || '', b.street2 || '',
-    b.city || '', b.state || '', b.zip || '', b.receiving_emails || '',
-    b.fix_email_group ? 1 : 0, b.station || '');
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(m.id, b.email || '', b.phone || '', b.first_name || '', b.last_name || '',
+    b.street || '', b.street2 || '', b.city || '', b.state || '', b.zip || '',
+    b.receiving_emails || '', b.fix_email_group ? 1 : 0, b.station || '');
   audit(db, 'contact_correction', `member ${m.id}`, b.station);
   res.json({ ok: true });
 });
@@ -555,6 +556,7 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
     `SELECT m.member_no, m.last_name, m.first_name,
             m.email old_email, m.phone old_phone,
             cc.email new_email, cc.phone new_phone,
+            cc.new_first_name, cc.new_last_name,
             cc.new_street, cc.new_street2, cc.new_city, cc.new_state, cc.new_zip,
             cc.receiving_emails,
             CASE WHEN cc.fix_email_group = 1 THEN 'yes' ELSE '' END fix_email_group,
@@ -563,7 +565,8 @@ app.get('/api/export/contact-corrections.csv', requireAdmin, (req, res) => {
   ).all();
   sendCsv(res, 'contact-corrections.csv',
     ['member_no', 'last_name', 'first_name', 'old_email', 'old_phone',
-     'new_email', 'new_phone', 'new_street', 'new_street2', 'new_city', 'new_state', 'new_zip',
+     'new_email', 'new_phone', 'new_first_name', 'new_last_name',
+     'new_street', 'new_street2', 'new_city', 'new_state', 'new_zip',
      'receiving_emails', 'fix_email_group', 'current_groups', 'ts', 'station'], rows);
 });
 

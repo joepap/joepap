@@ -242,6 +242,9 @@
       '<div class="method-grid" id="emailYN" style="grid-template-columns:1fr 1fr">' +
       '<button data-v="yes">Yes</button><button data-v="no">No / not sure</button></div>';
     html += '<div class="input-row">' +
+      '<div><label>First name</label><input type="text" id="fixFirst" value="' + esc(m.first_name) + '"></div>' +
+      '<div><label>Last name</label><input type="text" id="fixLast" value="' + esc(m.last_name) + '"></div></div>';
+    html += '<div class="input-row">' +
       '<div><label>Email</label><input type="email" id="fixEmail" value="' + esc(m.email) + '"></div>' +
       '<div><label>Phone</label><input type="tel" id="fixPhone" value="' + esc(m.phone) + '"></div></div>';
     html += '<div class="input-row">' +
@@ -322,6 +325,8 @@
       body: JSON.stringify({
         // Only send fields the volunteer actually changed, so the export
         // shows real corrections rather than every prefilled value.
+        first_name: changed(val('fixFirst'), m.first_name),
+        last_name: changed(val('fixLast'), m.last_name),
         email: changed(val('fixEmail'), m.email),
         phone: changed(val('fixPhone'), m.phone),
         street: changed(val('fixStreet'), m.addr_street),
