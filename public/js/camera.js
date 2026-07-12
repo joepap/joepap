@@ -70,6 +70,12 @@
     var ctx = canvas.getContext('2d', { willReadFrequently: true });
     running = true;
 
+    // Webcams (fixed focus, backlighting, glare) produce marginal frames;
+    // rotate through binarization strategies — each handles a different
+    // failure mode (uneven lighting vs. low contrast vs. washed-out).
+    var BINARIZERS = ['LocalAverage', 'GlobalHistogram', 'FixedThreshold'];
+    var frameNo = 0;
+
     async function tick() {
       if (!running) return;
       if (video.readyState >= 2 && video.videoWidth) {
@@ -81,9 +87,13 @@
           var results = await mod.readBarcodes(imageData, {
             formats: ['PDF417'],
             tryHarder: true,
+            tryInvert: true,
+            binarizer: BINARIZERS[frameNo % BINARIZERS.length],
             textMode: 'Plain',   // raw control chars for AAMVA parsing
             maxNumberOfSymbols: 1
           });
+          frameNo++;
+          if (opts.onFrame) opts.onFrame(frameNo);
           if (results.length && results[0].isValid && running) {
             opts.onDecoded(results[0].text);
             return; // caller decides whether to restart
@@ -92,7 +102,7 @@
           if (opts.onError) opts.onError(String(e && e.message || e));
         }
       }
-      setTimeout(tick, 180);
+      setTimeout(tick, 120);
     }
     tick();
   }

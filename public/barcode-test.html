@@ -48,34 +48,43 @@
     $('wasm').textContent = 'YES';
   }).catch(function (e) { $('wasm').textContent = 'FAILED: ' + e.message; });
 
-  var frames = 0, t0 = 0;
-  $('start').onclick = function () {
-    frames = 0; t0 = Date.now();
-    log('starting camera…');
+  var t0 = 0;
+  function onDecoded(text) {
+    var dt = ((Date.now() - t0) / 1000).toFixed(1);
+    log('DECODED after ' + dt + 's (' + text.length + ' chars)');
+    var parsed = AAMVA.parse(text);
+    if (parsed) {
+      log('AAMVA parse OK: ' + parsed.lastName + ', ' + parsed.firstName +
+          (parsed.dob ? '  age ' + AAMVA.ageFromDob(parsed.dob) : '') +
+          (parsed.state ? '  ' + parsed.state : ''));
+    } else {
+      log('Decoded but NOT AAMVA. First 60 chars: ' + JSON.stringify(text.slice(0, 60)));
+    }
+    log('— restarting scan; point at another barcode or Stop —');
+    startScan();
+  }
+  function onFrame(n) {
+    if (n % 25 === 0) {
+      log(n + ' frames scanned, no decode yet. Checklist: barcode SHARP in the ' +
+          'preview (move card back until crisp)? Light falling ON the card, not ' +
+          'behind it? No glare stripe across the bars?');
+    }
+  }
+  function startScan() {
+    t0 = Date.now();
     CameraScan.start({
       video: $('cam'),
-      onDecoded: function (text) {
-        var dt = ((Date.now() - t0) / 1000).toFixed(1);
-        log('DECODED after ' + dt + 's (' + text.length + ' chars)');
-        var parsed = AAMVA.parse(text);
-        if (parsed) {
-          log('AAMVA parse OK: ' + parsed.lastName + ', ' + parsed.firstName +
-              (parsed.dob ? '  age ' + AAMVA.ageFromDob(parsed.dob) : '') +
-              (parsed.state ? '  ' + parsed.state : ''));
-        } else {
-          log('Decoded but NOT AAMVA. First 60 chars: ' + JSON.stringify(text.slice(0, 60)));
-        }
-        log('— restarting scan; point at another barcode or Stop —');
-        t0 = Date.now();
-        CameraScan.start({ video: $('cam'), onDecoded: arguments.callee, onError: function(){} });
-      },
+      onDecoded: onDecoded,
+      onFrame: onFrame,
       onError: function () {}
     }).then(function () {
-      log('camera live. Point at a PDF417 barcode (back of license).');
+      log('camera live (' + $('cam').videoWidth + 'x' + $('cam').videoHeight +
+          '). Point at a PDF417 barcode (back of license).');
     }).catch(function (e) {
       log('CAMERA FAILED: ' + (e && e.message || e));
     });
-  };
+  }
+  $('start').onclick = function () { log('starting camera…'); startScan(); };
   $('stop').onclick = function () { CameraScan.stop(); log('stopped.'); };
 })();
 </script>
