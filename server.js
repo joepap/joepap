@@ -37,6 +37,24 @@ function requireAdmin(req, res, next) {
   res.status(401).json({ error: 'admin PIN required' });
 }
 
+// Every station request needs the station PIN (or the admin PIN). The app
+// may be served over the public internet (volunteer phones on cellular via
+// Tailscale Funnel), so member data must never be reachable un-PINned.
+function requireStation(req, res, next) {
+  const spin = req.get('X-Station-Pin') || '';
+  const apin = req.get('X-Admin-Pin') || req.query.pin || '';
+  if ((spin && spin === getConfig(db, 'station_pin')) ||
+      (apin && apin === getConfig(db, 'admin_pin'))) return next();
+  res.status(401).json({ error: 'station PIN required' });
+}
+
+// Gate the whole API except the health check; admin routes additionally
+// check requireAdmin on their own.
+app.use('/api', (req, res, next) => {
+  if (req.path === '/ping') return next();
+  requireStation(req, res, next);
+});
+
 function portalOk(status) {
   if (!status) return null; // portal status not imported
   const okValues = (getConfig(db, 'portal_ok_values') || 'approved')
@@ -614,7 +632,7 @@ app.get('/api/config', (req, res) => {
 });
 
 app.post('/api/config', requireAdmin, (req, res) => {
-  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'email_ok_groups', 'email_bad_groups'];
+  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'station_pin', 'email_ok_groups', 'email_bad_groups'];
   for (const k of allowed) {
     if (req.body[k] !== undefined) setConfig(db, k, req.body[k]);
   }

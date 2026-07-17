@@ -14,33 +14,44 @@
 
   // ---------- station identity ----------
   var station = localStorage.getItem('station36') || '';
+  var stationPin = localStorage.getItem('station36_pin') || '';
   var defaultMethod = localStorage.getItem('station36_method') || 'license_scan';
 
-  function showStationModal() {
+  function showStationModal(msg) {
     $('stationName').value = station;
+    $('stationPin').value = stationPin;
     $('stationMethod').value = defaultMethod;
     $('stationModal').classList.remove('hidden');
-    $('stationName').focus();
+    ($('stationName').value ? $('stationPin') : $('stationName')).focus();
+    if (msg) alert(msg);
   }
   $('stationSave').onclick = function () {
     var name = $('stationName').value.trim();
-    if (!name) return;
-    station = name;
-    defaultMethod = $('stationMethod').value;
-    localStorage.setItem('station36', station);
-    localStorage.setItem('station36_method', defaultMethod);
-    $('stationChip').textContent = 'Station: ' + station;
-    $('stationModal').classList.add('hidden');
+    var pin = $('stationPin').value.trim();
+    if (!name || !pin) return;
+    // Verify the PIN before accepting it.
+    fetch('/api/search?q=zz', { headers: { 'X-Station-Pin': pin } }).then(function (r) {
+      if (r.status === 401) { alert('Wrong station PIN — check with the organizer.'); return; }
+      station = name;
+      stationPin = pin;
+      defaultMethod = $('stationMethod').value;
+      localStorage.setItem('station36', station);
+      localStorage.setItem('station36_pin', stationPin);
+      localStorage.setItem('station36_method', defaultMethod);
+      $('stationChip').textContent = 'Station: ' + station;
+      $('stationModal').classList.add('hidden');
+    });
   };
-  $('stationChip').onclick = showStationModal;
-  if (!station) showStationModal();
+  $('stationChip').onclick = function () { showStationModal(); };
+  if (!station || !stationPin) showStationModal();
   else $('stationChip').textContent = 'Station: ' + station;
 
   // ---------- fetch helpers ----------
   function api(path, opts) {
     return fetch(path, Object.assign({
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', 'X-Station-Pin': stationPin }
     }, opts)).then(function (r) {
+      if (r.status === 401) showStationModal();
       return r.json().then(function (j) { return { status: r.status, body: j }; });
     });
   }

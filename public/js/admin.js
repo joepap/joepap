@@ -46,7 +46,7 @@
   var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License scan', dept_id: 'Dept ID', other: 'Other' };
 
   function refreshStats() {
-    fetch('/api/stats').then(function (r) { return r.json(); }).then(function (s) {
+    api('/api/stats').then(function (r) { return r.body; }).then(function (s) {
       $('statsTs').textContent = '· updated ' + new Date().toLocaleTimeString();
       $('statGrid').innerHTML =
         stat(s.checked_in, 'Checked in') +
@@ -290,7 +290,7 @@
 
   // ---------- settings ----------
   function loadSettings() {
-    fetch('/api/config').then(function (r) { return r.json(); }).then(function (c) {
+    api('/api/config').then(function (r) { return r.body; }).then(function (c) {
       $('staleDays').value = c.stale_days;
       $('ballotNumbering').value = c.ballot_numbering;
       $('emailOkGroups').value = c.email_ok_groups || '';
@@ -306,6 +306,8 @@
     };
     var np = $('newPin').value.trim();
     if (np) body.admin_pin = np;
+    var nsp = $('newStationPin').value.trim();
+    if (nsp) body.station_pin = nsp;
     api('/api/config', { method: 'POST', body: JSON.stringify(body) }).then(function (r) {
       if (r.status === 200) {
         if (np) { pin = np; sessionStorage.setItem('admin36_pin', pin); $('newPin').value = ''; }
