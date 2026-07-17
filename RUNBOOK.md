@@ -26,6 +26,20 @@ One page. Print this.
    `https://<server-ip>:8443/barcode-test.html` and confirm camera decoding works.
    **Re-import the real roster (with "Replace existing") after rehearsal.**
 
+## Make the server machine reliable (one time — do this!)
+
+1. **Keep it awake** (a sleeping Mac takes everything down):
+   ```
+   sudo pmset -a sleep 0 disksleep 0
+   ```
+2. **Auto-start both servers** at boot, with auto-restart on crash:
+   ```
+   bash scripts/install-autostart.sh
+   ```
+   After this, reboots and crashes self-heal — no terminal windows needed.
+   After any `git pull`, run the same script again to restart with new code.
+   Logs land in `logs/checkin.log` and `logs/queue.log`.
+
 ## Event day — start the system
 
 1. Power the travel router. Wait for Wi-Fi to appear.
