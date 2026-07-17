@@ -206,6 +206,9 @@
       renderMemberCard();
       $('memberCard').classList.remove('hidden');
       $('memberCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Non-dues-payer: surface the loud red screen up front so a volunteer
+      // can't miss it (the card also shows it, but this is unmissable).
+      if (currentMember.dues_block) showDuesBlock(currentMember);
     });
   }
 
@@ -220,7 +223,11 @@
             (m.assignment ? ' &middot; ' + esc(m.assignment) : '') +
             (m.platoon ? ' &middot; Platoon ' + esc(m.platoon) : '') +
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
-    if (m.dues_status) {
+    if (m.dues_block) {
+      // Non-dues-paying member — overrides ConnectPlus status entirely.
+      html += '<div class="dues-pill bad">&#9940; NON DUES-PAYING MEMBER &mdash; NOT ELIGIBLE</div>';
+      if (m.dues_block_note) html += '<div class="muted small">' + esc(m.dues_block_note) + '</div>';
+    } else if (m.dues_status) {
       html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
               (m.dues_ok ? '&#10003; ' : '&#10007; NOT ELIGIBLE — ') + esc(m.dues_status.toUpperCase()) + '</div>';
     } else {
@@ -300,7 +307,9 @@
             (m.access_granted_at ? ' checked disabled' : '') + '> Portal access granted today (help lane)' +
             (m.access_granted_at ? ' — logged ' + esc(m.access_granted_at) : '') + '</label></div>';
 
-    if (m.checked_in) {
+    if (m.dues_block) {
+      html += '<button class="big danger mt" disabled>&#9940; NOT ELIGIBLE — no ballot</button>';
+    } else if (m.checked_in) {
       html += '<button class="big danger mt" disabled>Already checked in — no ballot</button>';
     } else {
       html += '<button class="big primary mt" id="doCheckin">&#10003; Check In + Issue Ballot</button>';
@@ -408,6 +417,8 @@
     }).then(function (r) {
       if (r.status === 200) {
         showSuccess(r.body);
+      } else if (r.status === 409 && r.body.error === 'dues_block') {
+        showDuesBlock(r.body.member);
       } else if (r.status === 409) {
         showDuplicate(r.body);
       } else {
@@ -440,6 +451,16 @@
   }
   $('dupClose').onclick = function () {
     $('dupOverlay').classList.add('hidden');
+    closeMember();
+  };
+
+  function showDuesBlock(m) {
+    $('duesDetail').textContent = (m ? m.last_name + ', ' + m.first_name : '') +
+      (m && m.member_no ? '  (#' + m.member_no + ')' : '');
+    $('duesOverlay').classList.remove('hidden');
+  }
+  $('duesClose').onclick = function () {
+    $('duesOverlay').classList.add('hidden');
     closeMember();
   };
 

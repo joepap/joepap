@@ -75,6 +75,16 @@
   </div>
 </div>
 
+<!-- Non-dues-paying member: loud full-screen, no ballot -->
+<div class="overlay red hidden" id="duesOverlay">
+  <div class="panel">
+    <h2>&#9940; NON DUES-PAYING MEMBER</h2>
+    <div class="detail" id="duesDetail"></div>
+    <p style="margin:10px 0 20px">Not eligible to vote. <strong>Do not issue a ballot.</strong> Direct them to the resolution table.</p>
+    <button class="big" id="duesClose" style="background:#fff;color:#7f1212">OK &mdash; back to check-in</button>
+  </div>
+</div>
+
 <!-- Success flash -->
 <div class="success-flash hidden" id="successFlash">
   <div>

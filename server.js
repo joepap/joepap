@@ -94,6 +94,8 @@ function memberPublic(m) {
   return {
     portal_status: m.portal_status || '',
     portal_ok: portalOk(m.portal_status),
+    dues_block: Number(m.dues_block) === 1,
+    dues_block_note: m.dues_block_note || '',
     dept_id: m.dept_id || '',
     groups: m.groups || '',
     email_list: emailListStatus(m.groups),
@@ -450,6 +452,13 @@ app.post('/api/checkin', (req, res) => {
   }
   const m = db.prepare('SELECT * FROM members WHERE id = ?').get(member_id);
   if (!m) return res.status(404).json({ error: 'member not found' });
+
+  // Hard stop: non-dues-paying members may not be issued a ballot, no matter
+  // what a station sends. Enforced here, not just in the UI.
+  if (Number(m.dues_block) === 1) {
+    audit(db, 'checkin_dues_block', `member ${member_id} (${m.last_name}, ${m.first_name}) blocked — non-dues-paying`, station);
+    return res.status(409).json({ error: 'dues_block', member: memberPublic(m) });
+  }
 
   try {
     const result = db.transaction(() => {
