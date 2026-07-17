@@ -43,7 +43,7 @@ The queue moderator PIN is set when the queue starts (default 3636).
 2. **Import the latest roster** the day before: `/admin.html` → Roster import →
    map columns (auto-fills; only "Active" checked as eligible) → Replace ✓.
 3. **Change all three PINs** from defaults. Tell volunteers only the station PIN.
-4. **Ballot numbering Off** (Settings) — blind ballots.
+4. Ballots are **blind** — numbering is off by default (Settings can verify).
 5. **Rehearse**: `npm run seed` loads 300 fake members (`seed-output/` has
    printable practice barcodes). Volunteers practice on their own phones against
    the real URL. Re-import the real roster afterward (Replace ✓).
