@@ -280,6 +280,21 @@
     });
   };
 
+  // ---------- payroll dues list ----------
+  $('doPayrollImport').onclick = function () {
+    var f = $('payrollFile').files[0];
+    if (!f) { alert('Choose the payroll CSV first.'); return; }
+    var fd = new FormData();
+    fd.append('file', f);
+    $('payrollStatus').textContent = 'importing…';
+    api('/api/import/payroll', { method: 'POST', body: fd }).then(function (r) {
+      $('payrollStatus').textContent = r.status === 200
+        ? ('✓ ' + r.body.total + ' rows — ' + r.body.matched + ' matched NEP, ' + r.body.payrollOnly + ' payroll-only')
+        : ('failed: ' + (r.body.error || r.status));
+      refreshStats();
+    });
+  };
+
   // ---------- exports ----------
   Array.prototype.forEach.call(document.querySelectorAll('[data-export]'), function (b) {
     b.onclick = function () {

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Local 36 — Discrepancy Table</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .qitem { background:#fff; border:1px solid var(--line); border-left:6px solid #d9a521; border-radius:12px;
+           padding:14px; margin-bottom:10px; }
+  .qitem.open { border-left-color:var(--blue); box-shadow:0 2px 8px rgba(16,24,40,.12); }
+  .qitem .nm { font-size:1.2rem; font-weight:800; }
+  .qitem .rs { color:var(--muted); font-size:.9rem; }
+  .detail { margin-top:12px; border-top:1px solid var(--line); padding-top:12px; }
+  .kv { font-size:.95rem; margin:2px 0; } .kv b { color:var(--muted); font-weight:600; }
+  .pill { display:inline-block; padding:6px 12px; border-radius:10px; font-weight:800; margin:6px 0; }
+  .pill.green{background:var(--green-bg);color:var(--green)} .pill.yellow{background:#fef9c3;color:#a16207}
+  .pill.red{background:var(--red-bg);color:var(--red)}
+  .outcome-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+  .resolved{opacity:.7;font-size:.9rem;padding:6px 4px;border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <div class="org">
+      <div class="l1">DC Fire Fighters &middot; Local 36</div>
+      <div class="l2">Discrepancy Table &middot; Strength in Solidarity</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <span class="station-chip" id="counts"></span>
+</header>
+<main>
+  <section class="card" id="pinCard">
+    <h3>Table PIN</h3>
+    <div class="input-row">
+      <input type="password" id="pin" placeholder="Admin / secondary PIN" autocomplete="off">
+      <button class="primary" id="unlock">Unlock</button>
+    </div>
+  </section>
+
+  <div id="body" class="hidden">
+    <section class="card">
+      <h3>Waiting <span class="muted small" id="ts"></span></h3>
+      <div id="queue"></div>
+      <div id="empty" class="muted" style="text-align:center;padding:20px">No one waiting.</div>
+    </section>
+    <section class="card">
+      <h4>Recently resolved</h4>
+      <div id="resolved"></div>
+    </section>
+  </div>
+</main>
+<script src="/js/discrepancy.js"></script>
+</body>
+</html>

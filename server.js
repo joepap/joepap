@@ -21,6 +21,7 @@ const { open, getConfig, setConfig, audit } = require('./lib/db');
 const csv = require('./lib/csv');
 const tabular = require('./lib/tabular');
 const match = require('./lib/match');
+const payroll = require('./lib/payroll');
 
 const db = open(process.env.DB_FILE);
 const app = express();
@@ -84,6 +85,39 @@ function emailListStatus(groupsRaw) {
   return 'missing';
 }
 
+// Eligibility for an NEP member. Payroll is the authority: on the payroll
+// dues list => eligible; not on it => must be verified at the Discrepancy
+// Table (NEP may be stale — e.g. promoted out of the unit). The union's
+// known non-dues-payer list is an absolute block.
+let _payrollLoaded = null;
+function payrollLoaded() {
+  if (_payrollLoaded === null) _payrollLoaded = !!db.prepare('SELECT 1 FROM payroll_dues LIMIT 1').get();
+  return _payrollLoaded;
+}
+function invalidatePayrollCache() { _payrollLoaded = null; }
+
+function eligibilityOf(m) {
+  if (Number(m.dues_block) === 1) {
+    return { ballot: false, color: 'red', state: 'blocked',
+      label: 'NON DUES-PAYING MEMBER — NOT ELIGIBLE' };
+  }
+  if (payrollLoaded()) {
+    // Payroll list present => it is the authority.
+    if (Number(m.payroll_ok) === 1) {
+      return { ballot: true, color: 'green', state: 'verified', label: 'DUES VERIFIED ✓ (on payroll)' };
+    }
+    return { ballot: false, color: 'red', state: 'verify',
+      label: 'NOT ON DUES PAYROLL — send to Discrepancy Table' };
+  }
+  // No payroll list loaded => fall back to NEP Member Status.
+  if (Number(m.dues_ok) === 1) {
+    return { ballot: true, color: 'green', state: 'status_ok',
+      label: m.dues_status ? '✓ ' + m.dues_status.toUpperCase() : 'ELIGIBLE' };
+  }
+  return { ballot: false, color: 'red', state: 'status_bad',
+    label: m.dues_status ? 'NOT ELIGIBLE — ' + m.dues_status.toUpperCase() : 'NOT ELIGIBLE' };
+}
+
 function memberPublic(m) {
   const active = db.prepare(
     'SELECT id, ts, station, verification_method, ballot_no FROM checkins WHERE member_id = ? AND voided_at IS NULL'
@@ -96,6 +130,8 @@ function memberPublic(m) {
     portal_ok: portalOk(m.portal_status),
     dues_block: Number(m.dues_block) === 1,
     dues_block_note: m.dues_block_note || '',
+    payroll_ok: Number(m.payroll_ok) === 1,
+    eligibility: eligibilityOf(m),
     dept_id: m.dept_id || '',
     groups: m.groups || '',
     email_list: emailListStatus(m.groups),
@@ -376,6 +412,31 @@ app.post('/api/import/deptids', requireAdmin, upload.single('file'), (req, res) 
   res.json({ updated, unmatched });
 });
 
+// Payroll union-dues list import (the authoritative "paying dues" source).
+// CSV/xlsx columns: emplid, last, first, middle, ssn4, grade, step
+// (header names are case-insensitive; extras ignored).
+app.post('/api/import/payroll', requireAdmin, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file' });
+  const { headers, records } = tabular.parseUpload(req.file.buffer, req.file.originalname);
+  const h = {};
+  headers.forEach(x => { h[x.toLowerCase().replace(/[^a-z0-9]/g, '')] = x; });
+  const col = (rec, ...keys) => { for (const k of keys) if (h[k]) return (rec[h[k]] || '').trim(); return ''; };
+  const recs = records.map(r => ({
+    emplid: col(r, 'emplid', 'employeeid', 'empid'),
+    last: col(r, 'lastname', 'last'),
+    first: col(r, 'firstname', 'first'),
+    middle: col(r, 'middle', 'middlename', 'mi'),
+    ssn4: col(r, 'ssnlast4', 'ssn4', 'ssn'),
+    grade: col(r, 'grade'),
+    step: col(r, 'step')
+  })).filter(r => r.last || r.first);
+  const result = payroll.loadAndMatch(db, recs);
+  invalidatePayrollCache();
+  audit(db, 'payroll_import',
+    `${result.total} rows: ${result.matched} matched NEP, ${result.payrollOnly} payroll-only`, 'admin');
+  res.json(result);
+});
+
 // ---------- lookup ----------
 
 // Type-ahead: last-name prefix (or "last, first"), min 2 chars.
@@ -402,8 +463,28 @@ app.get('/api/search', (req, res) => {
   let out = rows;
   if (normFirst) out = rows.filter(m => m.norm_first.startsWith(normFirst) ||
     match.firstNameScore(normFirst, m.norm_first.split(' ')[0] || '') >= 85);
-  res.json({ members: out.map(memberPublic) });
+  // Also surface payroll-only people (paying dues but not in NEP) — YELLOW,
+  // they still get a ballot but need enrollment. Shown alongside NEP results.
+  const po = payroll.searchPayrollOnly(db, q).map(payrollOnlyPublic);
+  res.json({ members: out.map(memberPublic), payroll_only: po });
 });
+
+// A payroll-only person (on the dues list, not in NEP) rendered like a member
+// card. YELLOW eligibility: gets a ballot, but flagged for enrollment. Once
+// checked in they become a provisional member (payroll_dues.member_id set),
+// so a NULL member_id here means "not yet checked in".
+function payrollOnlyPublic(p) {
+  return {
+    payroll_id: p.id,
+    source: 'payroll',
+    last_name: p.last_name, first_name: p.first_name, middle_name: p.middle_name,
+    member_no: '', dept_id: '', grade: p.grade, step: p.step, ssn4: p.ssn4, emplid: p.emplid,
+    dues_block: false, payroll_ok: true,
+    eligibility: { ballot: true, color: 'yellow', state: 'payroll_only',
+      label: 'DUES PAID (payroll) — not in NEP · enroll' },
+    checked_in: null
+  };
+}
 
 // Fuzzy match for scanned IDs. Body: { lastName, firstName, dob? }.
 // The scanned dob is used TRANSIENTLY here to rank same-name members
@@ -443,7 +524,7 @@ app.get('/api/members/:id', (req, res) => {
 
 app.post('/api/checkin', (req, res) => {
   const { member_id, station, verification_method, method_note } = req.body || {};
-  const methods = ['portal_id', 'license_scan', 'dept_id', 'other'];
+  const methods = ['portal_id', 'license_scan', 'dept_id', 'other', 'payroll_dues', 'discrepancy'];
   if (!member_id || !station || !methods.includes(verification_method)) {
     return res.status(400).json({ error: 'member_id, station, verification_method required' });
   }
@@ -453,11 +534,18 @@ app.post('/api/checkin', (req, res) => {
   const m = db.prepare('SELECT * FROM members WHERE id = ?').get(member_id);
   if (!m) return res.status(404).json({ error: 'member not found' });
 
-  // Hard stop: non-dues-paying members may not be issued a ballot, no matter
-  // what a station sends. Enforced here, not just in the UI.
-  if (Number(m.dues_block) === 1) {
-    audit(db, 'checkin_dues_block', `member ${member_id} (${m.last_name}, ${m.first_name}) blocked — non-dues-paying`, station);
-    return res.status(409).json({ error: 'dues_block', member: memberPublic(m) });
+  // Eligibility gate (enforced here, not just in the UI). The main table only
+  // issues ballots to GREEN members (on payroll). Anything red — a known
+  // non-payer, or an NEP member not on the payroll list — must be resolved at
+  // the Discrepancy Table, which has its own authenticated override path.
+  // req.body.override (with the admin PIN) is how the Discrepancy Table issues.
+  const overridden = req.body.override === true &&
+    (req.get('X-Admin-Pin') || '') === getConfig(db, 'admin_pin');
+  const elig = eligibilityOf(m);
+  if (!elig.ballot && !overridden) {
+    audit(db, 'checkin_blocked', `member ${member_id} (${m.last_name}, ${m.first_name}) — ${elig.state}`, station);
+    return res.status(409).json({ error: elig.state === 'blocked' ? 'dues_block' : 'needs_verification',
+      eligibility: elig, member: memberPublic(m) });
   }
 
   try {
@@ -497,6 +585,144 @@ app.post('/api/checkin/:id/void', requireAdmin, (req, res) => {
   ).run(by || 'admin', reason || '', row.id);
   audit(db, 'checkin_void', `checkin ${row.id} member ${row.member_id}: ${reason || ''}`, by || 'admin');
   res.json({ ok: true });
+});
+
+// ---------- Discrepancy Table (secondary/"yellow-red" table) ----------
+
+// A main-table station sends a flagged person over. Body:
+//   { member_id? | payroll_id?, reason, station }
+app.post('/api/discrepancy', (req, res) => {
+  const b = req.body || {};
+  let name = '', member_id = null, payroll_id = null;
+  if (b.member_id) {
+    const m = db.prepare('SELECT * FROM members WHERE id = ?').get(b.member_id);
+    if (!m) return res.status(404).json({ error: 'member not found' });
+    member_id = m.id; name = `${m.last_name}, ${m.first_name}`;
+  } else if (b.payroll_id) {
+    const p = db.prepare('SELECT * FROM payroll_dues WHERE id = ?').get(b.payroll_id);
+    if (!p) return res.status(404).json({ error: 'payroll row not found' });
+    payroll_id = p.id; name = `${p.last_name}, ${p.first_name}`;
+  } else {
+    name = String(b.name || '').trim();
+    if (!name) return res.status(400).json({ error: 'member_id, payroll_id or name required' });
+  }
+  // Avoid duplicate pending entries for the same member.
+  if (member_id) {
+    const dup = db.prepare("SELECT id FROM discrepancies WHERE member_id = ? AND status = 'pending'").get(member_id);
+    if (dup) return res.json({ ok: true, id: dup.id, already: true });
+  }
+  const info = db.prepare(
+    `INSERT INTO discrepancies (member_id, name, reason, from_station)
+     VALUES (?, ?, ?, ?)`
+  ).run(member_id, name, String(b.reason || '').slice(0, 200), String(b.station || '').slice(0, 40));
+  // Stash payroll_id in the note field prefix so resolve can find it.
+  if (payroll_id) db.prepare('UPDATE discrepancies SET note = ? WHERE id = ?')
+    .run('payroll_id:' + payroll_id, info.lastInsertRowid);
+  audit(db, 'discrepancy_sent', `${name} — ${b.reason || ''}`, b.station);
+  res.json({ ok: true, id: info.lastInsertRowid });
+});
+
+// The queue for the Discrepancy Table dashboard.
+app.get('/api/discrepancy/list', requireAdmin, (req, res) => {
+  const pending = db.prepare(
+    "SELECT * FROM discrepancies WHERE status = 'pending' ORDER BY id"
+  ).all().map(d => ({ ...d, detail: discrepancyDetail(d) }));
+  const resolved = db.prepare(
+    "SELECT * FROM discrepancies WHERE status = 'resolved' ORDER BY resolved_at DESC LIMIT 15"
+  ).all();
+  res.json({
+    pending, resolved,
+    counts: {
+      pending: pending.length,
+      resolved: db.prepare("SELECT COUNT(*) c FROM discrepancies WHERE status = 'resolved'").get().c
+    }
+  });
+});
+
+// Full member/payroll detail for a queued person, so the worker sees why they
+// were flagged and what to check.
+function discrepancyDetail(d) {
+  if (d.member_id) {
+    const m = db.prepare('SELECT * FROM members WHERE id = ?').get(d.member_id);
+    return m ? { kind: 'member', member: memberPublic(m) } : null;
+  }
+  const pm = /payroll_id:(\d+)/.exec(d.note || '');
+  if (pm) {
+    const p = db.prepare('SELECT * FROM payroll_dues WHERE id = ?').get(pm[1]);
+    return p ? { kind: 'payroll', person: payrollOnlyPublic(p) } : null;
+  }
+  return { kind: 'name' };
+}
+
+// Resolve a queued person. Body:
+//   { outcome, issue_ballot, email, phone, note, by, station }
+// If issue_ballot: a payroll-only person becomes a provisional member, then a
+// check-in is recorded with method 'discrepancy'. Contact is captured too.
+app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
+  const b = req.body || {};
+  const d = db.prepare("SELECT * FROM discrepancies WHERE id = ? AND status = 'pending'").get(req.params.id);
+  if (!d) return res.status(404).json({ error: 'pending discrepancy not found' });
+
+  // Reject DC government emails — enrollment needs a personal address.
+  const email = String(b.email || '').trim();
+  if (email && /@dc\.gov\s*$/i.test(email)) {
+    return res.status(400).json({ error: 'dc_gov_email', message: 'Enter a personal (non-@dc.gov) email.' });
+  }
+
+  const by = String(b.by || 'discrepancy').slice(0, 40);
+  const station = String(b.station || 'Discrepancy').slice(0, 40);
+  let result = { ok: true };
+
+  const tx = db.transaction(() => {
+    let member_id = d.member_id;
+
+    // Payroll-only person getting a ballot → create a provisional member.
+    const pm = /payroll_id:(\d+)/.exec(d.note || '');
+    if (!member_id && pm && b.issue_ballot) {
+      const p = db.prepare('SELECT * FROM payroll_dues WHERE id = ?').get(pm[1]);
+      if (p) {
+        const full = [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(' ');
+        const info = db.prepare(`INSERT INTO members
+          (member_no, last_name, first_name, middle_name, full_name, dues_status, dues_ok,
+           payroll_ok, source, norm_last, norm_first)
+          VALUES ('', ?, ?, ?, ?, 'Payroll dues', 1, 1, 'payroll', ?, ?)`)
+          .run(p.last_name, p.first_name, p.middle_name, full,
+            match.normalizeName(p.last_name), match.normalizeName(p.first_name));
+        member_id = info.lastInsertRowid;
+        db.prepare('UPDATE payroll_dues SET member_id = ? WHERE id = ?').run(member_id, p.id);
+      }
+    }
+
+    // Capture contact for the enrollment follow-up.
+    if (member_id && (email || (b.phone || '').trim())) {
+      db.prepare(`INSERT INTO contact_corrections (member_id, email, phone, station)
+        VALUES (?, ?, ?, ?)`).run(member_id, email, String(b.phone || '').trim(), station);
+    }
+
+    // Issue the ballot (records the check-in) if the worker chose to.
+    if (b.issue_ballot && member_id) {
+      let ballotNo = null;
+      if (getConfig(db, 'ballot_numbering') === 'on') {
+        ballotNo = parseInt(getConfig(db, 'next_ballot_no'), 10) || 1;
+        setConfig(db, 'next_ballot_no', ballotNo + 1);
+      }
+      try {
+        db.prepare(`INSERT INTO checkins (member_id, station, verification_method, method_note, ballot_no)
+          VALUES (?, ?, 'discrepancy', ?, ?)`).run(member_id, station, String(b.outcome || '').slice(0, 120), ballotNo);
+        result.ballot_no = ballotNo;
+      } catch (e) {
+        if (String(e.message).includes('UNIQUE')) result.already_checked_in = true; else throw e;
+      }
+    }
+
+    db.prepare(`UPDATE discrepancies SET status = 'resolved', outcome = ?, note = ?,
+      resolved_by = ?, resolved_at = datetime('now','localtime') WHERE id = ?`)
+      .run(String(b.outcome || '').slice(0, 120),
+        (d.note ? d.note + ' | ' : '') + String(b.note || '').slice(0, 200), by, d.id);
+  });
+  tx();
+  audit(db, 'discrepancy_resolved', `${d.name} — ${b.outcome || ''}${result.ballot_no ? ' ballot #' + result.ballot_no : ''}`, station);
+  res.json(result);
 });
 
 // ---------- member updates ----------

@@ -64,7 +64,10 @@
     if (q.length < 2) { renderResults([]); return; }
     searchTimer = setTimeout(function () {
       api('/api/search?q=' + encodeURIComponent(q)).then(function (r) {
-        renderResults((r.body.members || []).map(function (m) { return { member: m }; }));
+        var items = (r.body.members || []).map(function (m) { return { member: m }; });
+        // Payroll-only people (paying dues, not in NEP) appear as yellow rows.
+        (r.body.payroll_only || []).forEach(function (p) { items.push({ member: p, payrollOnly: true }); });
+        renderResults(items);
       });
     }, 120);
   });
@@ -81,10 +84,11 @@
 
   function flagChips(m, dobMatch) {
     var chips = '';
+    var el = m.eligibility || {};
     if (m.checked_in) chips += '<span class="flag red">CHECKED IN</span>';
-    else if (!m.dues_status) chips += '<span class="flag gray">NO STATUS</span>';
-    else if (!m.dues_ok) chips += '<span class="flag red">STATUS</span>';
-    else chips += '<span class="flag green">OK</span>';
+    else if (el.color === 'green') chips += '<span class="flag green">ELIGIBLE</span>';
+    else if (el.color === 'yellow') chips += '<span class="flag yellow">PAYROLL · ENROLL</span>';
+    else chips += '<span class="flag red">VERIFY</span>';
     if (dobMatch === true) chips += ' <span class="flag green">DOB &#10003;</span>';
     if (dobMatch === false) chips += ' <span class="flag red">DOB &#10007;</span>';
     if (m.email_list === 'bad') chips += ' <span class="flag red">EMAIL</span>';
@@ -108,11 +112,11 @@
       btn.innerHTML =
         '<div><div class="name">' + esc(m.last_name) + (m.suffix ? ' ' + esc(m.suffix) : '') +
         ', ' + esc(m.first_name) + (m.middle_name ? ' ' + esc(m.middle_name) : '') + '</div>' +
-        '<div class="sub">#' + esc(m.member_no || '—') +
-        (m.age != null ? ' &middot; age ' + m.age : '') +
-        (it.score ? ' &middot; match ' + it.score + '%' : '') + '</div></div>' +
+        '<div class="sub">' + (it.payrollOnly ? 'payroll dues · not in NEP'
+          : '#' + esc(m.member_no || '—') + (m.age != null ? ' &middot; age ' + m.age : '') +
+            (it.score ? ' &middot; match ' + it.score + '%' : '')) + '</div></div>' +
         '<div class="flag-wrap" style="margin-left:auto">' + flagChips(m, it.dob_match) + '</div>';
-      btn.onclick = function () { openMember(m.id); };
+      btn.onclick = it.payrollOnly ? function () { openPayrollOnly(m); } : function () { openMember(m.id); };
       $('results').appendChild(btn);
     });
   }
@@ -198,6 +202,26 @@
   var currentMember = null;
   var selectedMethod = null;
 
+  // Payroll-only person (yellow): minimal card, routes to Discrepancy Table.
+  function openPayrollOnly(p) {
+    currentMember = p;
+    var html = '<div class="member-name">' + esc(p.last_name) + ', ' + esc(p.first_name) +
+      (p.middle_name ? ' ' + esc(p.middle_name) : '') + '</div>';
+    html += '<div class="member-meta">Emplid ' + esc(p.emplid || '—') +
+      (p.grade ? ' &middot; grade ' + esc(p.grade) : '') + (p.step ? ' &middot; step ' + esc(p.step) : '') + '</div>';
+    html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
+      esc(p.eligibility.label) + '</div>';
+    html += '<div class="banner yellow">On the payroll dues list but <strong>not in NEP</strong>. ' +
+      'Gets a ballot &mdash; send to the Discrepancy Table to enroll (capture email/phone) and issue.</div>';
+    html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Discrepancy Table</button>';
+    html += '<button class="ghost mt" id="closeMember" style="width:100%">Back</button>';
+    $('memberCard').innerHTML = html;
+    $('sendDisc').onclick = function () { sendToDiscrepancy(p); };
+    $('closeMember').onclick = closeMember;
+    $('memberCard').classList.remove('hidden');
+    $('memberCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function openMember(id) {
     api('/api/members/' + id).then(function (r) {
       if (r.status !== 200) return;
@@ -223,18 +247,16 @@
             (m.assignment ? ' &middot; ' + esc(m.assignment) : '') +
             (m.platoon ? ' &middot; Platoon ' + esc(m.platoon) : '') +
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
-    if (m.dues_block) {
-      // Non-dues-paying member — overrides ConnectPlus status entirely.
-      html += '<div class="dues-pill bad">&#9940; NON DUES-PAYING MEMBER &mdash; NOT ELIGIBLE</div>';
-      if (m.dues_block_note) html += '<div class="muted small">' + esc(m.dues_block_note) + '</div>';
-    } else if (m.dues_status) {
-      html += '<div class="dues-pill ' + (m.dues_ok ? 'ok' : 'bad') + '">' +
-              (m.dues_ok ? '&#10003; ' : '&#10007; NOT ELIGIBLE — ') + esc(m.dues_status.toUpperCase()) + '</div>';
-    } else {
-      // No status imported — show neutral, never a false green.
-      html += '<div class="dues-pill" style="background:#e6e9ee;color:#5c6b7f;border:2px solid #d8dee6">' +
-              'NO STATUS ON FILE &mdash; verify eligibility manually</div>';
-    }
+    // Eligibility pill from the server's authoritative model (payroll-first).
+    var el = m.eligibility || { color: 'red', label: 'NOT ELIGIBLE', ballot: false };
+    var pillCls = el.color === 'green' ? 'ok' : el.color === 'yellow' ? '' : 'bad';
+    var pillStyle = el.color === 'yellow'
+      ? ' style="background:#fef9c3;color:#a16207;border:2px solid #facc15"' : '';
+    html += '<div class="dues-pill ' + pillCls + '"' + pillStyle + '>' + esc(el.label) + '</div>';
+    if (m.dues_block && m.dues_block_note) html += '<div class="muted small">' + esc(m.dues_block_note) + '</div>';
+    // When payroll is the authority, still show the NEP status quietly for context.
+    if (m.dues_status && el.state !== 'status_ok' && el.state !== 'status_bad')
+      html += '<div class="muted small">NEP status: ' + esc(m.dues_status) + '</div>';
 
     if (m.checked_in) {
       html += '<div class="banner red">ALREADY CHECKED IN at ' + esc(m.checked_in.ts) +
@@ -307,12 +329,15 @@
             (m.access_granted_at ? ' checked disabled' : '') + '> Portal access granted today (help lane)' +
             (m.access_granted_at ? ' — logged ' + esc(m.access_granted_at) : '') + '</label></div>';
 
-    if (m.dues_block) {
-      html += '<button class="big danger mt" disabled>&#9940; NOT ELIGIBLE — no ballot</button>';
-    } else if (m.checked_in) {
+    if (m.checked_in) {
       html += '<button class="big danger mt" disabled>Already checked in — no ballot</button>';
-    } else {
+    } else if (el.ballot) {
       html += '<button class="big primary mt" id="doCheckin">&#10003; Check In + Issue Ballot</button>';
+    } else {
+      // Red/blocked at the main table — cannot issue a ballot here. Route to
+      // the Discrepancy Table for a human to verify/resolve.
+      html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Discrepancy Table</button>';
+      html += '<div class="muted small mt">Not eligible at this table. The Discrepancy Table will verify and decide.</div>';
     }
     html += '<button class="ghost mt" id="closeMember" style="width:100%">Back</button>';
 
@@ -349,7 +374,22 @@
       };
     }
     if ($('doCheckin')) $('doCheckin').onclick = doCheckin;
+    if ($('sendDisc')) $('sendDisc').onclick = function () { sendToDiscrepancy(m); };
     $('closeMember').onclick = closeMember;
+  }
+
+  function sendToDiscrepancy(m) {
+    var body = m.source === 'payroll'
+      ? { payroll_id: m.payroll_id, reason: 'payroll-only — enroll + ballot', station: station }
+      : { member_id: m.id, reason: (m.eligibility && m.eligibility.label) || 'verify', station: station };
+    $('sendDisc').disabled = true;
+    api('/api/discrepancy', { method: 'POST', body: JSON.stringify(body) }).then(function (r) {
+      if (r.status === 200) {
+        renderResults([], '<div class="banner blue">Sent to the Discrepancy Table. Direct ' +
+          esc(m.first_name) + ' there.</div>');
+        $('memberCard').classList.add('hidden');
+      } else { alert('Could not send: ' + (r.body.error || r.status)); $('sendDisc').disabled = false; }
+    });
   }
 
   function saveContactFix(emailYN) {

@@ -78,6 +78,18 @@
     </div>
   </section>
 
+  <!-- Payroll dues list import -->
+  <section class="card">
+    <h3>Payroll dues list (the dues authority)</h3>
+    <p class="muted small">The DC payroll union-dues report as a CSV/xlsx with columns
+      <code>emplid, last, first, middle, ssn4, grade, step</code>. Once loaded, being on this
+      list is what makes a member GREEN (eligible). Members not on it go to the Discrepancy
+      Table; people on it but not in NEP show up yellow (payroll-only).</p>
+    <input type="file" id="payrollFile" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <button class="primary mt" id="doPayrollImport">Import payroll list</button>
+    <span id="payrollStatus" class="muted" style="margin-left:10px"></span>
+  </section>
+
   <!-- Paper roll import -->
   <section class="card">
     <h3>Paper dues roll (optional second list)</h3>
