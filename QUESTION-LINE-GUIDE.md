@@ -42,8 +42,13 @@ you want to take all the related questions before moving on:
   automatically** — so you catch the follow-up before moving on.
 - Tap **Clear** on the bar to drop the grouping and return to the normal order.
 
-Matching is by keyword, so "pay scale steps" and "pay scale for new hires" group
-together. It's a highlight only — it never reorders the line or forces anything.
+Matching understands the contract's vocabulary — it groups by shared word AND by
+shared subject, so "money," "comp," "pay scale," and "acting pay" all group as
+compensation even though they share no letters. It knows the FY25-27 CBA topics
+(pay, overtime, staffing, healthcare, retirement, leave, promotions, safety, K9,
+etc.). It's a highlight only — it never reorders the line or forces anything, and
+you always have every topic in view as a backstop. (The word list lives in
+`public-queue/topics.js` if you ever want to add a term.)
 
 More than one person can be logged into /mod at the same time (e.g. a floor
 volunteer adding no-phone members while you run the mic) — everything stays in

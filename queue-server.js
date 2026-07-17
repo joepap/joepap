@@ -26,6 +26,8 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 fs.mkdirSync(DATA_DIR, { recursive: true });
 const db = new Database(path.join(DATA_DIR, 'queue.db'));
 db.pragma('journal_mode = WAL');
+db.pragma('synchronous = NORMAL');
+db.pragma('busy_timeout = 5000');   // survive concurrent writes (2 mods + members)
 db.exec(`
   CREATE TABLE IF NOT EXISTS entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,6 +51,8 @@ const page = name => (req, res) => res.sendFile(path.join(__dirname, 'public-que
 app.get('/', page('member.html'));
 app.get('/mod', page('mod.html'));
 app.get('/display', page('display.html'));
+app.get('/topics.js', (req, res) =>
+  res.type('application/javascript').sendFile(path.join(__dirname, 'public-queue', 'topics.js')));
 
 // Shared union logo — same file the check-in app uses (public/logo.png).
 // 404s harmlessly until the file is dropped in place.

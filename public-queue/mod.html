@@ -100,6 +100,7 @@
     <button class="resetBtn" id="reset">Clear entire line (start of meeting)</button>
   </div>
 </main>
+<script src="/topics.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -161,33 +162,26 @@
   }
 
   // --- topic grouping ---
-  // A topic "focus" highlights every waiting person sharing a keyword, so the
-  // moderator can clear related questions before moving on. Focus is stored as
-  // a keyword set and re-applied on every refresh, so someone who scans in
+  // Tapping a topic highlights everyone whose question is about the same thing,
+  // so the chair can clear related questions before moving on. Matching (shared
+  // keyword or shared concept, tuned to the CBA) lives in /topics.js so it can
+  // be unit-tested. Focus persists across refreshes, so someone who scans in
   // mid-topic lights up automatically.
-  var STOP = {a:1,an:1,the:1,to:1,of:1,on:1,in:1,for:1,and:1,or:1,my:1,our:1,we:1,us:1,
-    is:1,are:1,be:1,about:1,question:1,questions:1,comment:1,will:1,with:1,how:1,what:1,
-    when:1,why:1,who:1,do:1,does:1,can:1,it:1,that:1,this:1,new:1,old:1};
-  var focusWords = null;   // Set of keywords, or null when off
+  var focusTopic = null;   // analyzed focus topic, or null when off
 
-  function keywords(topic) {
-    return (topic || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
-      .filter(function (w) { return w.length > 2 && !STOP[w]; });
-  }
   function matchesFocus(topic) {
-    if (!focusWords) return false;
-    return keywords(topic).some(function (w) { return focusWords.has(w); });
+    return focusTopic ? Topics.related(focusTopic, Topics.analyze(topic)) : false;
   }
   function setFocus(topic) {
-    var kws = keywords(topic);
-    focusWords = kws.length ? new Set(kws) : null;
+    var a = Topics.analyze(topic);
+    focusTopic = (Object.keys(a.words).length || Object.keys(a.concepts).length) ? a : null;
     renderTopicbar(topic);
     refresh();
   }
-  function clearFocus() { focusWords = null; renderTopicbar(); refresh(); }
+  function clearFocus() { focusTopic = null; renderTopicbar(); refresh(); }
   function renderTopicbar(topic) {
     var bar = $('topicbar');
-    if (!focusWords) { bar.classList.remove('on'); return; }
+    if (!focusTopic) { bar.classList.remove('on'); return; }
     bar.classList.add('on');
     $('topicbarText').textContent = 'Grouping: “' + topic + '”';
   }
@@ -203,7 +197,7 @@
         $('nextTopic').textContent = w[0].topic ? '“' + w[0].topic + '”' : '';
       }
       // If a focus is active, show its count in the bar.
-      if (focusWords) {
+      if (focusTopic) {
         var n = w.filter(function (e) { return matchesFocus(e.topic); }).length;
         $('topicbarText').textContent = $('topicbarText').textContent.replace(/ — .*$/, '') +
           ' — ' + n + ' in line';
