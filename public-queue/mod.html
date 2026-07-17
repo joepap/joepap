@@ -25,8 +25,19 @@
              margin-bottom: 12px; }
   .nowNext .lbl { color: #15803d; font-weight: 800; font-size: .8rem; letter-spacing: 1px; }
   .nowNext .name { font-size: 1.8rem; font-weight: 900; }
+  .nowNext .topic { color: #7f1212; font-weight: 700; font-size: 1.05rem; margin-top: 2px; }
   .row { position: relative; overflow: hidden; border-radius: 14px; margin-bottom: 10px;
          border: 1px solid #d8dee6; background: #fff; }
+  .row.match { border: 2px solid #d9a521; box-shadow: 0 0 0 3px rgba(217,165,33,.25); }
+  .topicbar { display: none; align-items: center; gap: 10px; background: #fef3c7;
+              border: 2px solid #d9a521; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px;
+              font-weight: 700; color: #92600b; }
+  .topicbar.on { display: flex; }
+  .topicbar button { margin-left: auto; border: none; background: #92600b; color: #fff;
+                     border-radius: 8px; padding: 8px 12px; font-weight: 800; }
+  .face .topic { color: #7f1212; font-weight: 700; font-size: .95rem; margin-top: 2px;
+                 cursor: pointer; text-decoration: underline; text-decoration-color: #d9a521;
+                 text-underline-offset: 2px; }
   .row .under { position: absolute; inset: 0; display: flex; justify-content: space-between;
                 align-items: center; font-weight: 800; color: #fff; padding: 0 18px; }
   .under .l { color: #fff; } .under .r { color: #fff; }
@@ -68,17 +79,24 @@
     <div class="nowNext" id="nowNext" style="display:none">
       <div class="lbl">UP NEXT</div>
       <div class="name" id="nextName"></div>
+      <div class="topic" id="nextTopic"></div>
+    </div>
+    <div class="topicbar" id="topicbar">
+      <span id="topicbarText"></span>
+      <button id="topicbarClear">Clear</button>
     </div>
     <div id="list"></div>
     <div style="display:flex;gap:8px;margin:14px 0">
-      <input type="text" id="addName" placeholder="Add someone without a phone…"
-             style="flex:1;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
+      <input type="text" id="addName" placeholder="Name (no phone)"
+             style="flex:2;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
+      <input type="text" id="addTopic" placeholder="Topic"
+             style="flex:2;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
       <button id="addBtn" style="border:none;border-radius:12px;font-weight:800;padding:0 18px;
               background:#1d4ed8;color:#fff;font-size:1.3rem">+</button>
     </div>
     <h4 id="resolvedHdr" style="display:none">Recently handled</h4>
     <div id="resolvedList"></div>
-    <div class="hint">Swipe right = done &middot; swipe left = skip &middot; or use the buttons</div>
+    <div class="hint">Swipe right = done &middot; swipe left = skip &middot; tap a topic to group same-subject questions</div>
     <button class="resetBtn" id="reset">Clear entire line (start of meeting)</button>
   </div>
 </main>
@@ -142,25 +160,70 @@
     });
   }
 
+  // --- topic grouping ---
+  // A topic "focus" highlights every waiting person sharing a keyword, so the
+  // moderator can clear related questions before moving on. Focus is stored as
+  // a keyword set and re-applied on every refresh, so someone who scans in
+  // mid-topic lights up automatically.
+  var STOP = {a:1,an:1,the:1,to:1,of:1,on:1,in:1,for:1,and:1,or:1,my:1,our:1,we:1,us:1,
+    is:1,are:1,be:1,about:1,question:1,questions:1,comment:1,will:1,with:1,how:1,what:1,
+    when:1,why:1,who:1,do:1,does:1,can:1,it:1,that:1,this:1,new:1,old:1};
+  var focusWords = null;   // Set of keywords, or null when off
+
+  function keywords(topic) {
+    return (topic || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
+      .filter(function (w) { return w.length > 2 && !STOP[w]; });
+  }
+  function matchesFocus(topic) {
+    if (!focusWords) return false;
+    return keywords(topic).some(function (w) { return focusWords.has(w); });
+  }
+  function setFocus(topic) {
+    var kws = keywords(topic);
+    focusWords = kws.length ? new Set(kws) : null;
+    renderTopicbar(topic);
+    refresh();
+  }
+  function clearFocus() { focusWords = null; renderTopicbar(); refresh(); }
+  function renderTopicbar(topic) {
+    var bar = $('topicbar');
+    if (!focusWords) { bar.classList.remove('on'); return; }
+    bar.classList.add('on');
+    $('topicbarText').textContent = 'Grouping: “' + topic + '”';
+  }
+  $('topicbarClear').onclick = clearFocus;
+
   function refresh() {
     api('/api/mod/list').then(function (d) {
       $('counts').textContent = d.counts.waiting + ' waiting · ' + d.counts.done + ' done';
       var w = d.waiting;
       $('nowNext').style.display = w.length ? '' : 'none';
-      if (w.length) $('nextName').textContent = w[0].name;
+      if (w.length) {
+        $('nextName').textContent = w[0].name;
+        $('nextTopic').textContent = w[0].topic ? '“' + w[0].topic + '”' : '';
+      }
+      // If a focus is active, show its count in the bar.
+      if (focusWords) {
+        var n = w.filter(function (e) { return matchesFocus(e.topic); }).length;
+        $('topicbarText').textContent = $('topicbarText').textContent.replace(/ — .*$/, '') +
+          ' — ' + n + ' in line';
+      }
       $('list').innerHTML = w.length ? '' : '<div class="empty">Line is empty.</div>';
       w.forEach(function (e, i) {
         var row = document.createElement('div');
-        row.className = 'row';
+        row.className = 'row' + (matchesFocus(e.topic) ? ' match' : '');
         row.innerHTML =
           '<div class="under" style="background:linear-gradient(90deg,#15803d 50%,#b91c1c 50%)">' +
           '<span class="l">✓ done</span><span class="r">skip ✗</span></div>' +
           '<div class="face"><div class="num">' + (i + 1) + '</div>' +
-          '<div><div class="name">' + esc(e.name) + '</div><div class="ts">' + esc(e.ts.slice(11, 16)) + '</div></div>' +
-          '<span style="flex:1"></span>' +
+          '<div style="flex:1"><div class="name">' + esc(e.name) + '</div>' +
+          (e.topic ? '<div class="topic">“' + esc(e.topic) + '”</div>' : '') +
+          '<div class="ts">' + esc(e.ts.slice(11, 16)) + '</div></div>' +
           '<button class="bDone">✓</button><button class="bSkip">✗</button></div>';
         row.querySelector('.bDone').onclick = function () { act(e.id, 'done'); };
         row.querySelector('.bSkip').onclick = function () { act(e.id, 'skip'); };
+        var tEl = row.querySelector('.topic');
+        if (tEl) tEl.onclick = function () { setFocus(e.topic); };
         attachSwipe(row, e.id);
         $('list').appendChild(row);
       });
@@ -180,11 +243,11 @@
   function addManual() {
     var name = $('addName').value.trim();
     if (name.length < 2) { $('addName').focus(); return; }
-    api('/api/mod/add', { method: 'POST', body: JSON.stringify({ name: name }) })
-      .then(function () { $('addName').value = ''; refresh(); });
+    api('/api/mod/add', { method: 'POST', body: JSON.stringify({ name: name, topic: $('addTopic').value.trim() }) })
+      .then(function () { $('addName').value = ''; $('addTopic').value = ''; refresh(); });
   }
   $('addBtn').onclick = addManual;
-  $('addName').addEventListener('keydown', function (e) { if (e.key === 'Enter') addManual(); });
+  $('addTopic').addEventListener('keydown', function (e) { if (e.key === 'Enter') addManual(); });
 
   $('reset').onclick = function () {
     if (!confirm('Clear the ENTIRE line? This removes everyone.')) return;

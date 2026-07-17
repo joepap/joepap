@@ -38,6 +38,9 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS ix_entries_status ON entries(status);
   CREATE INDEX IF NOT EXISTS ix_entries_token ON entries(token);
 `);
+if (!db.prepare('PRAGMA table_info(entries)').all().some(c => c.name === 'topic')) {
+  db.exec("ALTER TABLE entries ADD COLUMN topic TEXT NOT NULL DEFAULT ''");
+}
 
 const app = express();
 app.use(express.json({ limit: '16kb' }));
@@ -73,18 +76,19 @@ function activeByToken(token) {
   ).get(token);
 }
 
-// Join the line (or update name if this device is already in it).
+// Join the line (or update name/topic if this device is already in it).
 app.post('/api/join', (req, res) => {
   const name = String((req.body || {}).name || '').trim().slice(0, 60);
+  const topic = String((req.body || {}).topic || '').trim().slice(0, 80);
   const token = String((req.body || {}).token || '').trim().slice(0, 64);
   if (name.length < 2) return res.status(400).json({ error: 'Enter your full name.' });
+  if (topic.length < 3) return res.status(400).json({ error: 'Say what your question is about — a few words is plenty.' });
   if (!token) return res.status(400).json({ error: 'missing token' });
   let entry = activeByToken(token);
   if (entry) {
-    db.prepare('UPDATE entries SET name = ? WHERE id = ?').run(name, entry.id);
-    entry.name = name;
+    db.prepare('UPDATE entries SET name = ?, topic = ? WHERE id = ?').run(name, topic, entry.id);
   } else {
-    const info = db.prepare('INSERT INTO entries (name, token) VALUES (?, ?)').run(name, token);
+    const info = db.prepare('INSERT INTO entries (name, token, topic) VALUES (?, ?, ?)').run(name, token, topic);
     entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(info.lastInsertRowid);
   }
   res.json({ position: positionOf(entry), waiting: waitingCount() });
@@ -110,6 +114,7 @@ app.get('/api/status', (req, res) => {
   res.json({
     inLine: true,
     name: entry.name,
+    topic: entry.topic,
     position: positionOf(entry),
     ahead: positionOf(entry) - 1,
     waiting: waitingCount()
@@ -124,9 +129,9 @@ app.get('/api/display-info', (req, res) => {
 // Moderator: the full line.
 app.get('/api/mod/list', requireMod, (req, res) => {
   res.json({
-    waiting: db.prepare("SELECT id, name, ts FROM entries WHERE status = 'waiting' ORDER BY id").all(),
+    waiting: db.prepare("SELECT id, name, topic, ts FROM entries WHERE status = 'waiting' ORDER BY id").all(),
     resolved: db.prepare(
-      "SELECT id, name, status, resolved_at FROM entries WHERE status != 'waiting' ORDER BY resolved_at DESC LIMIT 12"
+      "SELECT id, name, topic, status, resolved_at FROM entries WHERE status != 'waiting' ORDER BY resolved_at DESC LIMIT 12"
     ).all(),
     counts: {
       waiting: waitingCount(),
@@ -158,9 +163,10 @@ app.post('/api/mod/action', requireMod, (req, res) => {
 // take their place at the end of the line like anyone else.
 app.post('/api/mod/add', requireMod, (req, res) => {
   const name = String((req.body || {}).name || '').trim().slice(0, 60);
+  const topic = String((req.body || {}).topic || '').trim().slice(0, 80);
   if (name.length < 2) return res.status(400).json({ error: 'Enter the full name.' });
   const token = 'mod-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-  const info = db.prepare('INSERT INTO entries (name, token) VALUES (?, ?)').run(name, token);
+  const info = db.prepare('INSERT INTO entries (name, token, topic) VALUES (?, ?, ?)').run(name, token, topic);
   const entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(info.lastInsertRowid);
   res.json({ ok: true, position: positionOf(entry) });
 });

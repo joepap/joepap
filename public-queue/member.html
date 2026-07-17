@@ -25,13 +25,16 @@
   p.sub { color: #5c6b7f; margin-bottom: 18px; line-height: 1.4; }
   input { width: 100%; font-size: 1.2rem; padding: 16px; border: 2px solid #d8dee6;
           border-radius: 12px; text-align: center; }
+  input + input { margin-top: 12px; }
   input:focus { outline: 3px solid #93c5fd; border-color: #1d4ed8; }
+  .topichint { color: #8b98a9; font-size: .82rem; margin-top: 6px; }
   button { width: 100%; margin-top: 14px; font-size: 1.15rem; font-weight: 700; padding: 16px;
            border: none; border-radius: 12px; background: #b91c1c; color: #fff; cursor: pointer; }
   button.ghost { background: transparent; color: #5c6b7f; border: 2px solid #d8dee6; }
   .pos { font-size: 4.5rem; font-weight: 900; color: #b91c1c; line-height: 1.1; margin: 10px 0; }
   .ahead { font-size: 1.3rem; color: #1a2330; margin-bottom: 6px; }
   .youare { color: #5c6b7f; }
+  .mytopic { color: #b91c1c; font-weight: 700; margin: 4px 0 10px; }
   .next { background: #dcfce7; color: #15803d; border: 2px solid #4ade80; border-radius: 12px;
           padding: 14px; font-weight: 800; font-size: 1.3rem; margin: 12px 0; }
   .err { color: #b91c1c; font-weight: 600; margin-top: 10px; min-height: 1.2em; }
@@ -43,21 +46,25 @@
   <img src="/logo.png" alt="" onerror="this.style.display='none'">
   <div class="org">
     <div class="l1">DC Fire Fighters &middot; Local 36</div>
-    <div class="l2">Question Line &middot; Proud &amp; Strong</div>
+    <div class="l2">Question Line &middot; Strength in Solidarity</div>
   </div>
 </header>
 <main>
   <div class="card" id="joinCard">
     <h2>Want to speak?</h2>
-    <p class="sub">Enter your full name to get in line to ask a question or make a comment.
+    <p class="sub">Get in line to ask a question or make a comment.
       You'll see live how many people are ahead of you.</p>
     <input type="text" id="name" placeholder="Full name" autocomplete="name" maxlength="60">
+    <input type="text" id="topic" placeholder="What's your question about?" maxlength="80"
+           autocomplete="off" autocapitalize="sentences">
+    <div class="topichint">A few words — e.g. pay scale, healthcare, leave, staffing</div>
     <button id="join">Get in line</button>
     <div class="err" id="err"></div>
   </div>
 
   <div class="card" id="statusCard" style="display:none">
     <div class="youare" id="who"></div>
+    <div class="mytopic" id="myTopic"></div>
     <div id="posWrap">
       <div class="pos" id="pos">#—</div>
       <div class="ahead" id="ahead"></div>
@@ -103,6 +110,7 @@ Runs on the union's own equipment &middot; your name is used only to call on you
           return;
         }
         $('who').textContent = s.name;
+        $('myTopic').textContent = s.topic ? '“' + s.topic + '”' : '';
         $('pos').textContent = '#' + s.position;
         $('ahead').textContent = s.ahead === 0 ? '' :
           s.ahead + (s.ahead === 1 ? ' person' : ' people') + ' ahead of you';
@@ -116,11 +124,13 @@ Runs on the union's own equipment &middot; your name is used only to call on you
 
   $('join').onclick = function () {
     var name = $('name').value.trim();
+    var topic = $('topic').value.trim();
     if (name.length < 2) { $('err').textContent = 'Please enter your full name.'; return; }
+    if (topic.length < 3) { $('err').textContent = 'Add a few words on what your question is about.'; return; }
     $('join').disabled = true;
     fetch('/api/join', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, token: token })
+      body: JSON.stringify({ name: name, topic: topic, token: token })
     }).then(function (r) { return r.json(); }).then(function (d) {
       $('join').disabled = false;
       if (d.error) { $('err').textContent = d.error; return; }
@@ -130,7 +140,7 @@ Runs on the union's own equipment &middot; your name is used only to call on you
       $('err').textContent = 'Connection problem — try again.';
     });
   };
-  $('name').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('join').click(); });
+  $('topic').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('join').click(); });
 
   $('leave').onclick = function () {
     fetch('/api/leave', {
