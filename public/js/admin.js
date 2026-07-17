@@ -56,6 +56,8 @@
         stat(s.access_granted_today, 'Access granted') +
         stat(s.contact_corrections, 'Contact fixes') +
         stat(s.email_group_flags, 'Email-group flags') +
+        stat(s.discrepancy_pending, 'Discrepancy queue') +
+        stat(s.payroll_only_checked_in, 'Payroll-only voted') +
         stat(s.voided, 'Voided');
       $('methodGrid').innerHTML = (s.by_method || []).map(function (m) {
         return stat(m.c, METHOD_LABELS[m.verification_method] || m.verification_method);
@@ -302,6 +304,18 @@
       window.location = b.getAttribute('data-export') + '?pin=' + encodeURIComponent(pin);
     };
   });
+
+  // ---------- event reset ----------
+  $('resetEvent').onclick = function () {
+    var typed = prompt('This clears ALL check-ins, corrections, not-found, discrepancies and ' +
+      'provisional members (roster + payroll + settings are kept).\n\nType RESET to confirm:');
+    if (typed !== 'RESET') { if (typed !== null) alert('Not reset — you must type RESET exactly.'); return; }
+    api('/api/admin/reset-event', { method: 'POST', body: JSON.stringify({ confirm: 'RESET' }) })
+      .then(function (r) {
+        $('resetStatus').textContent = r.status === 200 ? '✓ event data cleared' : 'failed: ' + (r.body.error || r.status);
+        refreshStats();
+      });
+  };
 
   // ---------- settings ----------
   function loadSettings() {

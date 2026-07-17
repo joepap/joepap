@@ -44,12 +44,38 @@ remove_one() {
   echo "removed: com.local36.$name"
 }
 
+install_timer() {
+  local name="$1" script="$2" interval="$3"
+  local plist="$AGENTS/com.local36.$name.plist"
+  cat > "$plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.local36.$name</string>
+  <key>ProgramArguments</key>
+  <array><string>$NODE</string><string>$DIR/$script</string></array>
+  <key>WorkingDirectory</key><string>$DIR</string>
+  <key>RunAtLoad</key><true/>
+  <key>StartInterval</key><integer>$interval</integer>
+  <key>StandardOutPath</key><string>$DIR/logs/$name.log</string>
+  <key>StandardErrorPath</key><string>$DIR/logs/$name.log</string>
+</dict>
+</plist>
+EOF
+  launchctl unload "$plist" 2>/dev/null || true
+  launchctl load -w "$plist"
+  echo "installed + started: com.local36.$name ($script every ${interval}s)"
+}
+
 if [ "${1:-}" = "remove" ]; then
   remove_one checkin
   remove_one queue
+  remove_one backup
 else
   install_one checkin server.js
   install_one queue queue-server.js
+  install_timer backup scripts/backup.js 600
   echo
   echo "Both services now start at login and auto-restart if they crash."
   echo "Logs: $DIR/logs/checkin.log and $DIR/logs/queue.log"

@@ -11,8 +11,21 @@ public address has a real HTTPS certificate (no cert-trust step needed).
 
 - Check-in stations: **https://dcjoe-claude-macmini.tail5dba36.ts.net:8443**
 - Admin dashboard: same address + `/admin.html`
+- **Discrepancy Table**: same address + `/discrepancy.html` (admin PIN)
 - Question line (members): **https://dcjoe-claude-macmini.tail5dba36.ts.net**
 - Question line moderator: same + `/mod` · projector QR: same + `/display`
+
+## Eligibility model (payroll is the authority)
+
+- 🟢 **GREEN — on the payroll dues list** → ballot at the main table.
+- 🔴 **RED — in NEP but NOT on payroll** → no ballot at the main table; "Send to
+  Discrepancy Table," where a human checks the printed payroll and can override.
+  (NEP can be stale — promoted out, etc.)
+- 🟡 **YELLOW — on payroll but not in NEP** → confirmed dues-payer; sent to the
+  Discrepancy Table for a ballot + enrollment (capture personal email/phone —
+  @dc.gov is rejected — and hand a registration QR card).
+- 🔴 **Known non-payers** (the union's highlighted list) → blocked outright.
+- See DISCREPANCY-TABLE-GUIDE.md — print it for that table's worker.
 
 Two PINs protect everything (change both before the event in `/admin.html` →
 Settings): the **station PIN** (volunteers enter it once with their station
@@ -40,24 +53,34 @@ The queue moderator PIN is set when the queue starts (default 3636).
      phone hotspot before leaving home and confirm the public URLs still load.
    - *At home*: zero setup, but if home power/internet blips mid-meeting, nobody
      is there to fix it.
-2. **Import the latest roster** the day before: `/admin.html` → Roster import →
-   map columns (auto-fills; only "Active" checked as eligible) → Replace ✓.
-3. **Change all three PINs** from defaults. Tell volunteers only the station PIN.
+2. **Import the roster** (`/admin.html` → Roster import, Replace ✓), then the
+   **payroll dues list** (Payroll section), then re-run the non-payer block if
+   the roster changed: `node scripts/apply-dues-block.js` in the project folder.
+   Order matters: roster → payroll → dues block.
+3. **Change all PINs** from defaults (station, admin, queue moderator). Tell
+   volunteers only the station PIN; the Discrepancy worker gets the admin PIN.
 4. Ballots are **blind** — numbering is off by default (Settings can verify).
-5. **Rehearse**: `npm run seed` loads 300 fake members (`seed-output/` has
-   printable practice barcodes). Volunteers practice on their own phones against
-   the real URL. Re-import the real roster afterward (Replace ✓).
-6. Volunteers need nothing installed — just the URL, the station PIN, and a
+5. **Print**: the payroll reference (`/payroll-print.html`), the registration QR
+   cards (`/qr-card.html` — needs the NEP registration link), the question-line
+   QR (`/display` on the queue), and both one-page guides.
+6. **Rehearse**: `npm run seed` loads 300 fake members. Re-import the real
+   roster + payroll afterward (order in step 2).
+7. Volunteers need nothing installed — just the URL, the station PIN, and a
    charged phone. Wi-Fi-only iPads need a hotspot to join.
 
 ## Event day — start of day checks (5 minutes)
 
-1. Open the check-in URL on your phone: search a name → member card loads.
-2. Scan one real license on one phone: match appears.
-3. Admin dashboard shows the right roster count and zero check-ins.
-4. Queue: `/display` on the projector laptop (paste the members' URL for the QR),
-   moderator opens `/mod`, taps **Clear entire line**.
-5. Confirm every station device shows its station name (top right chip).
+1. Admin → **"Clear event data"** (type RESET) to wipe rehearsal check-ins —
+   roster, payroll and blocks are kept. Verify counts: roster ~3,398,
+   payroll 1,761, zero checked in.
+2. Open the check-in URL on your phone: search a name → green member loads.
+3. Scan one real license on one phone: match appears.
+4. Search a known red case → confirm "Send to Discrepancy Table" appears, and
+   it shows up at `/discrepancy.html`. Resolve it, then void that test
+   check-in from the admin dashboard.
+5. Queue: print/post the QR, moderator opens `/mod`, taps **Clear entire line**.
+6. Confirm every station device shows its station name (top right chip).
+7. Backups run automatically every 10 min into `backups/` — nothing to do.
 
 ## During the event
 
@@ -88,12 +111,22 @@ The queue moderator PIN is set when the queue starts (default 3636).
 
 Cheap insurance during the event: every ~30 min, copy `data/` to a USB stick.
 
-## After the event
+## After the event — download all seven exports
 
-Admin → Exports: **check-in log** (verification methods + access-granted),
-**contact corrections** (batch-update ConnectPlus; includes email-group flags),
-**not-found list**, **access granted**. Then archive `data/` somewhere safe and
-delete it from the mini — it holds the full member roster.
+Admin → Exports:
+1. **Check-in log** — every ballot: who, when, station, method, voids.
+2. **Contact corrections** — apply to ConnectPlus (includes email-group flags).
+3. **Not-found list** — follow up.
+4. **Access granted** — who the help lane set up.
+5. **Discrepancy log** — every red/yellow case and its outcome (the challenge
+   paper trail).
+6. **Payroll not in NEP (+attendance)** — the enrollment sheet: import these
+   people into NEP; `checked_in_at_vote` column prioritizes the no-shows for
+   recruitment.
+7. **Payroll list (clean)** — reference copy.
+
+Then archive `data/` + `backups/` somewhere safe and delete both from the
+mini — they hold the full member roster and payroll list.
 
 ---
 

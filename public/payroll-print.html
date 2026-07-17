@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payroll Dues List — printable</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         color: #16181d; padding: 24px; }
+  h1 { font-size: 1.1rem; letter-spacing: .5px; }
+  .sub { color: #5c6b7f; font-size: .85rem; margin: 4px 0 14px; }
+  .cols { column-count: 3; column-gap: 28px; }
+  .row { font-size: .8rem; padding: 1.5px 0; break-inside: avoid; border-bottom: 1px solid #eef1f4; }
+  .row b { font-weight: 700; }
+  .row .id { color: #5c6b7f; font-size: .72rem; }
+  .letter { font-weight: 900; font-size: 1rem; background: #16181d; color: #fff;
+            padding: 2px 8px; margin: 10px 0 4px; display: inline-block; border-radius: 6px;
+            break-after: avoid; }
+  .toolbar { margin-bottom: 14px; }
+  .toolbar button { font-size: 1rem; font-weight: 700; padding: 10px 18px; border: none;
+                    border-radius: 10px; background: #1d4ed8; color: #fff; cursor: pointer; }
+  #pinrow input { font-size: 1rem; padding: 10px; border: 2px solid #d8dee6; border-radius: 10px; }
+  @media print {
+    .toolbar, #pinrow { display: none; }
+    body { padding: 0; }
+    .cols { column-count: 4; }
+  }
+</style>
+</head>
+<body>
+<h1>LOCAL 36 — PAYROLL UNION DUES LIST (Discrepancy Table reference)</h1>
+<div class="sub" id="meta">Names on this list are confirmed dues-payers. If a member is found here,
+they may be issued a ballot (override at the Discrepancy Table).</div>
+<div id="pinrow"><input type="password" id="pin" placeholder="Admin PIN"> <button onclick="load()" style="font-size:1rem;padding:10px 16px;border:none;border-radius:10px;background:#15803d;color:#fff;font-weight:700">Load list</button></div>
+<div class="toolbar" style="display:none" id="printBar"><button onclick="window.print()">🖨 Print</button></div>
+<div class="cols" id="list"></div>
+<script>
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function load(){
+  var pin=document.getElementById('pin').value.trim();
+  fetch('/api/export/payroll-list.csv?pin='+encodeURIComponent(pin))
+    .then(function(r){ if(r.status!==200) throw new Error('wrong PIN'); return r.text(); })
+    .then(function(text){
+      var lines=text.trim().split(/\r?\n/); lines.shift();
+      var html='', letter='';
+      lines.forEach(function(line){
+        // naive CSV split is fine: names with commas are quoted; parse minimally
+        var parts=[]; var cur='',inQ=false;
+        for(var i=0;i<line.length;i++){var ch=line[i];
+          if(inQ){ if(ch==='\"'){ if(line[i+1]==='\"'){cur+='\"';i++;} else inQ=false; } else cur+=ch; }
+          else if(ch==='\"') inQ=true; else if(ch===','){parts.push(cur);cur='';} else cur+=ch;}
+        parts.push(cur);
+        var last=parts[0],first=parts[1],mid=parts[2],emplid=parts[3],inNep=parts[6];
+        var L=(last[0]||'').toUpperCase();
+        if(L!==letter){ letter=L; html+='<div class="letter">'+esc(L)+'</div>'; }
+        html+='<div class="row"><b>'+esc(last)+'</b>, '+esc(first)+(mid?' '+esc(mid):'')+
+              ' <span class="id">#'+esc(emplid)+(inNep==='yes'?'':' · not in NEP')+'</span></div>';
+      });
+      document.getElementById('list').innerHTML=html;
+      document.getElementById('meta').textContent+='  ·  '+lines.length+' names  ·  printed '+new Date().toLocaleDateString();
+      document.getElementById('pinrow').style.display='none';
+      document.getElementById('printBar').style.display='';
+    })
+    .catch(function(e){ alert(e.message||'failed'); });
+}
+</script>
+</body>
+</html>

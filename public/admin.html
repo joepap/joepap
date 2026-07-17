@@ -120,13 +120,30 @@
 
   <!-- Exports -->
   <section class="card">
-    <h3>Exports</h3>
+    <h3>Exports — during / after the meeting</h3>
     <div class="input-row">
       <button class="blue" data-export="/api/export/checkins.csv">Check-in log</button>
       <button class="blue" data-export="/api/export/contact-corrections.csv">Contact corrections</button>
       <button class="blue" data-export="/api/export/notfound.csv">Not-found list</button>
       <button class="blue" data-export="/api/export/access-granted.csv">Access granted</button>
     </div>
+    <div class="input-row mt">
+      <button class="blue" data-export="/api/export/discrepancies.csv">Discrepancy log</button>
+      <button class="blue" data-export="/api/export/payroll-gap.csv">Payroll not in NEP (+attendance)</button>
+      <button class="blue" data-export="/api/export/payroll-list.csv">Payroll list (clean, alphabetical)</button>
+      <a class="btn blue" href="/payroll-print.html" target="_blank"
+         style="display:flex;align-items:center;justify-content:center;text-decoration:none">Printable payroll (paper backup)</a>
+    </div>
+  </section>
+
+  <!-- Event reset -->
+  <section class="card">
+    <h3>Event-morning reset</h3>
+    <p class="muted small">Clears ALL check-ins, corrections, not-found entries, discrepancy queue and
+      provisional members from rehearsal/testing — keeps the roster, payroll list, dues blocks and
+      settings. Do this once before doors open, never after real check-ins begin.</p>
+    <button class="danger" id="resetEvent">Clear event data (keep roster + payroll)</button>
+    <span id="resetStatus" class="muted" style="margin-left:10px"></span>
   </section>
 
   <!-- Settings -->

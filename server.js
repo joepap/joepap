@@ -784,6 +784,12 @@ app.get('/api/stats', (req, res) => {
     access_granted_today: one('SELECT COUNT(*) c FROM members WHERE access_granted_at IS NOT NULL').c,
     contact_corrections: one('SELECT COUNT(*) c FROM contact_corrections').c,
     email_group_flags: one('SELECT COUNT(DISTINCT member_id) c FROM contact_corrections WHERE fix_email_group = 1').c,
+    discrepancy_pending: one("SELECT COUNT(*) c FROM discrepancies WHERE status = 'pending'").c,
+    discrepancy_resolved: one("SELECT COUNT(*) c FROM discrepancies WHERE status = 'resolved'").c,
+    payroll_total: one('SELECT COUNT(*) c FROM payroll_dues').c,
+    payroll_matched: one('SELECT COUNT(*) c FROM payroll_dues WHERE member_id IS NOT NULL').c,
+    payroll_only_checked_in: one(`SELECT COUNT(*) c FROM checkins c
+      JOIN members m ON m.id = c.member_id WHERE m.source = 'payroll' AND c.voided_at IS NULL`).c,
     by_method: all(`SELECT verification_method, COUNT(*) c FROM checkins
                     WHERE voided_at IS NULL GROUP BY verification_method`),
     by_station: all(`SELECT station, COUNT(*) c,
@@ -855,6 +861,81 @@ app.get('/api/export/access-granted.csv', requireAdmin, (req, res) => {
     ['member_no', 'last_name', 'first_name', 'access_granted_at', 'access_granted_station'], rows);
 });
 
+// Every Discrepancy Table case and its outcome — the paper trail for any
+// post-vote challenge ("who was overridden and why").
+app.get('/api/export/discrepancies.csv', requireAdmin, (req, res) => {
+  const rows = db.prepare(
+    `SELECT d.ts sent_at, d.name, d.reason, d.from_station, d.status, d.outcome,
+            d.resolved_by, d.resolved_at, d.note,
+            (SELECT cc.email FROM contact_corrections cc WHERE cc.member_id = d.member_id
+             ORDER BY cc.id DESC LIMIT 1) email_captured,
+            (SELECT cc.phone FROM contact_corrections cc WHERE cc.member_id = d.member_id
+             ORDER BY cc.id DESC LIMIT 1) phone_captured
+     FROM discrepancies d ORDER BY d.id`
+  ).all();
+  sendCsv(res, 'discrepancy-log.csv',
+    ['sent_at', 'name', 'reason', 'from_station', 'status', 'outcome',
+     'resolved_by', 'resolved_at', 'email_captured', 'phone_captured', 'note'], rows);
+});
+
+// Payroll dues-payers NOT in NEP, with attendance — the NEP enrollment /
+// recruitment sheet. checked_in_at_vote lets the office prioritize no-shows.
+app.get('/api/export/payroll-gap.csv', requireAdmin, (req, res) => {
+  const rows = db.prepare(
+    `SELECT p.last_name, p.first_name, p.middle_name, p.emplid, p.ssn4, p.grade, p.step,
+            CASE WHEN c.id IS NOT NULL THEN 'yes' ELSE '' END checked_in_at_vote,
+            c.ts checkin_ts,
+            (SELECT cc.email FROM contact_corrections cc WHERE cc.member_id = p.member_id
+             ORDER BY cc.id DESC LIMIT 1) email_captured,
+            (SELECT cc.phone FROM contact_corrections cc WHERE cc.member_id = p.member_id
+             ORDER BY cc.id DESC LIMIT 1) phone_captured
+     FROM payroll_dues p
+     LEFT JOIN members m ON m.id = p.member_id
+     LEFT JOIN checkins c ON c.member_id = p.member_id AND c.voided_at IS NULL
+     WHERE p.member_id IS NULL OR m.source = 'payroll'
+     ORDER BY p.last_name, p.first_name`
+  ).all();
+  sendCsv(res, 'payroll-not-in-NEP.csv',
+    ['last_name', 'first_name', 'middle_name', 'emplid', 'ssn4', 'grade', 'step',
+     'checked_in_at_vote', 'checkin_ts', 'email_captured', 'phone_captured'], rows);
+});
+
+// Full payroll list, alphabetical — for a clean printed reference at the
+// Discrepancy Table (replaces flipping through the 52-page scan).
+app.get('/api/export/payroll-list.csv', requireAdmin, (req, res) => {
+  const rows = db.prepare(
+    `SELECT last_name, first_name, middle_name, emplid, grade, step,
+            CASE WHEN member_id IS NOT NULL THEN 'yes' ELSE '' END in_nep
+     FROM payroll_dues ORDER BY last_name, first_name`
+  ).all();
+  sendCsv(res, 'payroll-dues-list.csv',
+    ['last_name', 'first_name', 'middle_name', 'emplid', 'grade', 'step', 'in_nep'], rows);
+});
+
+// ---------- event reset ----------
+
+// Wipe EVENT data (check-ins, corrections, not-found, discrepancies, audit,
+// provisional members) while KEEPING the roster, payroll list, dues blocks
+// and settings. For clearing rehearsal/test data the morning of the vote.
+app.post('/api/admin/reset-event', requireAdmin, (req, res) => {
+  if ((req.body || {}).confirm !== 'RESET') {
+    return res.status(400).json({ error: 'confirm required' });
+  }
+  const tx = db.transaction(() => {
+    db.exec(`DELETE FROM checkins; DELETE FROM contact_corrections;
+             DELETE FROM not_found; DELETE FROM discrepancies;`);
+    // Unlink + remove provisional members created by Discrepancy resolutions.
+    db.prepare(`UPDATE payroll_dues SET member_id = NULL WHERE member_id IN
+                (SELECT id FROM members WHERE source = 'payroll')`).run();
+    db.prepare("DELETE FROM members WHERE source = 'payroll'").run();
+    db.prepare("UPDATE members SET access_granted_at = NULL, access_granted_station = NULL").run();
+    setConfig(db, 'next_ballot_no', '1');
+  });
+  tx();
+  audit(db, 'event_reset', 'event data cleared (roster/payroll/settings kept)', 'admin');
+  res.json({ ok: true });
+});
+
 // ---------- config ----------
 
 app.get('/api/config', (req, res) => {
@@ -885,6 +966,20 @@ app.post('/api/config', requireAdmin, (req, res) => {
 });
 
 app.get('/api/ping', (req, res) => res.json({ ok: true, now: new Date().toISOString() }));
+
+// QR code PNG of a URL — used by /qr-card.html to print NEP registration
+// invite cards. Harmless generator; no member data involved.
+app.get('/qr.png', async (req, res) => {
+  const url = String(req.query.url || '').slice(0, 300);
+  if (!/^https?:\/\//.test(url)) return res.status(400).send('bad url');
+  try {
+    const bwipjs = require('bwip-js');
+    const png = await bwipjs.toBuffer({
+      bcid: 'qrcode', text: url, scale: 8, backgroundcolor: 'FFFFFF', padding: 2
+    });
+    res.set('Content-Type', 'image/png').send(png);
+  } catch (e) { res.status(500).send('qr failed'); }
+});
 
 // ---------- startup ----------
 
