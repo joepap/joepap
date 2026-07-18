@@ -65,25 +65,46 @@ The queue moderator PIN is set when the queue starts (default 3636).
    **`/meeting` hub page** on the queue server (login / register / question
    line / email help, all in one) — and both one-page guides. Print all QRs
    from the TinyURL, never the raw ts.net address (see FAILOVER.md).
-6. **Rehearse**: `npm run seed` loads 300 fake members. Re-import the real
+6. **Check-in email**: Admin → "Check-in confirmation email" — enter the SMTP
+   settings (mailbox + app password), paste the meeting-page TinyURL, **Send
+   test** to yourself, then tick "Send on every check-in" and Save.
+7. **Rehearse**: `npm run seed` loads 300 fake members. Re-import the real
    roster + payroll afterward (order in step 2).
-7. Volunteers need nothing installed — just the URL, the station PIN, and a
+8. Volunteers need nothing installed — just the URL, the station PIN, and a
    charged phone. Wi-Fi-only iPads need a hotspot to join.
+
+### Updating the app on the mini (after code changes)
+
+In Terminal on the mini:
+
+```
+cd ~/Desktop/claude/local36
+git pull
+npm install
+bash scripts/install-autostart.sh    # restarts both servers on the new code
+```
+
+Data, settings and PINs are untouched — only the code updates.
 
 ## Event day — start of day checks (5 minutes)
 
-1. Admin → **"Clear event data"** (type RESET) to wipe rehearsal check-ins —
+1. **Send the NEP/ConnectPlus text blast** to all members: meeting reminder +
+   the meeting-page TinyURL. (The check-in app emails each member as they
+   check in; the NEP blast is how texts go out.)
+2. Admin → **"Clear event data"** (type RESET) to wipe rehearsal check-ins —
    roster, payroll and blocks are kept. Verify counts: roster ~3,398,
    payroll 1,761, zero checked in.
-2. Open the check-in URL on your phone: search a name → green member loads.
-3. Scan one real license on one phone: match appears.
-4. Search a known red case → confirm "Send to Discrepancy Table" appears, and
+3. Open the check-in URL on your phone: search a name → green member loads.
+4. Scan one real license on one phone: match appears.
+5. Search a known red case → confirm "Send to Discrepancy Table" appears, and
    it shows up at `/discrepancy.html`. Resolve it, then void that test
    check-in from the admin dashboard.
-5. Queue: print/post the QR, moderator opens `/mod`, taps **Clear entire line**.
-6. Confirm every station device shows its station name (top right chip).
-7. Backups run automatically every 10 min into `backups/` — nothing to do.
-8. On the MacBook: start `bash ~/local36-backup/scripts/pull-backup.sh loop`
+6. Check-in email: check yourself in (then void it) — confirm the email lands
+   and its link opens the meeting page. "Emails sent" counter ticks up.
+7. Queue: print/post the QR, moderator opens `/mod`, taps **Clear entire line**.
+8. Confirm every station device shows its station name (top right chip).
+9. Backups run automatically every 10 min into `backups/` — nothing to do.
+10. On the MacBook: start `bash ~/local36-backup/scripts/pull-backup.sh loop`
    and leave it running — off-machine copies + a warm spare server.
    Full switch procedure: **FAILOVER.md**.
 
@@ -116,7 +137,7 @@ The queue moderator PIN is set when the queue starts (default 3636).
 
 Cheap insurance during the event: every ~30 min, copy `data/` to a USB stick.
 
-## After the event — download all seven exports
+## After the event — download all eight exports
 
 Admin → Exports:
 1. **Check-in log** — every ballot: who, when, station, method, voids.
@@ -125,10 +146,12 @@ Admin → Exports:
 4. **Access granted** — who the help lane set up.
 5. **Discrepancy log** — every red/yellow case and its outcome (the challenge
    paper trail).
-6. **Payroll not in NEP (+attendance)** — the enrollment sheet: import these
+6. **Email log** — every confirmation email: sent, failed, or no address on
+   file (the no-address rows are an email-collection follow-up list).
+7. **Payroll not in NEP (+attendance)** — the enrollment sheet: import these
    people into NEP; `checked_in_at_vote` column prioritizes the no-shows for
    recruitment.
-7. **Payroll list (clean)** — reference copy.
+8. **Payroll list (clean)** — reference copy.
 
 Then archive `data/` + `backups/` somewhere safe and delete both from the
 mini — they hold the full member roster and payroll list.

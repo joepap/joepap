@@ -58,7 +58,12 @@
         stat(s.email_group_flags, 'Email-group flags') +
         stat(s.discrepancy_pending, 'Discrepancy queue') +
         stat(s.payroll_only_checked_in, 'Payroll-only voted') +
-        stat(s.voided, 'Voided');
+        stat(s.voided, 'Voided') +
+        (s.mail_enabled
+          ? stat(s.emails_sent, 'Emails sent') +
+            stat(s.emails_failed, 'Emails failed') +
+            stat(s.emails_skipped, 'No email on file')
+          : '');
       $('methodGrid').innerHTML = (s.by_method || []).map(function (m) {
         return stat(m.c, METHOD_LABELS[m.verification_method] || m.verification_method);
       }).join('') || '<span class="muted">none yet</span>';
@@ -324,8 +329,52 @@
       $('ballotNumbering').value = c.ballot_numbering;
       $('emailOkGroups').value = c.email_ok_groups || '';
       $('emailBadGroups').value = c.email_bad_groups || '';
+      $('mailHost').value = c.mail_host || '';
+      $('mailPort').value = c.mail_port || '587';
+      $('mailUser').value = c.mail_user || '';
+      $('mailFrom').value = c.mail_from || '';
+      $('meetingLink').value = c.meeting_link || '';
+      $('mailSubject').value = c.mail_subject || '';
+      $('mailBody').value = c.mail_body || '';
+      $('mailEnabled').checked = c.mail_enabled === 'on';
+      $('mailPassSet').textContent = c.mail_pass_set ? '(one is stored ✓)' : '(none stored yet)';
+      $('mailBadge').textContent = c.mail_enabled === 'on' ? '· ON' : '· off';
     });
   }
+
+  // ---------- check-in email ----------
+  $('saveMail').onclick = function () {
+    var body = {
+      mail_enabled: $('mailEnabled').checked ? 'on' : 'off',
+      mail_host: $('mailHost').value.trim(),
+      mail_port: $('mailPort').value.trim() || '587',
+      mail_user: $('mailUser').value.trim(),
+      mail_from: $('mailFrom').value.trim(),
+      meeting_link: $('meetingLink').value.trim(),
+      mail_subject: $('mailSubject').value,
+      mail_body: $('mailBody').value
+    };
+    if ($('mailPass').value) body.mail_pass = $('mailPass').value;
+    if (body.mail_enabled === 'on' && !(body.mail_host && body.mail_user && body.mail_from)) {
+      $('mailStatus').textContent = 'Fill in host, username and From before turning it on.';
+      return;
+    }
+    api('/api/config', { method: 'POST', body: JSON.stringify(body) }).then(function (r) {
+      $('mailStatus').textContent = r.status === 200 ? '✓ saved — now Send test to prove it works' : 'failed';
+      $('mailPass').value = '';
+      loadSettings();
+    });
+  };
+  $('sendMailTest').onclick = function () {
+    var to = $('mailTestTo').value.trim();
+    if (!to) { $('mailStatus').textContent = 'Enter an address to send the test to.'; return; }
+    $('mailStatus').textContent = 'sending test…';
+    api('/api/admin/mail-test', { method: 'POST', body: JSON.stringify({ to: to }) }).then(function (r) {
+      $('mailStatus').textContent = r.status === 200
+        ? '✓ test sent to ' + to + ' — check the inbox (and spam)'
+        : '✗ ' + (r.body.error || 'failed');
+    });
+  };
   $('saveSettings').onclick = function () {
     var body = {
       stale_days: $('staleDays').value,

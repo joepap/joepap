@@ -22,6 +22,7 @@ const csv = require('./lib/csv');
 const tabular = require('./lib/tabular');
 const match = require('./lib/match');
 const payroll = require('./lib/payroll');
+const mailer = require('./lib/mailer');
 
 const db = open(process.env.DB_FILE);
 const app = express();
@@ -562,6 +563,9 @@ app.post('/api/checkin', (req, res) => {
       return { checkin_id: info.lastInsertRowid, ballot_no: ballotNo };
     })();
     audit(db, 'checkin', `member ${member_id} (${m.last_name}, ${m.first_name}) via ${verification_method}`, station);
+    // Confirmation email AFTER the response — a mail problem can never slow
+    // the line. sendCheckinEmail logs its own outcome and never throws.
+    setImmediate(() => mailer.sendCheckinEmail(db, m, result.checkin_id));
     res.json({ ok: true, ...result, member: memberPublic(m) });
   } catch (e) {
     if (String(e.message).includes('UNIQUE')) {
@@ -707,9 +711,10 @@ app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
         setConfig(db, 'next_ballot_no', ballotNo + 1);
       }
       try {
-        db.prepare(`INSERT INTO checkins (member_id, station, verification_method, method_note, ballot_no)
+        const ci = db.prepare(`INSERT INTO checkins (member_id, station, verification_method, method_note, ballot_no)
           VALUES (?, ?, 'discrepancy', ?, ?)`).run(member_id, station, String(b.outcome || '').slice(0, 120), ballotNo);
         result.ballot_no = ballotNo;
+        result._email = { member_id, checkin_id: ci.lastInsertRowid };
       } catch (e) {
         if (String(e.message).includes('UNIQUE')) result.already_checked_in = true; else throw e;
       }
@@ -722,6 +727,12 @@ app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
   });
   tx();
   audit(db, 'discrepancy_resolved', `${d.name} — ${b.outcome || ''}${result.ballot_no ? ' ballot #' + result.ballot_no : ''}`, station);
+  if (result._email) {
+    const em = db.prepare('SELECT * FROM members WHERE id = ?').get(result._email.member_id);
+    const cid = result._email.checkin_id;
+    delete result._email;
+    if (em) setImmediate(() => mailer.sendCheckinEmail(db, em, cid));
+  }
   res.json(result);
 });
 
@@ -790,6 +801,10 @@ app.get('/api/stats', (req, res) => {
     payroll_matched: one('SELECT COUNT(*) c FROM payroll_dues WHERE member_id IS NOT NULL').c,
     payroll_only_checked_in: one(`SELECT COUNT(*) c FROM checkins c
       JOIN members m ON m.id = c.member_id WHERE m.source = 'payroll' AND c.voided_at IS NULL`).c,
+    emails_sent: one("SELECT COUNT(*) c FROM email_log WHERE status = 'sent'").c,
+    emails_failed: one("SELECT COUNT(*) c FROM email_log WHERE status = 'failed'").c,
+    emails_skipped: one("SELECT COUNT(*) c FROM email_log WHERE status = 'skipped'").c,
+    mail_enabled: getConfig(db, 'mail_enabled') === 'on',
     by_method: all(`SELECT verification_method, COUNT(*) c FROM checkins
                     WHERE voided_at IS NULL GROUP BY verification_method`),
     by_station: all(`SELECT station, COUNT(*) c,
@@ -902,6 +917,17 @@ app.get('/api/export/payroll-gap.csv', requireAdmin, (req, res) => {
 
 // Full payroll list, alphabetical — for a clean printed reference at the
 // Discrepancy Table (replaces flipping through the 52-page scan).
+// Every confirmation-email attempt: who we reached, who bounced, who had no
+// address on file (a follow-up list in its own right).
+app.get('/api/export/email-log.csv', requireAdmin, (req, res) => {
+  const rows = db.prepare(
+    `SELECT e.ts, m.member_no, m.last_name, m.first_name, e.to_email, e.status, e.error
+     FROM email_log e LEFT JOIN members m ON m.id = e.member_id ORDER BY e.id`
+  ).all();
+  sendCsv(res, 'email-log.csv',
+    ['ts', 'member_no', 'last_name', 'first_name', 'to_email', 'status', 'error'], rows);
+});
+
 app.get('/api/export/payroll-list.csv', requireAdmin, (req, res) => {
   const rows = db.prepare(
     `SELECT last_name, first_name, middle_name, emplid, grade, step,
@@ -923,7 +949,7 @@ app.post('/api/admin/reset-event', requireAdmin, (req, res) => {
   }
   const tx = db.transaction(() => {
     db.exec(`DELETE FROM checkins; DELETE FROM contact_corrections;
-             DELETE FROM not_found; DELETE FROM discrepancies;`);
+             DELETE FROM not_found; DELETE FROM discrepancies; DELETE FROM email_log;`);
     // Unlink + remove provisional members created by Discrepancy resolutions.
     db.prepare(`UPDATE payroll_dues SET member_id = NULL WHERE member_id IN
                 (SELECT id FROM members WHERE source = 'payroll')`).run();
@@ -943,14 +969,30 @@ app.get('/api/config', (req, res) => {
     stale_days: getConfig(db, 'stale_days'),
     ballot_numbering: getConfig(db, 'ballot_numbering'),
     email_ok_groups: getConfig(db, 'email_ok_groups'),
-    email_bad_groups: getConfig(db, 'email_bad_groups')
+    email_bad_groups: getConfig(db, 'email_bad_groups'),
+    // Check-in email settings — the password itself never leaves the server,
+    // only whether one is stored.
+    mail_enabled: getConfig(db, 'mail_enabled'),
+    mail_host: getConfig(db, 'mail_host') || '',
+    mail_port: getConfig(db, 'mail_port') || '587',
+    mail_user: getConfig(db, 'mail_user') || '',
+    mail_pass_set: !!getConfig(db, 'mail_pass'),
+    mail_from: getConfig(db, 'mail_from') || '',
+    mail_subject: getConfig(db, 'mail_subject') || mailer.DEFAULT_SUBJECT,
+    mail_body: getConfig(db, 'mail_body') || mailer.DEFAULT_BODY,
+    meeting_link: getConfig(db, 'meeting_link') || ''
   });
 });
 
 app.post('/api/config', requireAdmin, (req, res) => {
-  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'station_pin', 'email_ok_groups', 'email_bad_groups'];
+  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'station_pin', 'email_ok_groups', 'email_bad_groups',
+    'mail_enabled', 'mail_host', 'mail_port', 'mail_user', 'mail_from', 'mail_subject', 'mail_body', 'meeting_link'];
   for (const k of allowed) {
     if (req.body[k] !== undefined) setConfig(db, k, req.body[k]);
+  }
+  // Blank password field on save = keep the stored one.
+  if (typeof req.body.mail_pass === 'string' && req.body.mail_pass !== '') {
+    setConfig(db, 'mail_pass', req.body.mail_pass);
   }
   // Recompute staleness if the rule changed.
   if (req.body.stale_days !== undefined) {
@@ -963,6 +1005,20 @@ app.post('/api/config', requireAdmin, (req, res) => {
     tx();
   }
   res.json({ ok: true });
+});
+
+// Admin: send a test check-in email to any address (verifies SMTP settings
+// end-to-end before the event).
+app.post('/api/admin/mail-test', requireAdmin, async (req, res) => {
+  const to = String((req.body || {}).to || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return res.status(400).json({ error: 'Enter a valid email address.' });
+  try {
+    await mailer.sendTest(db, to);
+    audit(db, 'mail_test', `test email sent to ${to}`, 'admin');
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message).slice(0, 300) });
+  }
 });
 
 app.get('/api/ping', (req, res) => res.json({ ok: true, now: new Date().toISOString() }));

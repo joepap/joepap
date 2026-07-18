@@ -129,6 +129,7 @@
     </div>
     <div class="input-row mt">
       <button class="blue" data-export="/api/export/discrepancies.csv">Discrepancy log</button>
+      <button class="blue" data-export="/api/export/email-log.csv">Email log</button>
       <button class="blue" data-export="/api/export/payroll-gap.csv">Payroll not in NEP (+attendance)</button>
       <button class="blue" data-export="/api/export/payroll-list.csv">Payroll list (clean, alphabetical)</button>
       <a class="btn blue" href="/payroll-print.html" target="_blank"
@@ -136,6 +137,41 @@
       <a class="btn blue" href="/qr-card.html" target="_blank"
          style="display:flex;align-items:center;justify-content:center;text-decoration:none">Registration QR cards</a>
     </div>
+  </section>
+
+  <!-- Check-in confirmation email -->
+  <section class="card">
+    <h3>Check-in confirmation email <span id="mailBadge" class="muted small"></span></h3>
+    <p class="muted small">Each member gets a "you're checked in — vote before the meeting ends"
+      email with the meeting-page link, sent in the background (a mail outage never slows the
+      line). Every attempt is logged: see the counters and the Email log export.</p>
+    <div class="stat-grid">
+      <div><label for="mailHost">SMTP host (Google Workspace: <code>smtp.gmail.com</code>)</label>
+        <input type="text" id="mailHost" autocomplete="off" placeholder="smtp.gmail.com"></div>
+      <div><label for="mailPort">Port (587 = normal, 465 = SSL)</label>
+        <input type="number" id="mailPort" value="587"></div>
+      <div><label for="mailUser">Username (the mailbox, e.g. info@iaff36.org)</label>
+        <input type="text" id="mailUser" autocomplete="off"></div>
+      <div><label for="mailPass">App password <span id="mailPassSet" class="muted small"></span></label>
+        <input type="password" id="mailPass" autocomplete="new-password" placeholder="leave blank to keep stored"></div>
+    </div>
+    <label for="mailFrom">From (what members see)</label>
+    <input type="text" id="mailFrom" autocomplete="off" placeholder='DC Fire Fighters Local 36 <info@iaff36.org>'>
+    <label for="meetingLink">Meeting page link — the TinyURL for the /meeting hub (goes in the email)</label>
+    <input type="text" id="meetingLink" autocomplete="off" placeholder="https://tinyurl.com/…">
+    <label for="mailSubject">Subject</label>
+    <input type="text" id="mailSubject">
+    <label for="mailBody">Message — <code>{first_name}</code>, <code>{last_name}</code> and <code>{link}</code> fill in automatically</label>
+    <textarea id="mailBody" rows="9" style="width:100%;font:inherit;padding:10px;border:1px solid #d8dee6;border-radius:8px"></textarea>
+    <div class="mt">
+      <label><input type="checkbox" id="mailEnabled" style="width:20px;height:20px"> Send the email on every check-in</label>
+    </div>
+    <div class="input-row mt">
+      <button class="primary" id="saveMail">Save email settings</button>
+      <input type="email" id="mailTestTo" placeholder="send a test to…" autocomplete="off">
+      <button class="blue" id="sendMailTest">Send test</button>
+    </div>
+    <span id="mailStatus" class="muted"></span>
   </section>
 
   <!-- Event reset -->

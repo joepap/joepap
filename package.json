@@ -19,6 +19,7 @@
     "bwip-js": "^4.11.2",
     "express": "^5.2.1",
     "multer": "^2.2.0",
+    "nodemailer": "^9.0.3",
     "xlsx": "^0.18.5",
     "zxing-wasm": "^3.1.0"
   },
