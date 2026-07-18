@@ -31,6 +31,15 @@
 
   <div id="adminBody" class="hidden">
 
+  <div class="ht-tabs">
+    <button id="tabDash" class="active">📊 Dashboard</button>
+    <button id="tabHelp">🚩 Help Table <span id="tabHelpCount" class="muted small"></span></button>
+  </div>
+
+  <div id="helpTableTab" class="hidden"></div>
+
+  <div id="dashTab">
+
   <div id="pinWarn" class="banner red" style="display:none">
     ⚠️ Your <b>Admin PIN</b> is still the default (3636) or the same as the station password.
     Any volunteer with the station password can reset the event, void ballots, and export the
@@ -211,8 +220,10 @@
     <span id="settingsStatus" class="muted" style="margin-left:10px"></span>
   </section>
 
-  </div>
+  </div><!-- /dashTab -->
+  </div><!-- /adminBody -->
 </main>
+<script src="/js/helptable.js"></script>
 <script src="/js/admin.js"></script>
 </body>
 </html>

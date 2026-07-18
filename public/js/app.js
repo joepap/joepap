@@ -138,7 +138,14 @@
         ', ' + esc(m.first_name) + (m.middle_name ? ' ' + esc(m.middle_name) : '') + '</div>' +
         '<div class="sub">' + (it.payrollOnly ? 'payroll dues · not in NEP'
           : '#' + esc(m.member_no || '—') + (m.age != null ? ' &middot; age ' + m.age : '') +
-            (it.score ? ' &middot; match ' + it.score + '%' : '')) + '</div></div>' +
+            (it.score ? ' &middot; match ' + it.score + '%' : '')) + '</div>' +
+        // Rank / assignment on file — helps tell two same-name members apart.
+        // (May be out of date; it's a disambiguation hint, not authoritative.)
+        (!it.payrollOnly && (m.rank || m.assignment || m.platoon)
+          ? '<div class="sub" style="color:#8b98a9">' +
+            [m.rank, m.assignment, m.platoon ? 'Plt ' + m.platoon : ''].filter(Boolean).map(esc).join(' &middot; ') +
+            '</div>' : '') +
+        '</div>' +
         '<div class="flag-wrap" style="margin-left:auto">' + flagChips(m, it.dob_match) + '</div>';
       btn.onclick = it.payrollOnly ? function () { openPayrollOnly(m); } : function () { openMember(m.id); };
       $('results').appendChild(btn);
@@ -149,6 +156,34 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+
+  // Non-visual confirmation so a volunteer knows a check-in registered without
+  // staring at the screen: a short beep + a phone buzz. Best-effort — silently
+  // no-ops where the browser blocks audio/vibrate (e.g. iOS Safari vibrate).
+  var _actx = null;
+  function feedback(kind) {
+    try {
+      if (navigator.vibrate) navigator.vibrate(kind === 'stop' ? [90, 60, 90] : 70);
+    } catch (e) { /* ignore */ }
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      _actx = _actx || new AC();
+      if (_actx.state === 'suspended') _actx.resume();
+      var beep = function (freq, start, dur) {
+        var o = _actx.createOscillator(), g = _actx.createGain();
+        o.type = 'sine'; o.frequency.value = freq;
+        o.connect(g); g.connect(_actx.destination);
+        var t = _actx.currentTime + start;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.start(t); o.stop(t + dur + 0.02);
+      };
+      if (kind === 'stop') { beep(320, 0, 0.18); beep(240, 0.2, 0.22); }   // low double = stop
+      else beep(880, 0, 0.12);                                            // bright single = go
+    } catch (e) { /* audio unavailable — fine */ }
   }
 
   // ---------- scan handling (wedge + camera share this) ----------
@@ -404,6 +439,7 @@
   }
 
   function showSuccess(body) {
+    feedback('ok');
     var m = body.member;
     $('successName').textContent = m.first_name + ' ' + m.last_name + ' — checked in';
     $('successBallot').textContent = body.ballot_no ? 'Ballot #' + body.ballot_no : '';
@@ -421,6 +457,7 @@
   }
 
   function showDuplicate(body) {
+    feedback('stop');
     var ex = body.existing || {};
     $('dupDetail').textContent = (body.member ? body.member.first_name + ' ' + body.member.last_name : '') +
       ' — at ' + (ex.ts || '?') + ' / Station ' + (ex.station || '?') +
@@ -433,6 +470,7 @@
   };
 
   function showDuesBlock(m) {
+    feedback('stop');
     $('duesDetail').textContent = (m ? m.last_name + ', ' + m.first_name : '') +
       (m && m.member_no ? '  (#' + m.member_no + ')' : '');
     $('duesOverlay').classList.remove('hidden');

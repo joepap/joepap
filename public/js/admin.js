@@ -33,6 +33,7 @@
         loadSettings();
         refreshStats();
         setInterval(refreshStats, 5000);
+        setupTabs();
       } else {
         alert('Wrong PIN');
       }
@@ -42,6 +43,21 @@
   $('pinBox').addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
   if (pin) { $('pinBox').value = pin; unlock(); }
 
+  // ---------- tabs (Dashboard | Help Table) ----------
+  var helpHandle = null;
+  function setupTabs() {
+    $('tabDash').onclick = function () {
+      $('tabDash').classList.add('active'); $('tabHelp').classList.remove('active');
+      $('dashTab').classList.remove('hidden'); $('helpTableTab').classList.add('hidden');
+    };
+    $('tabHelp').onclick = function () {
+      $('tabHelp').classList.add('active'); $('tabDash').classList.remove('active');
+      $('helpTableTab').classList.remove('hidden'); $('dashTab').classList.add('hidden');
+      // Mount the shared Help Table once, reusing the admin PIN already entered.
+      if (!helpHandle && window.HelpTable) helpHandle = window.HelpTable.mount($('helpTableTab'), pin);
+    };
+  }
+
   // ---------- stats ----------
   var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License scan', dept_id: 'Dept ID', other: 'Other' };
 
@@ -50,6 +66,7 @@
     api('/api/stats').then(function (r) { return r.body; }).then(function (s) {
       lastStats = s;
       $('statsTs').textContent = '· updated ' + new Date().toLocaleTimeString();
+      if ($('tabHelpCount')) $('tabHelpCount').textContent = s.discrepancy_pending ? '(' + s.discrepancy_pending + ')' : '';
       var turnout = s.payroll_total ? Math.round((s.checked_in / s.payroll_total) * 100) : null;
       $('statGrid').innerHTML =
         stat(s.checked_in, 'Checked in') +

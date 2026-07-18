@@ -149,3 +149,32 @@ table.data th { color: var(--muted); font-size: .8rem; text-transform: uppercase
   .method-grid { grid-template-columns: 1fr; }
   .input-row { flex-direction: column; }
 }
+
+/* ---------- Help Table (shared by /discrepancy.html and the Admin tab) ---------- */
+.ht-tabs { display:flex; gap:8px; margin-bottom:14px; }
+.ht-tabs button { flex:1; min-height:52px; border:1px solid var(--line); background:#fff;
+  border-radius:12px; font-weight:800; font-size:1rem; }
+.ht-tabs button.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.qitem { background:#fff; border:1px solid var(--line); border-left:6px solid #d9a521; border-radius:12px;
+  padding:0; margin-bottom:10px; overflow:hidden; }
+.qitem.contact { border-left-color:var(--green); }
+.qitem.open { border-left-color:var(--blue); box-shadow:0 2px 8px rgba(16,24,40,.12); }
+.qhead { padding:14px; cursor:pointer; display:flex; align-items:center; gap:10px; min-height:56px; }
+.qhead:active { background:#f6f3ee; }
+.qitem .nm { font-size:1.2rem; font-weight:800; flex:1; }
+.qitem .tap { font-size:1.4rem; color:var(--muted); }
+.qitem .rs { color:var(--muted); font-size:.9rem; padding:0 14px 12px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:.72rem; font-weight:800; letter-spacing:.4px; }
+.badge.verify { background:var(--red-bg); color:var(--red); }
+.badge.contact { background:var(--green-bg); color:var(--green); }
+.detail { margin:0 14px 14px; border-top:1px solid var(--line); padding-top:12px; }
+.kv { font-size:.95rem; margin:2px 0; } .kv b { color:var(--muted); font-weight:600; }
+.pill { display:inline-block; padding:6px 12px; border-radius:10px; font-weight:800; margin:6px 0; }
+.pill.green{background:var(--green-bg);color:var(--green)} .pill.yellow{background:#fef9c3;color:#a16207}
+.pill.red{background:var(--red-bg);color:var(--red)}
+.outcome-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.err{color:#b91c1c;font-weight:600;min-height:1.1em;margin-top:4px}
+.resolved{opacity:.7;font-size:.9rem;padding:6px 4px;border-bottom:1px solid var(--line)}
+.sresult{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:12px;margin-bottom:6px;font-size:1rem;min-height:48px}
+.sresult:active{background:#f6f3ee}
