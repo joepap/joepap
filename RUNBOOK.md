@@ -165,7 +165,7 @@ Data, settings and PINs are untouched — only the code updates.
 
 Cheap insurance during the event: every ~30 min, copy `data/` to a USB stick.
 
-## After the event — download all eight exports
+## After the event — download all ten exports
 
 Admin → Exports:
 1. **Check-in log** — every ballot: who, when, station, method, voids.
@@ -180,6 +180,12 @@ Admin → Exports:
    people into NEP; `checked_in_at_vote` column prioritizes the no-shows for
    recruitment.
 8. **Payroll list (clean)** — reference copy.
+9. **Audit log** — every check-in, blocked attempt, duplicate attempt, void and
+   override — the evidence trail if a ballot is contested.
+10. **NEP dues-members** — every dues-payer in NEP-import format (Member Status
+    = Active, Work Status = Active Member) to keep the database current after
+    the vote. Includes the emails/phones collected from data records at the
+    Help Table.
 
 Then archive `data/` + `backups/` somewhere safe and delete both from the
 mini — they hold the full member roster and payroll list.
