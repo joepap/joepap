@@ -51,12 +51,14 @@ the "Meeting page link" so the confirmation emails use it too.
 - 🔴 **Known non-payers** (the union's highlighted list) → blocked outright.
 - See DISCREPANCY-TABLE-GUIDE.md — print it for that table's worker.
 
-Two PINs protect everything (change both before the event in `/admin.html` →
-Settings): the **station password** (each volunteer enters it once along with
-**their own name** — check-ins are logged per volunteer; the current password
-is shown in Admin → Settings, ships as 1136) and the **admin PIN**
-(dashboard/imports/voids; default 3636). The queue moderator PIN is set when
-the queue starts (default 3636).
+All three PINs are **3636** out of the box (uniform): the **station password**
+(each volunteer enters it once along with **their own name** — check-ins are
+logged per volunteer; the current value is shown in Admin → Settings), the
+**admin PIN** (dashboard/imports/voids), and the **queue moderator PIN**.
+⚠️ Because station = admin right now, any volunteer with the station password
+could open the admin dashboard — before the event, change the **admin PIN**
+to something only you and the Discrepancy worker know (Settings), even if the
+station password stays 3636.
 
 ## One-time server setup (already done, listed for rebuild)
 
