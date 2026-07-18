@@ -27,7 +27,8 @@
   <p style="color:#5c6b7f;font-size:.9rem;margin-top:6px">Enter the NEP members-section registration
     link. This page renders printable hand-out cards (8 per page) — cut along the dashed lines. Hand one
     to every member the Discrepancy Table enrolls, and anyone flagged "no portal access."</p>
-  <input type="text" id="url" placeholder="https://…  (NEP registration page)">
+  <input type="text" id="url"
+         value="https://district-of-columbia-firefighters-association-local-36.connectplus.app/register">
   <button onclick="make()">Make cards</button>
   <button onclick="window.print()" style="background:#1d4ed8">🖨 Print</button>
 </div>
@@ -47,7 +48,8 @@ function make(){
   document.getElementById('grid').innerHTML=html;
 }
 var saved=localStorage.getItem('nep36qr');
-if(saved){ document.getElementById('url').value=saved; make(); }
+if(saved) document.getElementById('url').value=saved;
+make();
 </script>
 </body>
 </html>
