@@ -9,11 +9,35 @@ The Mac mini serves both apps through its permanent public HTTPS address
 check-in stations — camera license-scanning works out of the box because the
 public address has a real HTTPS certificate (no cert-trust step needed).
 
-- Check-in stations: **https://dcjoe-claude-macmini.tail5dba36.ts.net:8443**
-- Admin dashboard: same address + `/admin.html`
-- **Discrepancy Table**: same address + `/discrepancy.html` (admin PIN)
-- Question line (members): **https://dcjoe-claude-macmini.tail5dba36.ts.net**
-- Question line moderator: same + `/mod` · projector QR: same + `/display`
+## All the links
+
+Base = `https://dcjoe-claude-macmini.tail5dba36.ts.net`
+
+**Member-facing — wrap in TinyURLs; print/announce ONLY the short links:**
+
+| What | URL |
+|---|---|
+| Meeting hub — THE event QR | base `/meeting` |
+| Question line (also hub item 3) | base (no path) |
+| Member login (hub item 1) | `https://district-of-columbia-firefighters-association-local-36.connectplus.app/login` |
+| Register (hub item 2 + QR cards) | same site + `/register` |
+
+**Worker-facing — text to the specific person; never printed:**
+
+| What | URL | PIN |
+|---|---|---|
+| Check-in stations | base `:8443` | station PIN |
+| Discrepancy Table | base `:8443/discrepancy.html` | admin PIN |
+| Admin dashboard | base `:8443/admin.html` | admin PIN |
+| Question-line moderator | base `/mod` | moderator PIN |
+| Projector display | base `/display` | none |
+
+**Print-from-your-browser pages:** base `:8443/payroll-print.html` (payroll
+paper reference) and base `:8443/qr-card.html` (registration QR cards).
+
+Three TinyURLs cover everything printed: meeting hub, check-in stations,
+question line. Paste the meeting-hub TinyURL into Admin → Check-in email as
+the "Meeting page link" so the confirmation emails use it too.
 
 ## Eligibility model (payroll is the authority)
 
