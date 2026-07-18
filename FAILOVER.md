@@ -1,8 +1,17 @@
 # Failover — running the event from the MacBook if the mini dies
 
 The MacBook is on the same Tailscale network, so it can serve the internet the
-same way the mini does — it just gets **its own public URL**. Total switch
-time: ~5 minutes + telling stations the new address.
+same way the mini does — it just gets **its own public URL**. Because stations
+and printed QRs use the **TinyURL short links** (which we control), the switch
+is: start the laptop, repoint the short links, everyone re-opens. ~5 minutes.
+
+**Prerequisites for this to work — verify BEFORE the event:**
+- All printed materials and volunteer instructions use the SHORT links, never
+  the raw `ts.net` addresses (question-line QR poster especially).
+- You can actually EDIT the TinyURL destinations from your phone — log in and
+  test-edit one now. (Free-tier TinyURLs are often not editable; if yours
+  aren't, make editable ones or the whole plan falls back to announcing the
+  raw laptop URL.)
 
 ## Prep on the MacBook (do this BEFORE the event — 10 minutes, needs internet)
 
@@ -55,13 +64,16 @@ the paper flow at the tables can reconstruct.
    ```
    It prints the laptop's public URL — something like
    `https://gustave-eiffel-the-2nd.tail5dba36.ts.net`.
-4. **Announce the new URL** (whiteboard / group text). Stations open
-   `<new-url>:8443`, re-enter station name + station PIN, and continue.
-   Duplicate protection still holds — the restored database knows everyone
-   already checked in.
-5. Question line: moderator opens `<new-url>/mod`; the printed QR posters
-   point at the dead mini, so either announce the new link from the mic or
-   re-print one poster from `<new-url>/display`.
+4. **Update the TinyURL redirects** to point at the laptop's URL (check-in
+   short link → `<new-url>:8443`, question-line short link → `<new-url>`).
+   Then tell stations: "close the tab and re-open the short link" — a stale
+   open tab still points at the dead mini, so re-opening matters. They
+   re-enter station name + PIN once (the new address is a new site to the
+   browser). Duplicate protection still holds — the restored database knows
+   everyone already checked in.
+5. Question line: printed QR posters keep working IF they encode the TinyURL
+   (make sure of this when printing!). Members re-scan or reload; the
+   moderator re-opens `/mod` via the short link.
 
 ## Reality check
 
