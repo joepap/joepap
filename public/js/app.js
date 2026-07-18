@@ -38,13 +38,13 @@
       localStorage.setItem('station36', station);
       localStorage.setItem('station36_pin', stationPin);
       localStorage.setItem('station36_method', defaultMethod);
-      $('stationChip').textContent = 'Station: ' + station;
+      $('stationChip').textContent = '\u{1F464} ' + station;
       $('stationModal').classList.add('hidden');
     });
   };
   $('stationChip').onclick = function () { showStationModal(); };
   if (!station || !stationPin) showStationModal();
-  else $('stationChip').textContent = 'Station: ' + station;
+  else $('stationChip').textContent = '\u{1F464} ' + station;
 
   // ---------- fetch helpers ----------
   function api(path, opts) {

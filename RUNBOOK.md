@@ -26,7 +26,7 @@ Base = `https://dcjoe-claude-macmini.tail5dba36.ts.net`
 
 | What | URL | PIN |
 |---|---|---|
-| Check-in stations | base `:8443` | station PIN |
+| Check-in stations | base `:8443` | station password |
 | Discrepancy Table | base `:8443/discrepancy.html` | admin PIN |
 | Admin dashboard | base `:8443/admin.html` | admin PIN |
 | Question-line moderator | base `/mod` | moderator PIN |
@@ -52,9 +52,11 @@ the "Meeting page link" so the confirmation emails use it too.
 - See DISCREPANCY-TABLE-GUIDE.md — print it for that table's worker.
 
 Two PINs protect everything (change both before the event in `/admin.html` →
-Settings): the **station PIN** (volunteers enter it once with their station
-name; default 1136) and the **admin PIN** (dashboard/imports/voids; default 3636).
-The queue moderator PIN is set when the queue starts (default 3636).
+Settings): the **station password** (each volunteer enters it once along with
+**their own name** — check-ins are logged per volunteer; the current password
+is shown in Admin → Settings, ships as 1136) and the **admin PIN**
+(dashboard/imports/voids; default 3636). The queue moderator PIN is set when
+the queue starts (default 3636).
 
 ## One-time server setup (already done, listed for rebuild)
 
@@ -82,7 +84,7 @@ The queue moderator PIN is set when the queue starts (default 3636).
    the roster changed: `node scripts/apply-dues-block.js` in the project folder.
    Order matters: roster → payroll → dues block.
 3. **Change all PINs** from defaults (station, admin, queue moderator). Tell
-   volunteers only the station PIN; the Discrepancy worker gets the admin PIN.
+   volunteers only the station password; the Discrepancy worker gets the admin PIN.
 4. Ballots are **blind** — numbering is off by default (Settings can verify).
 5. **Print**: the payroll reference (`/payroll-print.html`), the registration QR
    cards (`/qr-card.html`), the ONE event QR — a TinyURL pointing at the
@@ -94,7 +96,7 @@ The queue moderator PIN is set when the queue starts (default 3636).
    test** to yourself, then tick "Send on every check-in" and Save.
 7. **Rehearse**: `npm run seed` loads 300 fake members. Re-import the real
    roster + payroll afterward (order in step 2).
-8. Volunteers need nothing installed — just the URL, the station PIN, and a
+8. Volunteers need nothing installed — just the URL, the station password, and a
    charged phone. Wi-Fi-only iPads need a hotspot to join.
 
 ### Updating the app on the mini (after code changes)
@@ -126,7 +128,7 @@ Data, settings and PINs are untouched — only the code updates.
 6. Check-in email: check yourself in (then void it) — confirm the email lands
    and its link opens the meeting page. "Emails sent" counter ticks up.
 7. Queue: print/post the QR, moderator opens `/mod`, taps **Clear entire line**.
-8. Confirm every station device shows its station name (top right chip).
+8. Confirm every check-in phone shows its volunteer's name (top right chip).
 9. Backups run automatically every 10 min into `backups/` — nothing to do.
 10. On the MacBook: start `bash ~/local36-backup/scripts/pull-backup.sh loop`
    and leave it running — off-machine copies + a warm spare server.
@@ -152,9 +154,9 @@ Data, settings and PINs are untouched — only the code updates.
 
 | Problem | Fix |
 |---|---|
-| A volunteer's phone dies | Nothing is lost. Any other phone: open the URL, enter station name + PIN, keep going. |
+| A volunteer's phone dies | Nothing is lost. Any other phone: open the URL, enter their name + station password, keep going. |
 | Page won't load on one phone | Their cellular signal. Toggle airplane mode, or move; worst case share another phone's hotspot. |
-| Pages load but actions fail with PIN prompt | They typo'd the station PIN — re-enter it. |
+| Pages load but actions fail with PIN prompt | They typo'd the station password — re-enter it. |
 | NOTHING loads on any phone | The mini or its internet is down. If it's at the venue: power-cycle it — everything auto-starts, ~2 min. If at home: call whoever is there. Meanwhile switch to paper sign-in (name + time), reconcile in the app afterward. |
 | Wrong person checked in | Admin → Recent check-ins → Void (logged), then check in the right person. |
 | Mini must be replaced mid-event | Clone repo on any Mac/PC with internet, `npm install`, copy the `data/` folder over (or re-import the roster), start both servers, set up funnel on that machine's Tailscale. Stations get a new URL — write it on the room's whiteboard. |

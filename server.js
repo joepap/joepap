@@ -970,6 +970,9 @@ app.get('/api/config', (req, res) => {
     ballot_numbering: getConfig(db, 'ballot_numbering'),
     email_ok_groups: getConfig(db, 'email_ok_groups'),
     email_bad_groups: getConfig(db, 'email_bad_groups'),
+    // The station password is shown in admin so the organizer knows what to
+    // tell volunteers. (Anyone who can call this endpoint already has it.)
+    station_pin: getConfig(db, 'station_pin'),
     // Check-in email settings — the password itself never leaves the server,
     // only whether one is stored.
     mail_enabled: getConfig(db, 'mail_enabled'),

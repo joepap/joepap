@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="spacer"></div>
-  <button class="station-chip" id="stationChip" title="Tap to change station">Station: &mdash;</button>
+  <button class="station-chip" id="stationChip" title="Tap to change who is checking people in">&mdash;</button>
 </header>
 
 <main>
@@ -98,9 +98,9 @@
 <div class="overlay dim hidden" id="stationModal">
   <div class="panel">
     <div class="card">
-      <h3>Station setup</h3>
-      <label for="stationName">Station name / number</label>
-      <input type="text" id="stationName" placeholder="e.g. Table 2" autocomplete="off">
+      <h3>Check-in setup</h3>
+      <label for="stationName">Your name (who is running this phone)</label>
+      <input type="text" id="stationName" placeholder="e.g. Joe P." autocomplete="off">
       <label for="stationPin">Station password (from the organizer)</label>
       <input type="text" id="stationPin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Password">
       <label for="stationMethod">Default verification method for this station</label>
@@ -110,7 +110,7 @@
         <option value="dept_id">Department ID</option>
         <option value="other">Other</option>
       </select>
-      <button class="primary big mt" id="stationSave">Save station</button>
+      <button class="primary big mt" id="stationSave">Start checking people in</button>
     </div>
   </div>
 </div>

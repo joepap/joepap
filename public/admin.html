@@ -37,9 +37,9 @@
     <div class="stat-grid mt" id="statGrid"></div>
     <h4 class="mt">By verification method</h4>
     <div class="stat-grid mt" id="methodGrid"></div>
-    <h4 class="mt">Per station</h4>
+    <h4 class="mt">Per volunteer</h4>
     <table class="data mt" id="stationTable"><thead>
-      <tr><th>Station</th><th>Check-ins</th><th>Last 10 min</th><th>Last activity</th></tr>
+      <tr><th>Volunteer</th><th>Check-ins</th><th>Last 10 min</th><th>Last activity</th></tr>
     </thead><tbody></tbody></table>
     <h4 class="mt">Recent check-ins (tap to void)</h4>
     <table class="data mt" id="recentTable"><thead>
@@ -195,7 +195,7 @@
     <input type="text" id="emailOkGroups">
     <label for="emailBadGroups">Email PROBLEM groups (comma list — bounced / no-email / returned mail)</label>
     <input type="text" id="emailBadGroups">
-    <label for="newStationPin">Change STATION PIN (what volunteers enter; leave blank to keep — default 1136)</label>
+    <label for="newStationPin">Change station password (what volunteers enter — current: <b id="curStationPin"></b>; leave blank to keep)</label>
     <input type="text" id="newStationPin" autocomplete="off">
     <label for="newPin">Change admin PIN (leave blank to keep)</label>
     <input type="password" id="newPin" autocomplete="new-password">

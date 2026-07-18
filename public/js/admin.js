@@ -329,6 +329,7 @@
       $('ballotNumbering').value = c.ballot_numbering;
       $('emailOkGroups').value = c.email_ok_groups || '';
       $('emailBadGroups').value = c.email_bad_groups || '';
+      $('curStationPin').textContent = c.station_pin || '';
       $('mailHost').value = c.mail_host || '';
       $('mailPort').value = c.mail_port || '587';
       $('mailUser').value = c.mail_user || '';

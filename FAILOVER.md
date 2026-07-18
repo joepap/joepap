@@ -68,7 +68,7 @@ the paper flow at the tables can reconstruct.
    short link → `<new-url>:8443`, question-line short link → `<new-url>`).
    Then tell stations: "close the tab and re-open the short link" — a stale
    open tab still points at the dead mini, so re-opening matters. They
-   re-enter station name + PIN once (the new address is a new site to the
+   re-enter their name + station password once (the new address is a new site to the
    browser). Duplicate protection still holds — the restored database knows
    everyone already checked in.
 5. Question line: printed QR posters keep working IF they encode the TinyURL
