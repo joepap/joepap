@@ -51,6 +51,7 @@ const page = name => (req, res) => res.sendFile(path.join(__dirname, 'public-que
 app.get('/', page('member.html'));
 app.get('/mod', page('mod.html'));
 app.get('/display', page('display.html'));
+app.get('/meeting', page('meeting.html'));   // one-QR event hub page
 app.get('/topics.js', (req, res) =>
   res.type('application/javascript').sendFile(path.join(__dirname, 'public-queue', 'topics.js')));
 

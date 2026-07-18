@@ -61,8 +61,10 @@ The queue moderator PIN is set when the queue starts (default 3636).
    volunteers only the station PIN; the Discrepancy worker gets the admin PIN.
 4. Ballots are **blind** — numbering is off by default (Settings can verify).
 5. **Print**: the payroll reference (`/payroll-print.html`), the registration QR
-   cards (`/qr-card.html` — needs the NEP registration link), the question-line
-   QR (`/display` on the queue), and both one-page guides.
+   cards (`/qr-card.html`), the ONE event QR — a TinyURL pointing at the
+   **`/meeting` hub page** on the queue server (login / register / question
+   line / email help, all in one) — and both one-page guides. Print all QRs
+   from the TinyURL, never the raw ts.net address (see FAILOVER.md).
 6. **Rehearse**: `npm run seed` loads 300 fake members. Re-import the real
    roster + payroll afterward (order in step 2).
 7. Volunteers need nothing installed — just the URL, the station PIN, and a
