@@ -29,7 +29,15 @@ const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 app.use(express.json({ limit: '2mb' }));
-app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
+// Serve the app with revalidation always on (etag + must-revalidate, no
+// stored copy). During the event the code changes between pulls; a browser
+// must never run a stale cached page/script — that class of "why isn't my
+// fix live?" bug is closed here at the cost of a tiny 304 round-trip.
+app.use(express.static(path.join(__dirname, 'public'), {
+  index: 'index.html',
+  etag: true,
+  setHeaders: function (res) { res.set('Cache-Control', 'no-cache'); }
+}));
 
 // ---------- helpers ----------
 
@@ -321,8 +329,19 @@ app.post('/api/import/roster', requireAdmin, upload.single('file'), (req, res) =
     return count;
   });
   const count = tx();
-  audit(db, 'roster_import', `imported ${count} members (replace=${replace})`, 'admin');
-  res.json({ imported: count });
+  // CRITICAL: re-importing the roster re-inserts everyone with payroll_ok=0.
+  // If a payroll list is loaded, re-match it against the fresh roster now —
+  // otherwise every member would read RED ("not on payroll") until someone
+  // remembered to re-import payroll. This makes the order roster→payroll safe.
+  let rematch = null;
+  if (db.prepare('SELECT 1 FROM payroll_dues LIMIT 1').get()) {
+    rematch = payroll.rematch(db);
+    invalidatePayrollCache();
+  }
+  audit(db, 'roster_import',
+    `imported ${count} members (replace=${replace})` +
+    (rematch ? ` — re-matched payroll: ${rematch.matched} eligible` : ''), 'admin');
+  res.json({ imported: count, rematch });
 });
 
 // Optional paper dues roll: flags members found on it; reports non-matches.
@@ -450,24 +469,55 @@ app.get('/api/search', (req, res) => {
     'SELECT * FROM members WHERE (dept_id != \'\' AND dept_id = ?) OR member_no = ? LIMIT 5'
   ).all(q, q);
   if (idHit.length) return res.json({ members: idHit.map(memberPublic), id_match: true });
-  let lastPart = q, firstPart = '';
-  if (q.includes(',')) [lastPart, firstPart] = q.split(',', 2).map(s => s.trim());
-  const normLast = match.normalizeName(lastPart);
-  const normFirst = match.normalizeName(firstPart);
-  if (!normLast) return res.json({ members: [] });
-  // Prefix match on any token of the normalized last name.
-  const rows = db.prepare(
-    `SELECT * FROM members
-     WHERE norm_last LIKE ? OR norm_last LIKE ?
-     ORDER BY norm_last, norm_first LIMIT 30`
-  ).all(normLast + '%', '% ' + normLast + '%');
-  let out = rows;
-  if (normFirst) out = rows.filter(m => m.norm_first.startsWith(normFirst) ||
-    match.firstNameScore(normFirst, m.norm_first.split(' ')[0] || '') >= 85);
+
+  // Last-name (prefix, any token) + optional first-name filter.
+  const byLastFirst = (normLast, normFirst) => {
+    if (!normLast) return [];
+    const rows = db.prepare(
+      `SELECT * FROM members WHERE norm_last LIKE ? OR norm_last LIKE ?
+       ORDER BY norm_last, norm_first LIMIT 30`
+    ).all(normLast + '%', '% ' + normLast + '%');
+    if (!normFirst) return rows;
+    return rows.filter(m => m.norm_first.startsWith(normFirst) ||
+      match.firstNameScore(normFirst, m.norm_first.split(' ')[0] || '') >= 85);
+  };
+
+  let out = [];
+  if (q.includes(',')) {
+    // "Last, First" — the canonical form.
+    const [lp, fp] = q.split(',', 2).map(s => s.trim());
+    out = byLastFirst(match.normalizeName(lp), match.normalizeName(fp));
+  } else {
+    const words = q.split(/\s+/).filter(Boolean);
+    if (words.length === 1) {
+      // One word: match it as a last-name OR first-name prefix, so typing a
+      // member's FIRST name (a very common habit) still finds them.
+      const w = match.normalizeName(words[0]);
+      if (!w) return res.json({ members: [] });
+      out = db.prepare(
+        `SELECT * FROM members WHERE norm_last LIKE ? OR norm_last LIKE ? OR norm_first LIKE ?
+         ORDER BY norm_last, norm_first LIMIT 30`
+      ).all(w + '%', '% ' + w + '%', w + '%');
+    } else {
+      // Multiple words with no comma: try BOTH "First … Last" and
+      // "Last First …" so natural first-last order works, then merge.
+      const first = match.normalizeName(words[0]);
+      const last = match.normalizeName(words[words.length - 1]);
+      const merged = byLastFirst(last, first)
+        .concat(byLastFirst(first, match.normalizeName(words.slice(1).join(' '))));
+      const seen = new Set();
+      for (const m of merged) if (!seen.has(m.id)) { seen.add(m.id); out.push(m); }
+      out = out.slice(0, 30);
+    }
+  }
   // Also surface payroll-only people (paying dues but not in NEP) — YELLOW,
   // they still get a ballot but need enrollment. Shown alongside NEP results.
-  const po = payroll.searchPayrollOnly(db, q).map(payrollOnlyPublic);
-  res.json({ members: out.map(memberPublic), payroll_only: po });
+  let poRows = payroll.searchPayrollOnly(db, q);
+  if (!poRows.length && !q.includes(',')) {
+    const words = q.split(/\s+/).filter(Boolean);
+    if (words.length > 1) poRows = payroll.searchPayrollOnly(db, words[words.length - 1] + ', ' + words[0]);
+  }
+  res.json({ members: out.map(memberPublic), payroll_only: poRows.map(payrollOnlyPublic) });
 });
 
 // A payroll-only person (on the dues list, not in NEP) rendered like a member
@@ -563,12 +613,24 @@ app.post('/api/checkin', (req, res) => {
       return { checkin_id: info.lastInsertRowid, ballot_no: ballotNo };
     })();
     audit(db, 'checkin', `member ${member_id} (${m.last_name}, ${m.first_name}) via ${verification_method}`, station);
+    // "Data record" (in NEP, no active portal account) → queue at the Help
+    // Table to collect email/phone for a post-meeting portal invite. They
+    // already have their ballot; this never blocks or slows check-in.
+    if (getConfig(db, 'collect_datarecord_contact') === 'on' && portalOk(m.portal_status) === false) {
+      const dup = db.prepare("SELECT id FROM discrepancies WHERE member_id = ? AND status = 'pending'").get(member_id);
+      if (!dup) {
+        db.prepare(`INSERT INTO discrepancies (member_id, name, reason, from_station, kind)
+          VALUES (?, ?, 'Data record — collect contact for portal invite', ?, 'collect_contact')`)
+          .run(member_id, `${m.last_name}, ${m.first_name}`, station);
+      }
+      result.collect_contact = true;
+    }
     // Confirmation email AFTER the response — a mail problem can never slow
     // the line. sendCheckinEmail logs its own outcome and never throws.
     setImmediate(() => mailer.sendCheckinEmail(db, m, result.checkin_id));
     res.json({ ok: true, ...result, member: memberPublic(m) });
   } catch (e) {
-    if (String(e.message).includes('UNIQUE')) {
+    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE' || String(e.message).includes('UNIQUE')) {
       // One member, one ballot — enforced by ux_checkins_active.
       const existing = db.prepare(
         'SELECT ts, station, ballot_no FROM checkins WHERE member_id = ? AND voided_at IS NULL'
@@ -610,10 +672,23 @@ app.post('/api/discrepancy', (req, res) => {
     name = String(b.name || '').trim();
     if (!name) return res.status(400).json({ error: 'member_id, payroll_id or name required' });
   }
-  // Avoid duplicate pending entries for the same member.
+  // Avoid duplicate pending entries for the same person — by member_id, and
+  // (critical for vote integrity) by payroll_id too, so a payroll-only person
+  // sent over twice can't be resolved into two ballots.
   if (member_id) {
     const dup = db.prepare("SELECT id FROM discrepancies WHERE member_id = ? AND status = 'pending'").get(member_id);
     if (dup) return res.json({ ok: true, id: dup.id, already: true });
+  }
+  if (payroll_id) {
+    const dup = db.prepare("SELECT id FROM discrepancies WHERE note = ? AND status = 'pending'").get('payroll_id:' + payroll_id);
+    if (dup) return res.json({ ok: true, id: dup.id, already: true });
+    // Already enrolled from this payroll row in a prior resolution? Then a
+    // member exists — point at that member instead of making a second one.
+    const p = db.prepare('SELECT member_id FROM payroll_dues WHERE id = ?').get(payroll_id);
+    if (p && p.member_id) {
+      const dupm = db.prepare("SELECT id FROM discrepancies WHERE member_id = ? AND status = 'pending'").get(p.member_id);
+      if (dupm) return res.json({ ok: true, id: dupm.id, already: true });
+    }
   }
   const info = db.prepare(
     `INSERT INTO discrepancies (member_id, name, reason, from_station)
@@ -680,11 +755,16 @@ app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
   const tx = db.transaction(() => {
     let member_id = d.member_id;
 
-    // Payroll-only person getting a ballot → create a provisional member.
+    // Payroll-only person getting a ballot → create a provisional member —
+    // BUT only if one wasn't already created for this payroll row in an
+    // earlier resolution. Re-using the existing member_id means the unique
+    // active-check-in index will (correctly) block a second ballot.
     const pm = /payroll_id:(\d+)/.exec(d.note || '');
     if (!member_id && pm && b.issue_ballot) {
       const p = db.prepare('SELECT * FROM payroll_dues WHERE id = ?').get(pm[1]);
-      if (p) {
+      if (p && p.member_id) {
+        member_id = p.member_id;              // already enrolled — reuse, don't duplicate
+      } else if (p) {
         const full = [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(' ');
         const info = db.prepare(`INSERT INTO members
           (member_no, last_name, first_name, middle_name, full_name, dues_status, dues_ok,
@@ -705,18 +785,25 @@ app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
 
     // Issue the ballot (records the check-in) if the worker chose to.
     if (b.issue_ballot && member_id) {
-      let ballotNo = null;
-      if (getConfig(db, 'ballot_numbering') === 'on') {
-        ballotNo = parseInt(getConfig(db, 'next_ballot_no'), 10) || 1;
-        setConfig(db, 'next_ballot_no', ballotNo + 1);
-      }
-      try {
-        const ci = db.prepare(`INSERT INTO checkins (member_id, station, verification_method, method_note, ballot_no)
-          VALUES (?, ?, 'discrepancy', ?, ?)`).run(member_id, station, String(b.outcome || '').slice(0, 120), ballotNo);
-        result.ballot_no = ballotNo;
-        result._email = { member_id, checkin_id: ci.lastInsertRowid };
-      } catch (e) {
-        if (String(e.message).includes('UNIQUE')) result.already_checked_in = true; else throw e;
+      // Guard first so a duplicate never burns a ballot number (the number is
+      // only allocated once we know the INSERT will land).
+      const active = db.prepare('SELECT 1 FROM checkins WHERE member_id = ? AND voided_at IS NULL').get(member_id);
+      if (active) {
+        result.already_checked_in = true;
+      } else {
+        let ballotNo = null;
+        if (getConfig(db, 'ballot_numbering') === 'on') {
+          ballotNo = parseInt(getConfig(db, 'next_ballot_no'), 10) || 1;
+          setConfig(db, 'next_ballot_no', ballotNo + 1);
+        }
+        try {
+          const ci = db.prepare(`INSERT INTO checkins (member_id, station, verification_method, method_note, ballot_no)
+            VALUES (?, ?, 'discrepancy', ?, ?)`).run(member_id, station, String(b.outcome || '').slice(0, 120), ballotNo);
+          result.ballot_no = ballotNo;
+          result._email = { member_id, checkin_id: ci.lastInsertRowid };
+        } catch (e) {
+          if (e.code === 'SQLITE_CONSTRAINT_UNIQUE' || String(e.message).includes('UNIQUE')) result.already_checked_in = true; else throw e;
+        }
       }
     }
 
@@ -938,6 +1025,68 @@ app.get('/api/export/payroll-list.csv', requireAdmin, (req, res) => {
     ['last_name', 'first_name', 'middle_name', 'emplid', 'grade', 'step', 'in_nep'], rows);
 });
 
+// Every dues-paying member (= everyone on the payroll list), formatted to
+// match the NEP/ConnectPlus database download so it can be re-imported to
+// keep the membership database current after the vote. Every row is marked
+// Member Status = Active, Work Status = Active Member (per the union's rule
+// that all current dues-payers are active members). NEP data is used when the
+// person is already in NEP; payroll-only people fill the name/emplid columns.
+// NOTE: confirm the exact NEP header names against one real export row and
+// tell me if any differ — the labels here mirror the roster-import fields.
+app.get('/api/export/nep-dues-members.csv', requireAdmin, (req, res) => {
+  const rows = db.prepare(`
+    SELECT p.emplid, p.ssn4, p.grade, p.step,
+           p.last_name p_last, p.first_name p_first, p.middle_name p_middle,
+           m.member_no, m.last_name m_last, m.first_name m_first, m.middle_name m_middle, m.suffix,
+           m.email m_email, m.phone m_phone,
+           m.addr_street, m.addr_street2, m.addr_city, m.addr_state, m.addr_zip,
+           m.rank, m.platoon, m.assignment, m.appt_date, m.paramedic, m.dob,
+           (SELECT cc.email FROM contact_corrections cc WHERE cc.member_id = m.id AND cc.email != '' ORDER BY cc.id DESC LIMIT 1) cc_email,
+           (SELECT cc.phone FROM contact_corrections cc WHERE cc.member_id = m.id AND cc.phone != '' ORDER BY cc.id DESC LIMIT 1) cc_phone,
+           CASE WHEN p.member_id IS NOT NULL AND (m.source IS NULL OR m.source != 'payroll') THEN 'yes' ELSE 'no' END in_nep
+    FROM payroll_dues p LEFT JOIN members m ON m.id = p.member_id
+    ORDER BY COALESCE(m.last_name, p.last_name), COALESCE(m.first_name, p.first_name)`).all();
+  const H = ['First Name', 'Middle Name', 'Last Name', 'Suffix', 'Member Number',
+    'Member Status', 'Work Status', 'Email', 'Phone', 'Address', 'Address 2',
+    'City', 'State', 'Zip', 'Rank', 'Platoon', 'Assignment', 'Appointment Date',
+    'Paramedic', 'Date of Birth', 'Emplid', 'Grade', 'Step', 'SSN Last 4', 'Currently in NEP'];
+  const out = rows.map(r => ({
+    'First Name': r.m_first || r.p_first || '',
+    'Middle Name': r.m_middle || r.p_middle || '',
+    'Last Name': r.m_last || r.p_last || '',
+    'Suffix': r.suffix || '',
+    'Member Number': r.member_no || '',
+    'Member Status': 'Active',
+    'Work Status': 'Active Member',
+    'Email': r.cc_email || r.m_email || '',
+    'Phone': r.cc_phone || r.m_phone || '',
+    'Address': r.addr_street || '',
+    'Address 2': r.addr_street2 || '',
+    'City': r.addr_city || '',
+    'State': r.addr_state || '',
+    'Zip': r.addr_zip || '',
+    'Rank': r.rank || '',
+    'Platoon': r.platoon || '',
+    'Assignment': r.assignment || '',
+    'Appointment Date': r.appt_date || '',
+    'Paramedic': r.paramedic || '',
+    'Date of Birth': r.dob || '',
+    'Emplid': r.emplid || '',
+    'Grade': r.grade || '',
+    'Step': r.step || '',
+    'SSN Last 4': r.ssn4 || '',
+    'Currently in NEP': r.in_nep
+  }));
+  sendCsv(res, 'nep-dues-members.csv', H, out);
+});
+
+// The audit log — every check-in, blocked attempt, duplicate attempt, void,
+// override, reset. The evidence trail for a contested vote.
+app.get('/api/export/audit-log.csv', requireAdmin, (req, res) => {
+  const rows = db.prepare('SELECT ts, action, detail, station FROM audit_log ORDER BY id').all();
+  sendCsv(res, 'audit-log.csv', ['ts', 'action', 'detail', 'station'], rows);
+});
+
 // ---------- event reset ----------
 
 // Wipe EVENT data (check-ins, corrections, not-found, discrepancies, audit,
@@ -973,6 +1122,9 @@ app.get('/api/config', (req, res) => {
     // The station password is shown in admin so the organizer knows what to
     // tell volunteers. (Anyone who can call this endpoint already has it.)
     station_pin: getConfig(db, 'station_pin'),
+    // Booleans only — never echo the admin PIN itself.
+    admin_equals_station: getConfig(db, 'admin_pin') === getConfig(db, 'station_pin'),
+    admin_is_default: getConfig(db, 'admin_pin') === '3636',
     // Check-in email settings — the password itself never leaves the server,
     // only whether one is stored.
     mail_enabled: getConfig(db, 'mail_enabled'),

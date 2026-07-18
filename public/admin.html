@@ -31,6 +31,12 @@
 
   <div id="adminBody" class="hidden">
 
+  <div id="pinWarn" class="banner red" style="display:none">
+    ⚠️ Your <b>Admin PIN</b> is still the default (3636) or the same as the station password.
+    Any volunteer with the station password can reset the event, void ballots, and export the
+    roster. Change the Admin PIN below (Settings) to something only you and the Help Table know.
+  </div>
+
   <!-- Live stats -->
   <section class="card">
     <h3>Live counts <span class="muted small" id="statsTs"></span></h3>
@@ -130,6 +136,8 @@
     <div class="input-row mt">
       <button class="blue" data-export="/api/export/discrepancies.csv">Discrepancy log</button>
       <button class="blue" data-export="/api/export/email-log.csv">Email log</button>
+      <button class="blue" data-export="/api/export/audit-log.csv">Audit log (contested-vote trail)</button>
+      <button class="blue" data-export="/api/export/nep-dues-members.csv">NEP dues-members (re-import sheet)</button>
       <button class="blue" data-export="/api/export/payroll-gap.csv">Payroll not in NEP (+attendance)</button>
       <button class="blue" data-export="/api/export/payroll-list.csv">Payroll list (clean, alphabetical)</button>
       <a class="btn blue" href="/payroll-print.html" target="_blank"

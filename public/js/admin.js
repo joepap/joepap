@@ -45,11 +45,17 @@
   // ---------- stats ----------
   var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License scan', dept_id: 'Dept ID', other: 'Other' };
 
+  var lastStats = null;
   function refreshStats() {
     api('/api/stats').then(function (r) { return r.body; }).then(function (s) {
+      lastStats = s;
       $('statsTs').textContent = '· updated ' + new Date().toLocaleTimeString();
+      var turnout = s.payroll_total ? Math.round((s.checked_in / s.payroll_total) * 100) : null;
       $('statGrid').innerHTML =
         stat(s.checked_in, 'Checked in') +
+        (s.payroll_total ? stat(turnout + '%', 'Turnout (of dues-payers)') : '') +
+        (s.payroll_total ? stat(Math.max(0, s.payroll_total - s.checked_in), 'Eligible not yet in') : '') +
+        stat(s.payroll_total || 0, 'On payroll (eligible)') +
         stat(s.ballots_issued, 'Ballots issued') +
         stat(s.members_total, 'Roster size') +
         stat(s.not_found, 'Not found') +
@@ -202,8 +208,15 @@
     if (!f) return;
     var mapping = readMapping($('mapGrid'));
     if (!mapping.full_name && !mapping.last_name) { alert('Map Full name, or Last name.'); return; }
-    if ($('replaceExisting').checked &&
-        !confirm('Replace roster? This clears ALL existing members and check-ins.')) return;
+    if ($('replaceExisting').checked) {
+      // Guard against wiping a live event; echo the real count.
+      var live = (lastStats && lastStats.checked_in) || 0;
+      var msg = live > 0
+        ? '⚠️ Replace roster will DELETE ' + live + ' live check-ins and all members. ' +
+          'Do NOT do this during the event. Continue?'
+        : 'Replace roster? This clears ALL existing members and check-ins.';
+      if (!confirm(msg)) return;
+    }
     var fd = new FormData();
     fd.append('file', f);
     fd.append('mapping', JSON.stringify(mapping));
@@ -218,7 +231,8 @@
     $('importStatus').textContent = 'importing…';
     api('/api/import/roster', { method: 'POST', body: fd }).then(function (r) {
       $('importStatus').textContent = r.status === 200
-        ? ('✓ imported ' + r.body.imported + ' members')
+        ? ('✓ imported ' + r.body.imported + ' members' +
+           (r.body.rematch ? ' — re-matched payroll: ' + r.body.rematch.matched + ' eligible' : ''))
         : ('failed: ' + (r.body.error || r.status));
       refreshStats();
     });
@@ -312,14 +326,24 @@
 
   // ---------- event reset ----------
   $('resetEvent').onclick = function () {
-    var typed = prompt('This clears ALL check-ins, corrections, not-found, discrepancies and ' +
-      'provisional members (roster + payroll + settings are kept).\n\nType RESET to confirm:');
-    if (typed !== 'RESET') { if (typed !== null) alert('Not reset — you must type RESET exactly.'); return; }
-    api('/api/admin/reset-event', { method: 'POST', body: JSON.stringify({ confirm: 'RESET' }) })
-      .then(function (r) {
-        $('resetStatus').textContent = r.status === 200 ? '✓ event data cleared' : 'failed: ' + (r.body.error || r.status);
-        refreshStats();
-      });
+    // Echo the live check-in count into the required token so an accidental
+    // mid-event reset is nearly impossible.
+    api('/api/stats').then(function (r) { return r.body; }).then(function (s) {
+      var live = s.checked_in || 0;
+      var token = live > 0 ? 'RESET-' + live : 'RESET';
+      var warn = live > 0
+        ? '⚠️ There are ' + live + ' LIVE check-ins. Resetting deletes all of them permanently.\n\n' +
+          'Only do this if the event has NOT started (clearing rehearsal data).\n\nType ' + token + ' to confirm:'
+        : 'This clears ALL check-ins, corrections, not-found, discrepancies, email log and ' +
+          'provisional members (roster + payroll + settings are kept).\n\nType RESET to confirm:';
+      var typed = prompt(warn);
+      if (typed !== token) { if (typed !== null) alert('Not reset — you must type ' + token + ' exactly.'); return; }
+      api('/api/admin/reset-event', { method: 'POST', body: JSON.stringify({ confirm: 'RESET' }) })
+        .then(function (r) {
+          $('resetStatus').textContent = r.status === 200 ? '✓ event data cleared' : 'failed: ' + (r.body.error || r.status);
+          refreshStats();
+        });
+    });
   };
 
   // ---------- settings ----------
@@ -330,6 +354,10 @@
       $('emailOkGroups').value = c.email_ok_groups || '';
       $('emailBadGroups').value = c.email_bad_groups || '';
       $('curStationPin').textContent = c.station_pin || '';
+      // Security nudge: warn if the admin PIN is still the default or the same
+      // as the station password (any volunteer could then reset/void/export).
+      var warn = $('pinWarn');
+      if (warn) warn.style.display = (c.admin_equals_station || c.admin_is_default) ? '' : 'none';
       $('mailHost').value = c.mail_host || '';
       $('mailPort').value = c.mail_port || '587';
       $('mailUser').value = c.mail_user || '';

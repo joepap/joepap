@@ -15,12 +15,15 @@
   // ---------- station identity ----------
   var station = localStorage.getItem('station36') || '';
   var stationPin = localStorage.getItem('station36_pin') || '';
-  var defaultMethod = localStorage.getItem('station36_method') || 'license_scan';
+  var stationRole = localStorage.getItem('station36_role') || 'checkin';
+  // The default check-in process is the search bar + license scan; the role
+  // dropdown (check-in vs help table) replaced the old method picker.
+  var defaultMethod = 'license_scan';
 
   function showStationModal(msg) {
     $('stationName').value = station;
     $('stationPin').value = stationPin;
-    $('stationMethod').value = defaultMethod;
+    if ($('stationRole')) $('stationRole').value = stationRole;
     $('stationModal').classList.remove('hidden');
     ($('stationName').value ? $('stationPin') : $('stationName')).focus();
     if (msg) alert(msg);
@@ -31,16 +34,23 @@
     if (!name || !pin) return;
     // Verify the PIN before accepting it.
     fetch('/api/search?q=zz', { headers: { 'X-Station-Pin': pin } }).then(function (r) {
-      if (r.status === 401) { alert('Wrong station PIN — check with the organizer.'); return; }
+      if (r.status === 401) { alert('Wrong station password — check with the organizer.'); return; }
       station = name;
       stationPin = pin;
-      defaultMethod = $('stationMethod').value;
+      stationRole = $('stationRole') ? $('stationRole').value : 'checkin';
       localStorage.setItem('station36', station);
       localStorage.setItem('station36_pin', stationPin);
-      localStorage.setItem('station36_method', defaultMethod);
+      localStorage.setItem('station36_role', stationRole);
+      // The Help Table's tool is the Help Table dashboard — send them there.
+      if (stationRole === 'help') { window.location = '/discrepancy.html'; return; }
       $('stationChip').textContent = '\u{1F464} ' + station;
       $('stationModal').classList.add('hidden');
     });
+  };
+  // Reflect the chosen role in the button label so "Start checking people in"
+  // isn't shown when they're actually heading to the Help Table.
+  if ($('stationRole')) $('stationRole').onchange = function () {
+    $('stationSave').textContent = this.value === 'help' ? 'Open the Help Table →' : 'Start checking people in';
   };
   $('stationChip').onclick = function () { showStationModal(); };
   if (!station || !stationPin) showStationModal();
@@ -239,7 +249,13 @@
 
   function openMember(id) {
     api('/api/members/' + id).then(function (r) {
-      if (r.status !== 200) return;
+      if (r.status !== 200) {
+        // Never fail silently — a tap that does nothing makes a volunteer freeze.
+        renderResults([], r.status === 0
+          ? '<div class="banner red">No connection — check signal and tap the name again.</div>'
+          : '<div class="banner red">Could not open member (' + (r.body.error || r.status) + '). Try again.</div>');
+        return;
+      }
       currentMember = r.body.member;
       selectedMethod = defaultMethod;
       renderMemberCard();

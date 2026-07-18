@@ -104,12 +104,10 @@
       <input type="text" id="stationName" placeholder="e.g. Joe P." autocomplete="off">
       <label for="stationPin">Station password (from the organizer)</label>
       <input type="text" id="stationPin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Password">
-      <label for="stationMethod">Default verification method for this station</label>
-      <select id="stationMethod">
-        <option value="license_scan">License scan (standard lane)</option>
-        <option value="portal_id">Portal + ID (green lane)</option>
-        <option value="dept_id">Department ID</option>
-        <option value="other">Other</option>
+      <label for="stationRole">Which table are you working?</label>
+      <select id="stationRole">
+        <option value="checkin">Check-in table (search &amp; scan, issue ballots)</option>
+        <option value="help">Secondary Help Table (resolve flags, collect contact)</option>
       </select>
       <button class="primary big mt" id="stationSave">Start checking people in</button>
     </div>
