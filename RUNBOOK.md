@@ -81,6 +81,9 @@ The queue moderator PIN is set when the queue starts (default 3636).
 5. Queue: print/post the QR, moderator opens `/mod`, taps **Clear entire line**.
 6. Confirm every station device shows its station name (top right chip).
 7. Backups run automatically every 10 min into `backups/` — nothing to do.
+8. On the MacBook: start `bash ~/local36-backup/scripts/pull-backup.sh loop`
+   and leave it running — off-machine copies + a warm spare server.
+   Full switch procedure: **FAILOVER.md**.
 
 ## During the event
 
