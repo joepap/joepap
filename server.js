@@ -105,10 +105,10 @@ function eligibilityOf(m) {
   if (payrollLoaded()) {
     // Payroll list present => it is the authority.
     if (Number(m.payroll_ok) === 1) {
-      return { ballot: true, color: 'green', state: 'verified', label: 'DUES VERIFIED ✓ (on payroll)' };
+      return { ballot: true, color: 'green', state: 'verified', label: 'DUES VERIFIED ✓' };
     }
     return { ballot: false, color: 'red', state: 'verify',
-      label: 'NOT ON DUES PAYROLL — send to Discrepancy Table' };
+      label: 'DUES NOT VERIFIED — send to Discrepancy Table' };
   }
   // No payroll list loaded => fall back to NEP Member Status.
   if (Number(m.dues_ok) === 1) {
@@ -481,8 +481,8 @@ function payrollOnlyPublic(p) {
     last_name: p.last_name, first_name: p.first_name, middle_name: p.middle_name,
     member_no: '', dept_id: '', grade: p.grade, step: p.step, ssn4: p.ssn4, emplid: p.emplid,
     dues_block: false, payroll_ok: true,
-    eligibility: { ballot: true, color: 'yellow', state: 'payroll_only',
-      label: 'DUES PAID (payroll) — not in NEP · enroll' },
+    eligibility: { ballot: true, color: 'green', state: 'payroll_only',
+      label: 'DUES VERIFIED ✓' },
     checked_in: null
   };
 }

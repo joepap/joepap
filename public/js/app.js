@@ -47,12 +47,20 @@
   else $('stationChip').textContent = '\u{1F464} ' + station;
 
   // ---------- fetch helpers ----------
+  // Never lets a network hiccup silently kill the page: a failed fetch (or a
+  // non-JSON reply from a restarting server) resolves to status 0 so every
+  // caller can show "no connection" and re-enable its buttons.
   function api(path, opts) {
     return fetch(path, Object.assign({
       headers: { 'Content-Type': 'application/json', 'X-Station-Pin': stationPin }
     }, opts)).then(function (r) {
       if (r.status === 401) showStationModal();
-      return r.json().then(function (j) { return { status: r.status, body: j }; });
+      return r.json().then(
+        function (j) { return { status: r.status, body: j }; },
+        function () { return { status: 0, body: { error: 'bad reply — server restarting?' } }; }
+      );
+    }, function () {
+      return { status: 0, body: { error: 'no connection' } };
     });
   }
 
@@ -61,9 +69,13 @@
   $('searchBox').addEventListener('input', function () {
     var q = this.value.trim();
     clearTimeout(searchTimer);
-    if (q.length < 2) { renderResults([]); return; }
+    if (q.length < 2) { renderResults([], ''); return; }
     searchTimer = setTimeout(function () {
       api('/api/search?q=' + encodeURIComponent(q)).then(function (r) {
+        if (r.status === 0) {
+          renderResults([], '<div class="banner red">No connection — check cellular signal and type again.</div>');
+          return;
+        }
         var items = (r.body.members || []).map(function (m) { return { member: m }; });
         // Payroll-only people (paying dues, not in NEP) appear as yellow rows.
         (r.body.payroll_only || []).forEach(function (p) { items.push({ member: p, payrollOnly: true }); });
@@ -86,6 +98,7 @@
     var chips = '';
     var el = m.eligibility || {};
     if (m.checked_in) chips += '<span class="flag red">CHECKED IN</span>';
+    else if (el.state === 'payroll_only') chips += '<span class="flag yellow">PAYROLL · ENROLL</span>';
     else if (el.color === 'green') chips += '<span class="flag green">ELIGIBLE</span>';
     else if (el.color === 'yellow') chips += '<span class="flag yellow">PAYROLL · ENROLL</span>';
     else chips += '<span class="flag red">VERIFY</span>';
@@ -100,7 +113,8 @@
   function renderResults(items, headerHtml) {
     var box = $('results');
     box.innerHTML = headerHtml || '';
-    if (!items.length && headerHtml === undefined) return;
+    // An explicit banner (confirmation / error) stands alone — no filler.
+    if (!items.length && headerHtml !== undefined) return;
     if (!items.length) {
       box.innerHTML += '<div class="banner yellow">No roster matches. Try fewer letters, or use "Not on roster".</div>';
       return;
@@ -209,8 +223,9 @@
       (p.middle_name ? ' ' + esc(p.middle_name) : '') + '</div>';
     html += '<div class="member-meta">Emplid ' + esc(p.emplid || '—') +
       (p.grade ? ' &middot; grade ' + esc(p.grade) : '') + (p.step ? ' &middot; step ' + esc(p.step) : '') + '</div>';
+    html += '<div class="dues-pill ok">' + esc(p.eligibility.label) + '</div>';
     html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
-      esc(p.eligibility.label) + '</div>';
+      'NOT IN NEP DATABASE — enroll at the help table</div>';
     html += '<div class="banner yellow">On the payroll dues list but <strong>not in NEP</strong>. ' +
       'Gets a ballot &mdash; send to the Discrepancy Table to enroll (capture email/phone) and issue.</div>';
     html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Discrepancy Table</button>';
@@ -247,74 +262,35 @@
             (m.assignment ? ' &middot; ' + esc(m.assignment) : '') +
             (m.platoon ? ' &middot; Platoon ' + esc(m.platoon) : '') +
             (m.on_paper_roll ? ' &middot; on paper dues roll' : '') + '</div>';
-    // Eligibility pill from the server's authoritative model (payroll-first).
-    var el = m.eligibility || { color: 'red', label: 'NOT ELIGIBLE', ballot: false };
+    // Pill 1 — dues, from the server's authoritative model (payroll-first).
+    var el = m.eligibility || { color: 'red', label: 'NOT VERIFIED', ballot: false };
     var pillCls = el.color === 'green' ? 'ok' : el.color === 'yellow' ? '' : 'bad';
     var pillStyle = el.color === 'yellow'
       ? ' style="background:#fef9c3;color:#a16207;border:2px solid #facc15"' : '';
     html += '<div class="dues-pill ' + pillCls + '"' + pillStyle + '>' + esc(el.label) + '</div>';
     if (m.dues_block && m.dues_block_note) html += '<div class="muted small">' + esc(m.dues_block_note) + '</div>';
-    // When payroll is the authority, still show the NEP status quietly for context.
-    if (m.dues_status && el.state !== 'status_ok' && el.state !== 'status_bad')
-      html += '<div class="muted small">NEP status: ' + esc(m.dues_status) + '</div>';
+    // Pill 2 — NEP database: green = in it, yellow = payroll-only (enroll at
+    // the help table). Info updates happen via the meeting link they get by
+    // text/email — nothing is edited in the check-in line.
+    if (m.source === 'payroll') {
+      html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
+              'NOT IN NEP DATABASE — enroll at the help table</div>';
+    } else {
+      html += '<div class="dues-pill ok">NEP DATABASE &#10003;' +
+              (m.dues_status ? ' (' + esc(m.dues_status) + ')' : '') + '</div>';
+    }
 
     if (m.checked_in) {
       html += '<div class="banner red">ALREADY CHECKED IN at ' + esc(m.checked_in.ts) +
-              ' / Station ' + esc(m.checked_in.station) +
+              ' / ' + esc(m.checked_in.station) +
               (m.checked_in.ballot_no ? ' / Ballot #' + m.checked_in.ballot_no : '') + '</div>';
     }
 
     if (m.portal_ok === false) {
       html += '<div class="banner yellow">&#9888; No ConnectPlus portal access (status: ' +
-              esc(m.portal_status) + ') — <strong>hand them a portal card</strong>' +
-              ' or send to the help lane after check-in.</div>';
+              esc(m.portal_status) + ') — after check-in, tell them to ' +
+              '<strong>proceed to the help table</strong> (secondary table).</div>';
     }
-    if (m.email_list === 'bad') {
-      html += '<div class="banner red">&#9993; Known email problem — they are in a no-email/returned-mail ' +
-              'group. Verify their email below; a group fix will be flagged for the office.</div>';
-    } else if (m.email_list === 'missing') {
-      html += '<div class="banner yellow">&#9993; Not in any email distribution group — a group fix ' +
-              'will be flagged when you save below.</div>';
-    }
-
-    if (m.last_correction) {
-      html += '<div class="banner green">&#10003; Corrections already captured at ' +
-              esc(m.last_correction.ts) + ' (station ' + esc(m.last_correction.station) +
-              ') — no need to re-enter unless something else changed.</div>';
-    }
-    // Verify & update — always expanded; saving never blocks check-in.
-    html += '<details id="infoCheck" open>' +
-      '<summary style="font-weight:700;font-size:1.05rem;padding:10px 0;cursor:pointer">' +
-      'Verify member info &mdash; &ldquo;Is this all still correct? Are you getting our emails?&rdquo;</summary>';
-    html += '<label>Are you receiving our emails?</label>' +
-      '<div class="method-grid" id="emailYN" style="grid-template-columns:1fr 1fr">' +
-      '<button data-v="yes">Yes</button><button data-v="no">No / not sure</button></div>';
-    html += '<div class="input-row">' +
-      '<div><label>First name</label><input type="text" id="fixFirst" value="' + esc(m.first_name) + '"></div>' +
-      '<div><label>Middle</label><input type="text" id="fixMiddle" value="' + esc(m.middle_name) + '"></div>' +
-      '<div><label>Last name</label><input type="text" id="fixLast" value="' + esc(m.last_name) + '"></div></div>';
-    html += '<div class="input-row">' +
-      '<div><label>Email</label><input type="email" id="fixEmail" value="' + esc(m.email) + '"></div>' +
-      '<div><label>Phone</label><input type="tel" id="fixPhone" value="' + esc(m.phone) + '"></div></div>';
-    html += '<div class="input-row">' +
-      '<div style="flex:2"><label>Street</label><input type="text" id="fixStreet" value="' + esc(m.addr_street) + '"></div>' +
-      '<div><label>Apt/Unit</label><input type="text" id="fixStreet2" value="' + esc(m.addr_street2) + '"></div></div>';
-    html += '<div class="input-row">' +
-      '<div style="flex:2"><label>City</label><input type="text" id="fixCity" value="' + esc(m.addr_city) + '"></div>' +
-      '<div><label>State</label><input type="text" id="fixState" value="' + esc(m.addr_state) + '"></div>' +
-      '<div><label>Zip</label><input type="text" id="fixZip" value="' + esc(m.addr_zip) + '"></div></div>';
-    html += '<div class="input-row">' +
-      '<div><label>Rank</label><input type="text" id="fixRank" value="' + esc(m.rank) + '"></div>' +
-      '<div><label>Assignment</label><input type="text" id="fixAssignment" value="' + esc(m.assignment) + '"></div>' +
-      '<div><label>Platoon</label><input type="text" id="fixPlatoon" value="' + esc(m.platoon) + '"></div></div>';
-    html += '<div class="input-row">' +
-      '<div><label>Appointment date</label><input type="text" id="fixApptDate" value="' + esc(m.appt_date) + '" placeholder="MM/DD/YYYY"></div>' +
-      '<div><label>Paramedic</label><select id="fixParamedic">' +
-        ['', 'Yes', 'No'].map(function (v) {
-          return '<option value="' + v + '"' + (m.paramedic === v ? ' selected' : '') + '>' + (v || '—') + '</option>';
-        }).join('') + '</select></div></div>';
-    html += '<button class="blue mt" id="fixSave" style="width:100%">Save corrections</button>';
-    html += '</details>';
 
     html += '<label style="margin-top:14px">Verification method</label><div class="method-grid" id="methodGrid">';
     Object.keys(METHOD_LABELS).forEach(function (k) {
@@ -324,10 +300,6 @@
     html += '</div>';
     html += '<input type="text" id="methodNote" class="' + (selectedMethod === 'other' ? '' : 'hidden') +
             '" placeholder="Required note for Other…" autocomplete="off">';
-
-    html += '<div class="mt"><label><input type="checkbox" id="accessGranted" style="width:22px;height:22px;vertical-align:middle"' +
-            (m.access_granted_at ? ' checked disabled' : '') + '> Portal access granted today (help lane)' +
-            (m.access_granted_at ? ' — logged ' + esc(m.access_granted_at) : '') + '</label></div>';
 
     if (m.checked_in) {
       html += '<button class="big danger mt" disabled>Already checked in — no ballot</button>';
@@ -354,25 +326,6 @@
       };
     });
 
-    var emailYN = '';
-    Array.prototype.forEach.call($('emailYN').querySelectorAll('button'), function (b) {
-      b.onclick = function () {
-        emailYN = b.getAttribute('data-v');
-        Array.prototype.forEach.call($('emailYN').querySelectorAll('button'), function (x) {
-          x.classList.toggle('selected', x === b);
-        });
-        if (emailYN === 'no') $('infoCheck').setAttribute('open', '');
-      };
-    });
-    $('fixSave').onclick = function () { saveContactFix(emailYN); };
-    if ($('accessGranted') && !m.access_granted_at) {
-      $('accessGranted').onchange = function () {
-        if (!this.checked) return;
-        api('/api/members/' + m.id + '/access-granted', {
-          method: 'POST', body: JSON.stringify({ station: station })
-        });
-      };
-    }
     if ($('doCheckin')) $('doCheckin').onclick = doCheckin;
     if ($('sendDisc')) $('sendDisc').onclick = function () { sendToDiscrepancy(m); };
     $('closeMember').onclick = closeMember;
@@ -389,43 +342,6 @@
           esc(m.first_name) + ' there.</div>');
         $('memberCard').classList.add('hidden');
       } else { alert('Could not send: ' + (r.body.error || r.status)); $('sendDisc').disabled = false; }
-    });
-  }
-
-  function saveContactFix(emailYN) {
-    var m = currentMember;
-    var val = function (id) { return $(id) ? $(id).value.trim() : ''; };
-    var changed = function (v, old) { return v !== (old || '').trim() ? v : ''; };
-    // Flag a ConnectPlus group fix when they say they're not getting emails,
-    // or their groups already show a known problem.
-    var fixGroup = (emailYN === 'no') || m.email_list === 'bad' || m.email_list === 'missing';
-    api('/api/members/' + m.id + '/contact', {
-      method: 'POST',
-      body: JSON.stringify({
-        // Only send fields the volunteer actually changed, so the export
-        // shows real corrections rather than every prefilled value.
-        first_name: changed(val('fixFirst'), m.first_name),
-        middle_name: changed(val('fixMiddle'), m.middle_name),
-        last_name: changed(val('fixLast'), m.last_name),
-        email: changed(val('fixEmail'), m.email),
-        phone: changed(val('fixPhone'), m.phone),
-        street: changed(val('fixStreet'), m.addr_street),
-        street2: changed(val('fixStreet2'), m.addr_street2),
-        city: changed(val('fixCity'), m.addr_city),
-        state: changed(val('fixState'), m.addr_state),
-        zip: changed(val('fixZip'), m.addr_zip),
-        rank: changed(val('fixRank'), m.rank),
-        assignment: changed(val('fixAssignment'), m.assignment),
-        platoon: changed(val('fixPlatoon'), m.platoon),
-        appt_date: changed(val('fixApptDate'), m.appt_date),
-        paramedic: changed(val('fixParamedic'), m.paramedic),
-        receiving_emails: emailYN || '',
-        fix_email_group: fixGroup,
-        station: station
-      })
-    }).then(function () {
-      $('fixSave').textContent = 'Saved ✓' + (fixGroup ? ' — email group flagged for the office' : '');
-      $('fixSave').disabled = true;
     });
   }
 
@@ -461,9 +377,12 @@
         showDuesBlock(r.body.member);
       } else if (r.status === 409) {
         showDuplicate(r.body);
+      } else if (r.status === 0) {
+        alert('No connection — the check-in did NOT go through. Check signal and tap the button again.');
+        if ($('doCheckin')) $('doCheckin').disabled = false;
       } else {
         alert('Check-in failed: ' + (r.body.error || r.status));
-        $('doCheckin').disabled = false;
+        if ($('doCheckin')) $('doCheckin').disabled = false;
       }
     });
   }
@@ -474,12 +393,15 @@
     $('successBallot').textContent = body.ballot_no ? 'Ballot #' + body.ballot_no : '';
     $('successSub').textContent = body.ballot_no ? 'Hand them ballot #' + body.ballot_no : 'Hand them their ballot';
     $('successFlash').classList.remove('hidden');
+    // Reset to a fresh scan/search screen IMMEDIATELY (behind the flash) so
+    // the station is ready for the next member the moment the flash clears.
+    closeMember();
     setTimeout(hideSuccess, 2600);
     $('successFlash').onclick = hideSuccess;
   }
   function hideSuccess() {
     $('successFlash').classList.add('hidden');
-    closeMember();
+    $('searchBox').focus();
   }
 
   function showDuplicate(body) {
@@ -517,13 +439,24 @@
   $('nfSave').onclick = function () {
     var name = $('nfName').value.trim();
     if (!name) { $('nfName').focus(); return; }
+    $('nfSave').disabled = true;
     api('/api/notfound', {
       method: 'POST',
       body: JSON.stringify({ name_entered: name, notes: $('nfNotes').value.trim(), station: station })
-    }).then(function () {
+    }).then(function (r) {
+      $('nfSave').disabled = false;
+      if (r.status !== 200) {
+        alert(r.status === 0
+          ? 'No connection — NOT logged. Check signal and tap again.'
+          : 'Could not log: ' + (r.body.error || r.status));
+        return;
+      }
+      // Back to a fresh check-in screen, with a confirmation banner.
       $('notFoundCard').classList.add('hidden');
       $('nfName').value = ''; $('nfNotes').value = '';
-      renderResults([], '<div class="banner blue">Logged. Direct the member to the resolution table.</div>');
+      $('searchBox').value = '';
+      renderResults([], '<div class="banner blue">&#10003; Logged. Direct the member to the help table.</div>');
+      $('searchBox').focus();
     });
   };
 })();

@@ -140,16 +140,16 @@ Data, settings and PINs are untouched — only the code updates.
 
 - **Camera**: tap "Scan ID", point at the barcode on the BACK of the license.
 - **No scan?** Type 2+ letters of the last name. `smith, j` narrows by first name.
-- **Green ACTIVE pill** = eligible, issue ballot. **Red NOT ELIGIBLE** = no ballot
-  without a conversation. **Gray NO STATUS** = blank in NEP; resolution table.
+- The card shows two pills: **DUES VERIFIED ✓** (green — issue ballot; red =
+  send to the Discrepancy Table) and **NEP DATABASE** (green = registered;
+  yellow = not in NEP — enroll at the help table).
+- **No info updates in the line** — members fix their own details through the
+  meeting-page link they get by text/email. Keep the line moving.
 - **Duplicate** = full red screen with original time/station. No ballot;
-  disputes go to the resolution table.
-- **Verify member info** (open on every card): read it back, fix anything wrong,
-  ask "are you getting our emails?", Save. Never blocks check-in. A green
-  "corrections already captured" note means another station already did it.
-- **Yellow portal banner** = hand them a portal card / help lane after check-in.
-- **Not on roster** = log via the button, send to resolution table. No ballot.
-- **Help lane**: tick "Portal access granted today" after setting them up.
+  disputes go to the help table.
+- **Yellow portal banner** = after check-in, tell them to proceed to the help
+  table (secondary table).
+- **Not on roster** = log via the button, send to the help table. No ballot.
 - **Question line**: see QUESTION-LINE-GUIDE.md (one page for the moderator).
 
 ## If things break
