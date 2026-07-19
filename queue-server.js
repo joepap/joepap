@@ -47,13 +47,21 @@ if (!db.prepare('PRAGMA table_info(entries)').all().some(c => c.name === 'topic'
 const app = express();
 app.use(express.json({ limit: '16kb' }));
 
-const page = name => (req, res) => res.sendFile(path.join(__dirname, 'public-queue', name));
+// no-cache (revalidate every load) — same policy as the check-in server, so a
+// stale cached page can never outlive a code update.
+const page = name => (req, res) => {
+  res.set('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public-queue', name), { cacheControl: false });
+};
 app.get('/', page('member.html'));
 app.get('/mod', page('mod.html'));
 app.get('/display', page('display.html'));
 app.get('/meeting', page('meeting.html'));   // one-QR event hub page
-app.get('/topics.js', (req, res) =>
-  res.type('application/javascript').sendFile(path.join(__dirname, 'public-queue', 'topics.js')));
+app.get('/topics.js', (req, res) => {
+  res.set('Cache-Control', 'no-cache');
+  res.type('application/javascript')
+    .sendFile(path.join(__dirname, 'public-queue', 'topics.js'), { cacheControl: false });
+});
 
 // Shared union logo — same file the check-in app uses (public/logo.png).
 // 404s harmlessly until the file is dropped in place.

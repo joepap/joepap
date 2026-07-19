@@ -139,14 +139,40 @@
     }
 
     function refresh() {
+      // Never yank the DOM out from under someone typing — if focus is in any
+      // of our inputs, skip this tick; the next one (after blur) catches up.
+      var ae = document.activeElement;
+      if (ae && root.contains(ae) && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) {
+        return Promise.resolve();
+      }
       return api('/api/discrepancy/list').then(function (r) {
         if (r.status !== 200) { if (r.status === 0) q('.ht-ts').textContent = '· no connection'; return; }
         var d = r.body;
         if (counts) counts.textContent = d.counts.pending + ' waiting · ' + d.counts.resolved + ' done';
         q('.ht-ts').textContent = '· ' + new Date().toLocaleTimeString();
         q('.ht-empty').style.display = d.pending.length ? 'none' : '';
-        var queue = q('.ht-queue'); queue.innerHTML = '';
+        var queue = q('.ht-queue');
+        // Preserve typed-but-unsaved contact input (and any error text) on the
+        // open item across the rebuild — the 4s tick must never eat input.
+        var saved = null;
+        var openEl = queue.querySelector('.qitem.open');
+        if (openEl) {
+          saved = {
+            email: (openEl.querySelector('.d-email') || {}).value || '',
+            phone: (openEl.querySelector('.d-phone') || {}).value || '',
+            note: (openEl.querySelector('.d-note') || {}).value || '',
+            err: (openEl.querySelector('.d-err') || {}).textContent || ''
+          };
+        }
+        queue.innerHTML = '';
         d.pending.forEach(function (item) { try { queue.appendChild(renderItem(item)); } catch (e) { /* skip bad item */ } });
+        var openEl2 = queue.querySelector('.qitem.open');
+        if (saved && openEl2) {
+          var set = function (sel, val) { var el = openEl2.querySelector(sel); if (el && val) el.value = val; };
+          set('.d-email', saved.email); set('.d-phone', saved.phone); set('.d-note', saved.note);
+          var errEl = openEl2.querySelector('.d-err');
+          if (errEl && saved.err) errEl.textContent = saved.err;
+        }
         q('.ht-resolved').innerHTML = d.resolved.map(function (x) {
           return '<div class="resolved"><b>' + esc(x.name) + '</b> — ' + esc(x.outcome || 'resolved') +
             ' <span class="muted">(' + esc(x.resolved_by) + ', ' + esc((x.resolved_at || '').slice(11, 16)) + ')</span></div>';
