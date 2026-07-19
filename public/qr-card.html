@@ -12,6 +12,7 @@
   .setup button { font-size: 1rem; font-weight: 700; padding: 12px 18px; border: none; border-radius: 10px;
                   background: #b91c1c; color: #fff; cursor: pointer; }
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
   .cardp { border: 2px dashed #9aa4b2; border-radius: 12px; padding: 14px; display: flex; gap: 14px;
            align-items: center; break-inside: avoid; }
   .cardp img { width: 120px; height: 120px; }

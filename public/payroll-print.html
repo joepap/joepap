@@ -53,9 +53,16 @@ function load(){
         parts.push(cur);
         var last=parts[0],first=parts[1],mid=parts[2],emplid=parts[3],inNep=parts[6];
         var L=(last[0]||'').toUpperCase();
-        if(L!==letter){ letter=L; html+='<div class="letter">'+esc(L)+'</div>'; }
-        html+='<div class="row"><b>'+esc(last)+'</b>, '+esc(first)+(mid?' '+esc(mid):'')+
+        var row='<div class="row"><b>'+esc(last)+'</b>, '+esc(first)+(mid?' '+esc(mid):'')+
               ' <span class="id">#'+esc(emplid)+(inNep==='yes'?'':' · not in NEP')+'</span></div>';
+        if(L!==letter){
+          letter=L;
+          // Glue the letter chip to its first name so a column break can never
+          // orphan the chip (break-after:avoid alone is unreliable in print).
+          html+='<div style="break-inside:avoid"><div class="letter">'+esc(L)+'</div>'+row+'</div>';
+        } else {
+          html+=row;
+        }
       });
       document.getElementById('list').innerHTML=html;
       document.getElementById('meta').textContent+='  ·  '+lines.length+' names  ·  printed '+new Date().toLocaleDateString();

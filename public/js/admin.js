@@ -59,7 +59,8 @@
   }
 
   // ---------- stats ----------
-  var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License scan', dept_id: 'Dept ID', other: 'Other' };
+  var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License scan', dept_id: 'Dept ID',
+    other: 'Other', payroll_dues: 'Payroll dues', discrepancy: 'Help Table' };
 
   var lastStats = null;
   function refreshStats() {
@@ -79,7 +80,7 @@
         stat(s.access_granted_today, 'Access granted') +
         stat(s.contact_corrections, 'Contact fixes') +
         stat(s.email_group_flags, 'Email-group flags') +
-        stat(s.discrepancy_pending, 'Discrepancy queue') +
+        stat(s.discrepancy_pending, 'Help Table queue') +
         stat(s.payroll_only_checked_in, 'Payroll-only voted') +
         stat(s.voided, 'Voided') +
         (s.mail_enabled

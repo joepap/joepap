@@ -142,7 +142,7 @@
         // Rank / assignment on file — helps tell two same-name members apart.
         // (May be out of date; it's a disambiguation hint, not authoritative.)
         (!it.payrollOnly && (m.rank || m.assignment || m.platoon)
-          ? '<div class="sub" style="color:#8b98a9">' +
+          ? '<div class="sub" style="color:#5c6b7f">' +
             [m.rank, m.assignment, m.platoon ? 'Plt ' + m.platoon : ''].filter(Boolean).map(esc).join(' &middot; ') +
             '</div>' : '') +
         '</div>' +
@@ -156,6 +156,16 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+
+  // Glanceable timestamps: today → "14:05"; another day (two-day meeting!)
+  // → "7/18 14:05". Falls back to the raw string if the format is unexpected.
+  function fmtTs(ts) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2})/.exec(String(ts || ''));
+    if (!m) return String(ts || '');
+    var now = new Date();
+    var sameDay = now.getFullYear() === +m[1] && (now.getMonth() + 1) === +m[2] && now.getDate() === +m[3];
+    return sameDay ? m[4] : (+m[2]) + '/' + (+m[3]) + ' ' + m[4];
   }
 
   // Non-visual confirmation so a volunteer knows a check-in registered without
@@ -270,7 +280,7 @@
       (p.grade ? ' &middot; grade ' + esc(p.grade) : '') + (p.step ? ' &middot; step ' + esc(p.step) : '') + '</div>';
     html += '<div class="dues-pill ok">' + esc(p.eligibility.label) + '</div>';
     html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
-      'NOT IN NEP DATABASE — enroll at the help table</div>';
+      'NOT IN NEP DATABASE — enroll at the Help Table</div>';
     html += '<div class="banner yellow">On the payroll dues list but <strong>not in NEP</strong>. ' +
       'Gets a ballot &mdash; send to the Help Table to enroll (capture email/phone) and issue.</div>';
     html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Help Table</button>';
@@ -325,14 +335,14 @@
     // text/email — nothing is edited in the check-in line.
     if (m.source === 'payroll') {
       html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
-              'NOT IN NEP DATABASE — enroll at the help table</div>';
+              'NOT IN NEP DATABASE — enroll at the Help Table</div>';
     } else {
       html += '<div class="dues-pill ok">NEP DATABASE &#10003;' +
               (m.dues_status ? ' (' + esc(m.dues_status) + ')' : '') + '</div>';
     }
 
     if (m.checked_in) {
-      html += '<div class="banner red">ALREADY CHECKED IN at ' + esc(m.checked_in.ts) +
+      html += '<div class="banner red">ALREADY CHECKED IN at ' + esc(fmtTs(m.checked_in.ts)) +
               ' / ' + esc(m.checked_in.station) +
               (m.checked_in.ballot_no ? ' / Ballot #' + m.checked_in.ballot_no : '') + '</div>';
     }
@@ -340,7 +350,7 @@
     if (m.portal_ok === false) {
       html += '<div class="banner yellow">&#9888; No ConnectPlus portal access (status: ' +
               esc(m.portal_status) + ') — after check-in, tell them to ' +
-              '<strong>proceed to the help table</strong> (secondary table).</div>';
+              '<strong>proceed to the Help Table</strong> (secondary table).</div>';
     }
 
     html += '<label style="margin-top:14px">Verification method</label><div class="method-grid" id="methodGrid">';
@@ -442,7 +452,7 @@
     feedback('ok');
     var m = body.member;
     $('successName').textContent = m.first_name + ' ' + m.last_name + ' — checked in';
-    $('successBallot').textContent = body.ballot_no ? 'Ballot #' + body.ballot_no : '';
+    $('successBallot').textContent = body.ballot_no ? 'Ballot #' + body.ballot_no : '✓';
     $('successSub').textContent = body.ballot_no ? 'Hand them ballot #' + body.ballot_no : 'Hand them their ballot';
     $('successFlash').classList.remove('hidden');
     // Reset to a fresh scan/search screen IMMEDIATELY (behind the flash) so
@@ -460,7 +470,7 @@
     feedback('stop');
     var ex = body.existing || {};
     $('dupDetail').textContent = (body.member ? body.member.first_name + ' ' + body.member.last_name : '') +
-      ' — at ' + (ex.ts || '?') + ' / Station ' + (ex.station || '?') +
+      ' — at ' + (ex.ts ? fmtTs(ex.ts) : '?') + ' / ' + (ex.station || '?') +
       (ex.ballot_no ? ' / Ballot #' + ex.ballot_no : '');
     $('dupOverlay').classList.remove('hidden');
   }
@@ -509,7 +519,7 @@
       $('notFoundCard').classList.add('hidden');
       $('nfName').value = ''; $('nfNotes').value = '';
       $('searchBox').value = '';
-      renderResults([], '<div class="banner blue">&#10003; Logged. Direct the member to the help table.</div>');
+      renderResults([], '<div class="banner blue">&#10003; Logged. Direct the member to the Help Table.</div>');
       $('searchBox').focus();
     });
   };

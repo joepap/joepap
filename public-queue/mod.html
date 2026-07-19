@@ -46,7 +46,7 @@
   .num { background: #e6e9ee; color: #5c6b7f; font-weight: 800; border-radius: 10px;
          min-width: 42px; text-align: center; padding: 8px 0; }
   .face .name { font-size: 1.2rem; font-weight: 700; flex: 1; }
-  .face .ts { color: #8b98a9; font-size: .75rem; }
+  .face .ts { color: #5c6b7f; font-size: .75rem; }
   .face button { border: none; border-radius: 10px; font-weight: 800; padding: 12px 14px;
                  font-size: 1rem; cursor: pointer; }
   .bDone { background: #dcfce7; color: #15803d; }
@@ -56,11 +56,11 @@
   .tag.done { background: #dcfce7; color: #15803d; } .tag.skipped { background: #fee2e2; color: #b91c1c; }
   .resolved button { margin-left: auto; border: 1px solid #d8dee6; background: #fff; border-radius: 8px;
                      padding: 6px 10px; font-size: .8rem; }
-  .empty { text-align: center; color: #8b98a9; padding: 30px 0; font-size: 1.05rem; }
+  .empty { text-align: center; color: #5c6b7f; padding: 30px 0; font-size: 1.05rem; }
   h4 { margin: 16px 4px 8px; color: #5c6b7f; }
   .resetBtn { width: 100%; margin-top: 18px; padding: 12px; border: 2px solid #d8dee6; background: transparent;
-              color: #8b98a9; border-radius: 12px; font-weight: 700; }
-  .hint { text-align: center; color: #8b98a9; font-size: .8rem; margin-top: 8px; }
+              color: #5c6b7f; border-radius: 12px; font-weight: 700; }
+  .hint { text-align: center; color: #5c6b7f; font-size: .8rem; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -88,9 +88,9 @@
     <div id="list"></div>
     <div style="display:flex;gap:8px;margin:14px 0">
       <input type="text" id="addName" placeholder="Name (no phone)"
-             style="flex:2;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
+             style="flex:2;min-width:0;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
       <input type="text" id="addTopic" placeholder="Topic"
-             style="flex:2;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
+             style="flex:2;min-width:0;font-size:1.05rem;padding:12px;border:2px solid #d8dee6;border-radius:12px">
       <button id="addBtn" style="border:none;border-radius:12px;font-weight:800;padding:0 18px;
               background:#1d4ed8;color:#fff;font-size:1.3rem">+</button>
     </div>

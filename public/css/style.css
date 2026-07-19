@@ -178,3 +178,26 @@ table.data th { color: var(--muted); font-size: .8rem; text-transform: uppercase
 .sresult{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);
   border-radius:10px;padding:12px;margin-bottom:6px;font-size:1rem;min-height:48px}
 .sresult:active{background:#f6f3ee}
+
+/* ---------- freeze-night polish (visual QA) ---------- */
+/* Wide tables scroll inside their card instead of panning the whole page */
+@media (max-width: 640px) {
+  table.data { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+/* Rows of buttons wrap rather than run off the card edge */
+.input-row { flex-wrap: wrap; }
+/* <a class="btn blue"> links get the same blue skin as blue buttons */
+.btn.blue { background: var(--blue); color: #fff; }
+/* Status pills never break mid-word; multiple pills stack neatly */
+.result-row .flag { white-space: nowrap; }
+.result-row .flag-wrap { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex: 0 0 auto; }
+/* Empty header counter pill hides until it has content */
+.station-chip:empty { display: none; }
+/* Help Table outcome buttons: single column on narrow phones */
+@media (max-width: 480px) {
+  .outcome-btns { grid-template-columns: 1fr; }
+}
+/* Header tagline fits on phones */
+@media (max-width: 430px) {
+  header.appbar .brand .org .l2 { letter-spacing: 1px; }
+}

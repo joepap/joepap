@@ -188,13 +188,28 @@
       searchTimer = setTimeout(function () {
         api('/api/search?q=' + encodeURIComponent(term)).then(function (r) {
           if (r.status !== 200) { results.innerHTML = '<div class="muted small">' + (r.status === 0 ? 'No connection.' : 'Search failed.') + '</div>'; return; }
-          var rows = (r.body.members || []).map(function (m) { return { label: m.last_name + ', ' + m.first_name + (m.member_no ? ' · #' + m.member_no : ''), body: { member_id: m.id } }; });
-          (r.body.payroll_only || []).forEach(function (p) { rows.push({ label: p.last_name + ', ' + p.first_name + ' · payroll (not in NEP)', body: { payroll_id: p.payroll_id } }); });
+          // Each row carries its eligibility pill so the worker sees
+          // green/red/yellow before even tapping.
+          var pill = function (el) {
+            if (!el) return '';
+            var color = el.color === 'green' ? 'green' : el.color === 'yellow' ? 'yellow' : 'red';
+            return ' <span class="pill ' + color + '" style="font-size:.72rem;padding:2px 8px;margin:0">' + esc(el.label || '') + '</span>';
+          };
+          var rows = (r.body.members || []).map(function (m) {
+            return { html: esc(m.last_name + ', ' + m.first_name + (m.member_no ? ' · #' + m.member_no : '')) +
+              (m.checked_in ? ' <span class="pill red" style="font-size:.72rem;padding:2px 8px;margin:0">CHECKED IN</span>' : pill(m.eligibility)),
+              body: { member_id: m.id } };
+          });
+          (r.body.payroll_only || []).forEach(function (p) {
+            rows.push({ html: esc(p.last_name + ', ' + p.first_name) +
+              ' <span class="pill yellow" style="font-size:.72rem;padding:2px 8px;margin:0">PAYROLL · NOT IN NEP</span>',
+              body: { payroll_id: p.payroll_id } });
+          });
           if (!rows.length) { results.innerHTML = '<div class="muted small">No match.</div>'; return; }
           results.innerHTML = '';
           rows.slice(0, 8).forEach(function (row) {
             var btn = document.createElement('button');
-            btn.className = 'sresult'; btn.textContent = row.label;
+            btn.className = 'sresult'; btn.innerHTML = row.html;
             btn.onclick = function () { addToQueue(row.body, results); };
             results.appendChild(btn);
           });
