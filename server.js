@@ -882,7 +882,8 @@ app.get('/api/stats', (req, res) => {
   res.json({
     members_total: one('SELECT COUNT(*) c FROM members').c,
     checked_in: one('SELECT COUNT(*) c FROM checkins WHERE voided_at IS NULL').c,
-    ballots_issued: one('SELECT COUNT(*) c FROM checkins WHERE voided_at IS NULL AND ballot_no IS NOT NULL').c,
+    // Blind ballots: every non-voided check-in = one ballot handed out.
+    ballots_issued: one('SELECT COUNT(*) c FROM checkins WHERE voided_at IS NULL').c,
     voided: one('SELECT COUNT(*) c FROM checkins WHERE voided_at IS NOT NULL').c,
     not_found: one('SELECT COUNT(*) c FROM not_found').c,
     access_granted_today: one('SELECT COUNT(*) c FROM members WHERE access_granted_at IS NOT NULL').c,
@@ -1147,7 +1148,9 @@ app.get('/api/config', (req, res) => {
 });
 
 app.post('/api/config', requireAdmin, (req, res) => {
-  const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'station_pin', 'email_ok_groups', 'email_bad_groups',
+  // ballot_numbering is intentionally NOT settable — Local 36 ballots are
+  // blind; db.js forces it off on every boot.
+  const allowed = ['stale_days', 'admin_pin', 'station_pin', 'email_ok_groups', 'email_bad_groups',
     'mail_enabled', 'mail_host', 'mail_port', 'mail_user', 'mail_from', 'mail_subject', 'mail_body', 'meeting_link',
     'collect_datarecord_contact'];
   for (const k of allowed) {

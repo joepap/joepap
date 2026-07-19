@@ -74,7 +74,7 @@
         (s.payroll_total ? stat(turnout + '%', 'Turnout (of dues-payers)') : '') +
         (s.payroll_total ? stat(Math.max(0, s.payroll_total - s.checked_in), 'Eligible not yet in') : '') +
         stat(s.payroll_total || 0, 'On payroll (eligible)') +
-        stat(s.ballots_issued, 'Ballots issued') +
+        stat(s.checked_in, 'Ballots handed out') +
         stat(s.members_total, 'Roster size') +
         stat(s.not_found, 'Not found') +
         stat(s.access_granted_today, 'Access granted') +
@@ -368,7 +368,6 @@
   function loadSettings() {
     api('/api/config').then(function (r) { return r.body; }).then(function (c) {
       $('staleDays').value = c.stale_days;
-      $('ballotNumbering').value = c.ballot_numbering;
       $('emailOkGroups').value = c.email_ok_groups || '';
       $('emailBadGroups').value = c.email_bad_groups || '';
       $('curStationPin').textContent = c.station_pin || '';
@@ -422,7 +421,6 @@
   $('saveSettings').onclick = function () {
     var body = {
       stale_days: $('staleDays').value,
-      ballot_numbering: $('ballotNumbering').value,
       email_ok_groups: $('emailOkGroups').value,
       email_bad_groups: $('emailBadGroups').value,
       collect_datarecord_contact: $('collectDataRecord').checked ? 'on' : 'off'

@@ -107,7 +107,8 @@ but don't buzz.
    Order matters: roster → payroll → dues block.
 3. **PINs**: everything is 3636 — station password, admin PIN, queue moderator.
    Tell volunteers "3636" and that's the whole briefing.
-4. Ballots are **blind** — numbering is off by default (Settings can verify).
+4. Ballots are **blind** — numbering is permanently off (the app never shows a
+   ballot number). "Ballots handed out" on the dashboard = the check-in count.
 5. **Print**: the payroll reference (`/payroll-print.html`), the registration QR
    cards (`/qr-card.html`), the ONE event QR — a TinyURL pointing at the
    **`/meeting` hub page** on the queue server (login / register / question

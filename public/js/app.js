@@ -5,8 +5,10 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
+  // Verification methods offered at the table: License or Department ID
+  // (per the E-board). 'Other' stays as the escape hatch — it requires a
+  // typed note. portal_id remains valid server-side for historical rows only.
   var METHOD_LABELS = {
-    portal_id: 'Portal + ID (green lane)',
     license_scan: 'License',
     dept_id: 'Department ID',
     other: 'Other'
