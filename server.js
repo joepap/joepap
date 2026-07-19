@@ -39,6 +39,12 @@ app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: function (res) { res.set('Cache-Control', 'no-cache'); }
 }));
 
+// Clean route for the staff hub (one TinyURL → menu of all staff stations).
+app.get('/staff', (req, res) => {
+  res.set('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'staff.html'), { cacheControl: false });
+});
+
 // ---------- helpers ----------
 
 function requireAdmin(req, res, next) {

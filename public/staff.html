@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local 36 — Staff</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: #f2f0ec; color: #16181d; min-height: 100vh;
+         display: flex; flex-direction: column; align-items: center; }
+  header { background: linear-gradient(180deg,#1b1e24,#14161a); color: #fff; width: 100%;
+           padding: 16px; display: flex; align-items: center; justify-content: center; gap: 14px;
+           border-bottom: 4px solid #b91c1c; box-shadow: inset 0 -8px 0 -4px #d9a521; }
+  header img { height: 52px; width: auto; border-radius: 50%; box-shadow: 0 0 0 2px #d9a521; }
+  header .org { text-align: left; line-height: 1.25; }
+  header .l1 { font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; font-size: 1.05rem; }
+  header .l2 { font-size: .72rem; color: #d9a521; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; }
+  main { width: 100%; max-width: 480px; padding: 22px 18px 34px; }
+  h2 { text-align: center; font-size: 1.15rem; margin-bottom: 4px; }
+  .sub { text-align: center; color: #5c6b7f; font-size: .9rem; margin-bottom: 18px; }
+  a.item { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #d8dee6;
+           border-top: 4px solid #b91c1c; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+           text-decoration: none; color: #16181d; box-shadow: 0 1px 4px rgba(16,24,40,.08); min-height: 68px; }
+  a.item:active { background: #f6f3ee; }
+  .ico { min-width: 44px; height: 44px; border-radius: 12px; background: #16181d; color: #fff;
+         font-size: 1.4rem; display: flex; align-items: center; justify-content: center; }
+  .t1 { font-weight: 800; font-size: 1.05rem; }
+  .t2 { color: #5c6b7f; font-size: .84rem; margin-top: 2px; line-height: 1.35; }
+  .secondary { margin-top: 8px; display: flex; gap: 10px; }
+  .secondary a { flex: 1; text-align: center; background: #fff; border: 1px solid #d8dee6; border-radius: 12px;
+                 padding: 12px; text-decoration: none; color: #16181d; font-weight: 700; font-size: .9rem; }
+  .secondary a:active { background: #f6f3ee; }
+  .note { text-align: center; color: #8b98a9; font-size: .78rem; margin-top: 16px; line-height: 1.4; }
+  footer { color: #8b98a9; font-size: .75rem; padding: 14px; text-align: center;
+           letter-spacing: 1px; font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <img src="/logo.png" alt="" onerror="this.style.display='none'">
+  <div class="org">
+    <div class="l1">DC Fire Fighters &middot; Local 36</div>
+    <div class="l2">Ratification &mdash; Staff</div>
+  </div>
+</header>
+<main>
+  <h2>Pick your station</h2>
+  <div class="sub">Each one asks for its password (3636) when you open it.</div>
+
+  <a class="item" href="/">
+    <div class="ico">🟢</div>
+    <div><div class="t1">Check-in table</div>
+    <div class="t2">Search &amp; scan members, issue ballots. Enter your name + 3636.</div></div>
+  </a>
+
+  <a class="item" href="/discrepancy.html">
+    <div class="ico">🚩</div>
+    <div><div class="t1">Help Table</div>
+    <div class="t2">Resolve flagged members and collect contact info. PIN 3636.</div></div>
+  </a>
+
+  <a class="item" href="/admin.html">
+    <div class="ico">📊</div>
+    <div><div class="t1">Admin Dashboard</div>
+    <div class="t2">Live counts &amp; turnout, imports, exports (and a Help Table tab). PIN 3636.</div></div>
+  </a>
+
+  <a class="item" id="modLink" href="#">
+    <div class="ico">🎤</div>
+    <div><div class="t1">Line Moderator</div>
+    <div class="t2">Run the question line — call people to the mic. PIN 3636.</div></div>
+  </a>
+
+  <div class="secondary">
+    <a id="displayLink" href="#">📺 Projector display</a>
+    <a id="qlineLink" href="#">🙋 Question line (member view)</a>
+  </div>
+
+  <div class="note">The question line runs on a separate address (no port number).
+    These links point there automatically — they'll keep working even on the backup laptop.</div>
+</main>
+<footer>LOCAL No. 36 of the INTERNATIONAL ASSOCIATION of FIRE FIGHTERS &middot; AFL-CIO</footer>
+<script>
+  // The question-line pages live on the QUEUE server (port 443 on this same
+  // host), not the check-in server (:8443). Build those links from the current
+  // hostname so they survive a failover to a different machine's URL.
+  var q = 'https://' + location.hostname;
+  document.getElementById('modLink').href = q + '/mod';
+  document.getElementById('displayLink').href = q + '/display';
+  document.getElementById('qlineLink').href = q + '/';
+</script>
+</body>
+</html>
