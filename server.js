@@ -53,6 +53,17 @@ function requireAdmin(req, res, next) {
   res.status(401).json({ error: 'admin PIN required' });
 }
 
+// The Help Table is a STAFF station (password 3636, same as check-in), while
+// the Admin Dashboard has its own organizer PIN. Accept either credential in
+// either header so the standalone page (staff password) and the admin tab
+// (admin PIN) both work.
+function requireHelpTable(req, res, next) {
+  const given = [req.get('X-Admin-Pin') || '', req.get('X-Station-Pin') || '', req.query.pin || ''];
+  const valid = [getConfig(db, 'station_pin'), getConfig(db, 'admin_pin')];
+  if (given.some(g => g && valid.includes(g))) return next();
+  res.status(401).json({ error: 'PIN required' });
+}
+
 // Every station request needs the station PIN (or the admin PIN). The app
 // may be served over the public internet (volunteer phones on cellular via
 // Tailscale Funnel), so member data must never be reachable un-PINned.
@@ -740,7 +751,7 @@ app.post('/api/discrepancy', (req, res) => {
 });
 
 // The queue for the Discrepancy Table dashboard.
-app.get('/api/discrepancy/list', requireAdmin, (req, res) => {
+app.get('/api/discrepancy/list', requireHelpTable, (req, res) => {
   const pending = db.prepare(
     "SELECT * FROM discrepancies WHERE status = 'pending' ORDER BY id"
   ).all().map(d => ({ ...d, detail: discrepancyDetail(d) }));
@@ -775,7 +786,7 @@ function discrepancyDetail(d) {
 //   { outcome, issue_ballot, email, phone, note, by, station }
 // If issue_ballot: a payroll-only person becomes a provisional member, then a
 // check-in is recorded with method 'discrepancy'. Contact is captured too.
-app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
+app.post('/api/discrepancy/:id/resolve', requireHelpTable, (req, res) => {
   const b = req.body || {};
   const d = db.prepare("SELECT * FROM discrepancies WHERE id = ? AND status = 'pending'").get(req.params.id);
   if (!d) return res.status(404).json({ error: 'pending discrepancy not found' });
@@ -1150,7 +1161,7 @@ app.get('/api/config', (req, res) => {
     station_pin: getConfig(db, 'station_pin'),
     // Booleans only — never echo the admin PIN itself.
     admin_equals_station: getConfig(db, 'admin_pin') === getConfig(db, 'station_pin'),
-    admin_is_default: getConfig(db, 'admin_pin') === '3636',
+    admin_is_default: getConfig(db, 'admin_pin') === '6363',
     collect_datarecord_contact: getConfig(db, 'collect_datarecord_contact'),
     // Check-in email settings — the password itself never leaves the server,
     // only whether one is stored.

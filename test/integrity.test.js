@@ -107,6 +107,16 @@ test('audit-log export is admin-gated and present', async () => {
   assert.strictEqual((await fetch(base + '/api/export/audit-log.csv', { headers: { 'X-Admin-Pin': 'apin' } })).status, 200);
 });
 
+test('Help Table accepts the staff password; admin endpoints still refuse it', async () => {
+  const S2 = { 'X-Station-Pin': 'spin' };
+  assert.strictEqual((await fetch(base + '/api/discrepancy/list', { headers: S2 })).status, 200,
+    'staff password opens the Help Table queue');
+  assert.strictEqual((await fetch(base + '/api/export/checkins.csv', { headers: S2 })).status, 401,
+    'staff password must NOT open admin exports');
+  assert.strictEqual((await fetch(base + '/api/discrepancy/list', { headers: { 'X-Admin-Pin': 'apin' } })).status, 200,
+    'admin PIN still works for the Help Table (admin tab)');
+});
+
 test('config never leaks the admin pin but reports collision booleans', async () => {
   const c = await (await get('/api/config')).json();
   assert.strictEqual(c.admin_pin, undefined);

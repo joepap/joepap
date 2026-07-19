@@ -30,17 +30,18 @@ Base = `https://dcjoe-claude-macmini.tail5dba36.ts.net`
 
 The hub is a menu: Check-in table · Help Table · Admin Dashboard · Line
 Moderator (+ projector / question-line shortcuts). Each still asks for its
-PIN (3636), so it's safe that everyone sees every button. The moderator /
+password (staff 3636; Admin needs the organizer PIN 6363), so it's safe that
+everyone sees every button. The moderator /
 display / question-line links build from the address bar, so they survive a
 failover to the laptop. This one link replaces the individual worker URLs
 below — those still work if you want them:
 
 | What | URL | PIN |
 |---|---|---|
-| Check-in stations | base `:8443` | station password |
-| Help Table | base `:8443/discrepancy.html` — the address still says "discrepancy", same page. Also a tab inside Admin. | admin PIN |
-| Admin dashboard | base `:8443/admin.html` | admin PIN |
-| Question-line moderator | base `/mod` | moderator PIN |
+| Check-in stations | base `:8443` | staff password (3636) |
+| Help Table | base `:8443/discrepancy.html` — the address still says "discrepancy", same page. Also a tab inside Admin. | staff password (3636) |
+| Admin dashboard | base `:8443/admin.html` | organizer PIN (6363) |
+| Question-line moderator | base `/mod` | staff password (3636) |
 | Projector display | base `/display` | none |
 
 **Print-from-your-browser pages:** base `:8443/payroll-print.html` (payroll
@@ -66,13 +67,12 @@ Check-in email as the "Meeting page link" so the confirmation emails use it too.
 - 🔴 **Known non-payers** (the union's highlighted list) → blocked outright.
 - See DISCREPANCY-TABLE-GUIDE.md (the Help Table worker guide) — print it.
 
-All three PINs are **3636** (uniform, by choice): the **station password**
-(each volunteer enters it once along with **their own name** — check-ins are
-logged per volunteer; the current value is shown in Admin → Settings), the
-**admin PIN** (dashboard/imports/voids/Help Table), and the **queue moderator
-PIN**. One number to remember for everyone. Station and admin PINs can be
-changed any time in Admin → Settings; the moderator PIN is set on the mini
-itself.
+Two passwords: the **staff password 3636** covers every worker station —
+check-in tables, the Help Table, and the question-line moderator (each
+volunteer enters it once along with their own name at check-in). The **Admin
+Dashboard has its own organizer PIN: 6363** (live counts, settings, imports,
+exports, voids — organizer only). Both can be changed in Admin → Settings;
+the moderator PIN is set on the mini itself.
 
 **Volunteer briefing (the whole thing):** open the check-in link → type YOUR
 NAME → password 3636 → pick your table ("Check-in table" or "Secondary Help
@@ -106,8 +106,9 @@ but don't buzz.
    **payroll dues list** (Payroll section), then re-run the non-payer block if
    the roster changed: `node scripts/apply-dues-block.js` in the project folder.
    Order matters: roster → payroll → dues block.
-3. **PINs**: everything is 3636 — station password, admin PIN, queue moderator.
-   Tell volunteers "3636" and that's the whole briefing.
+3. **PINs**: staff password 3636 (check-in, Help Table, moderator) — tell
+   volunteers "3636" and that's the whole briefing. Admin Dashboard: 6363
+   (keep that one to yourself).
 4. Ballots are **blind** — numbering is permanently off (the app never shows a
    ballot number). "Ballots handed out" on the dashboard = the check-in count.
 5. **Print**: the payroll reference (`/payroll-print.html`), the registration QR

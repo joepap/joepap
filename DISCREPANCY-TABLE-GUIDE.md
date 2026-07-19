@@ -4,8 +4,9 @@
 
 You handle everyone the main check-in tables can't finish on their own.
 Open **`<server-link>/discrepancy.html`** on your device (the address says
-"discrepancy" — it opens the Help Table), enter the admin PIN. Or use the
-**Help Table tab inside the Admin page** — same queue, same PIN.
+"discrepancy" — it opens the Help Table), enter the **staff password (3636 —
+same as check-in)**. (The organizer can also work this queue from the Help
+Table tab inside the Admin page.)
 Keep the **printed payroll list** (and the original scanned report) at your table.
 
 ## Who lands in your queue, and what to do
