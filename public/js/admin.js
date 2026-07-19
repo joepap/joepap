@@ -371,10 +371,6 @@
       $('emailOkGroups').value = c.email_ok_groups || '';
       $('emailBadGroups').value = c.email_bad_groups || '';
       $('curStationPin').textContent = c.station_pin || '';
-      // Security nudge: warn if the admin PIN is still the default or the same
-      // as the station password (any volunteer could then reset/void/export).
-      var warn = $('pinWarn');
-      if (warn) warn.style.display = (c.admin_equals_station || c.admin_is_default) ? '' : 'none';
       $('mailHost').value = c.mail_host || '';
       $('mailPort').value = c.mail_port || '587';
       $('mailUser').value = c.mail_user || '';

@@ -51,14 +51,12 @@ the "Meeting page link" so the confirmation emails use it too.
 - 🔴 **Known non-payers** (the union's highlighted list) → blocked outright.
 - See DISCREPANCY-TABLE-GUIDE.md — print it for that table's worker.
 
-All three PINs are **3636** out of the box (uniform): the **station password**
+All three PINs are **3636** (uniform, by choice): the **station password**
 (each volunteer enters it once along with **their own name** — check-ins are
 logged per volunteer; the current value is shown in Admin → Settings), the
-**admin PIN** (dashboard/imports/voids), and the **queue moderator PIN**.
-⚠️ Because station = admin right now, any volunteer with the station password
-could open the admin dashboard — before the event, change the **admin PIN**
-to something only you and the Discrepancy worker know (Settings), even if the
-station password stays 3636.
+**admin PIN** (dashboard/imports/voids/Help Table), and the **queue moderator
+PIN**. One number to remember for everyone. They can be changed any time in
+Admin → Settings if you ever want to.
 
 ## One-time server setup (already done, listed for rebuild)
 
@@ -85,8 +83,8 @@ station password stays 3636.
    **payroll dues list** (Payroll section), then re-run the non-payer block if
    the roster changed: `node scripts/apply-dues-block.js` in the project folder.
    Order matters: roster → payroll → dues block.
-3. **Change all PINs** from defaults (station, admin, queue moderator). Tell
-   volunteers only the station password; the Discrepancy worker gets the admin PIN.
+3. **PINs**: everything is 3636 — station password, admin PIN, queue moderator.
+   Tell volunteers "3636" and that's the whole briefing.
 4. Ballots are **blind** — numbering is off by default (Settings can verify).
 5. **Print**: the payroll reference (`/payroll-print.html`), the registration QR
    cards (`/qr-card.html`), the ONE event QR — a TinyURL pointing at the

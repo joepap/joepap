@@ -272,8 +272,8 @@
     html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
       'NOT IN NEP DATABASE — enroll at the help table</div>';
     html += '<div class="banner yellow">On the payroll dues list but <strong>not in NEP</strong>. ' +
-      'Gets a ballot &mdash; send to the Discrepancy Table to enroll (capture email/phone) and issue.</div>';
-    html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Discrepancy Table</button>';
+      'Gets a ballot &mdash; send to the Help Table to enroll (capture email/phone) and issue.</div>';
+    html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Help Table</button>';
     html += '<button class="ghost mt" id="closeMember" style="width:100%">Back</button>';
     $('memberCard').innerHTML = html;
     $('sendDisc').onclick = function () { sendToDiscrepancy(p); };
@@ -359,8 +359,8 @@
     } else {
       // Red/blocked at the main table — cannot issue a ballot here. Route to
       // the Discrepancy Table for a human to verify/resolve.
-      html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Discrepancy Table</button>';
-      html += '<div class="muted small mt">Not eligible at this table. The Discrepancy Table will verify and decide.</div>';
+      html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Help Table</button>';
+      html += '<div class="muted small mt">Not eligible at this table. The Help Table will verify and decide.</div>';
     }
     html += '<button class="ghost mt" id="closeMember" style="width:100%">Back</button>';
 
@@ -389,7 +389,7 @@
     $('sendDisc').disabled = true;
     api('/api/discrepancy', { method: 'POST', body: JSON.stringify(body) }).then(function (r) {
       if (r.status === 200) {
-        renderResults([], '<div class="banner blue">Sent to the Discrepancy Table. Direct ' +
+        renderResults([], '<div class="banner blue">Sent to the Help Table. Direct ' +
           esc(m.first_name) + ' there.</div>');
         $('memberCard').classList.add('hidden');
       } else { alert('Could not send: ' + (r.body.error || r.status)); $('sendDisc').disabled = false; }

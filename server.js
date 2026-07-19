@@ -116,7 +116,7 @@ function eligibilityOf(m) {
       return { ballot: true, color: 'green', state: 'verified', label: 'DUES VERIFIED ✓' };
     }
     return { ballot: false, color: 'red', state: 'verify',
-      label: 'DUES NOT VERIFIED — send to Discrepancy Table' };
+      label: 'DUES NOT VERIFIED — send to Help Table' };
   }
   // No payroll list loaded => fall back to NEP Member Status.
   if (Number(m.dues_ok) === 1) {
