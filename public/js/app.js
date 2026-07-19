@@ -7,7 +7,7 @@
 
   var METHOD_LABELS = {
     portal_id: 'Portal + ID (green lane)',
-    license_scan: 'License scan',
+    license_scan: 'License',
     dept_id: 'Department ID',
     other: 'Other'
   };

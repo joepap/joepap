@@ -59,7 +59,7 @@
   }
 
   // ---------- stats ----------
-  var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License scan', dept_id: 'Dept ID',
+  var METHOD_LABELS = { portal_id: 'Portal + ID', license_scan: 'License', dept_id: 'Dept ID',
     other: 'Other', payroll_dues: 'Payroll dues', discrepancy: 'Help Table' };
 
   var lastStats = null;
