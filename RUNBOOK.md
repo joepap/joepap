@@ -22,7 +22,18 @@ Base = `https://dcjoe-claude-macmini.tail5dba36.ts.net`
 | Member login (hub item 1) | `https://district-of-columbia-firefighters-association-local-36.connectplus.app/login` |
 | Register (hub item 2 + QR cards) | same site + `/register` |
 
-**Worker-facing — text to the specific person; never printed:**
+**Staff — ONE link for the whole team (TinyURL this):**
+
+| What | URL |
+|---|---|
+| **Staff hub** — pick your station | base `:8443/staff` |
+
+The hub is a menu: Check-in table · Help Table · Admin Dashboard · Line
+Moderator (+ projector / question-line shortcuts). Each still asks for its
+PIN (3636), so it's safe that everyone sees every button. The moderator /
+display / question-line links build from the address bar, so they survive a
+failover to the laptop. This one link replaces the individual worker URLs
+below — those still work if you want them:
 
 | What | URL | PIN |
 |---|---|---|
@@ -35,9 +46,9 @@ Base = `https://dcjoe-claude-macmini.tail5dba36.ts.net`
 **Print-from-your-browser pages:** base `:8443/payroll-print.html` (payroll
 paper reference) and base `:8443/qr-card.html` (registration QR cards).
 
-Three TinyURLs cover everything printed: meeting hub, check-in stations,
-question line. Paste the meeting-hub TinyURL into Admin → Check-in email as
-the "Meeting page link" so the confirmation emails use it too.
+**Two TinyURLs cover it:** the members' question-line/meeting link, and the
+**staff hub** (`:8443/staff`). Paste the meeting-hub TinyURL into Admin →
+Check-in email as the "Meeting page link" so the confirmation emails use it too.
 
 ## Eligibility model (payroll is the authority)
 
