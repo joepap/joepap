@@ -46,6 +46,28 @@ test('a portal-active member is NOT auto-queued', async () => {
   assert.ok(!q.pending.find(x => x.member_id === id), 'portal-active member should not be queued');
 });
 
+test('payroll-only direct check-in: ballot at main table + auto-queued for enrollment', async () => {
+  const p = db.prepare(`INSERT INTO payroll_dues (emplid,last_name,first_name,norm_last,norm_first,member_id)
+    VALUES ('077','Direct','Dana','DIRECT','DANA',NULL)`).run();
+  const pid = p.lastInsertRowid;
+  const r1 = await (await post('/api/checkin',
+    { payroll_id: pid, station: 'T1', verification_method: 'payroll_dues' })).json();
+  assert.strictEqual(r1.ok, true);
+  assert.strictEqual(r1.collect_contact, true, 'should be auto-queued at the Help Table');
+  assert.strictEqual(r1.member.last_name, 'Direct');
+  // Queued as a GOT BALLOT / GET CONTACT item with the enrollment reason.
+  const q = await (await get('/api/discrepancy/list', A)).json();
+  const item = q.pending.find(x => x.name === 'Direct, Dana');
+  assert.ok(item, 'enrollment item should be pending');
+  assert.strictEqual(item.kind, 'collect_contact');
+  assert.match(item.reason, /enroll in NEP/);
+  // Second direct attempt = duplicate, not a second ballot or second member.
+  const r2 = await post('/api/checkin', { payroll_id: pid, station: 'T2', verification_method: 'payroll_dues' });
+  assert.strictEqual(r2.status, 409);
+  assert.strictEqual((await r2.json()).error, 'already_checked_in');
+  assert.strictEqual(db.prepare("SELECT COUNT(*) c FROM members WHERE last_name='Direct'").get().c, 1);
+});
+
 test('payroll-only person cannot be sent to the Help Table twice (dedup)', async () => {
   const p = db.prepare(`INSERT INTO payroll_dues (emplid,last_name,first_name,norm_last,norm_first,member_id)
     VALUES ('09','Payonly','Pat','PAYONLY','PAT',NULL)`).run();

@@ -71,9 +71,9 @@
       var html = '';
       if (item.kind === 'collect_contact') {
         html += '<div class="pill green">✓ Checked in &amp; issued a ballot</div>';
-        html += '<div class="kv muted small">This member is a <b>data record</b> in NEP (no online portal account). ' +
-          'Collect a personal email and/or phone so we can send a portal invite after the meeting. ' +
-          'They already have their ballot — nothing else is needed.</div>';
+        html += '<div class="kv muted small">They <b>already have their ballot</b> — nothing to decide. ' +
+          'Collect a personal email and/or phone (see the reason line above: portal invite, or ' +
+          'NEP enrollment — for enrollment also hand them a registration QR card).</div>';
         if (det.kind === 'member' && det.member)
           html += '<div class="kv"><b>Member #</b> ' + esc(det.member.member_no || '—') +
             '  <b>NEP status</b> ' + esc(det.member.dues_status || '—') + '</div>';

@@ -28,9 +28,13 @@ Keep the **printed payroll list** (and the original scanned report) at your tabl
    Ballot → **Override**. No ballot → **No ballot** (logged).
 
 **🟡 payroll-only** (paying dues via payroll but not in the NEP system)
-1. Confirmed dues-payers — they **get a ballot**.
-2. Ask for their **personal email** (not @dc.gov) and phone; type them in.
-3. **✓ Override — issue ballot**, then hand them a **registration QR card**.
+1. Usually they arrive **already holding a ballot** (the main table issues it)
+   and show up in your list as **"GOT BALLOT · GET CONTACT"** with an
+   "enroll in NEP" reason — just collect their **personal email** (not
+   @dc.gov) and phone, tap **✓ Save contact & done**, and hand them a
+   **registration QR card**.
+2. If one arrives **without** a ballot (sent over instead): capture the
+   contact, then **✓ Override — issue ballot**, plus the QR card.
 
 **🔴 "NON DUES-PAYING MEMBER"** (on the union's known non-payer list)
 - No ballot unless they can show they've started paying (E-board call).

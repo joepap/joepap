@@ -579,14 +579,40 @@ app.get('/api/members/:id', (req, res) => {
 
 // ---------- check-in ----------
 
+// A payroll-only person (paying dues, not in NEP) becomes a provisional
+// member record so the one-ballot unique index protects them like everyone
+// else. Reuses the existing member if one was already created for this
+// payroll row — never a duplicate.
+function provisionalFromPayroll(p) {
+  if (p.member_id) return p.member_id;
+  const full = [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(' ');
+  const info = db.prepare(`INSERT INTO members
+    (member_no, last_name, first_name, middle_name, full_name, dues_status, dues_ok,
+     payroll_ok, source, norm_last, norm_first)
+    VALUES ('', ?, ?, ?, ?, 'Payroll dues', 1, 1, 'payroll', ?, ?)`)
+    .run(p.last_name, p.first_name, p.middle_name, full,
+      match.normalizeName(p.last_name), match.normalizeName(p.first_name));
+  db.prepare('UPDATE payroll_dues SET member_id = ? WHERE id = ?').run(info.lastInsertRowid, p.id);
+  return info.lastInsertRowid;
+}
+
 app.post('/api/checkin', (req, res) => {
-  const { member_id, station, verification_method, method_note } = req.body || {};
+  const { station, verification_method, method_note } = req.body || {};
+  let member_id = (req.body || {}).member_id;
   const methods = ['portal_id', 'license_scan', 'dept_id', 'other', 'payroll_dues', 'discrepancy'];
-  if (!member_id || !station || !methods.includes(verification_method)) {
-    return res.status(400).json({ error: 'member_id, station, verification_method required' });
+  if ((!member_id && !(req.body || {}).payroll_id) || !station || !methods.includes(verification_method)) {
+    return res.status(400).json({ error: 'member_id (or payroll_id), station, verification_method required' });
   }
   if (verification_method === 'other' && !(method_note || '').trim()) {
     return res.status(400).json({ error: 'note required for method "other"' });
+  }
+  // Payroll-only direct issue: the payroll list IS the dues verification, so
+  // the main table can issue the ballot right there (Help Table enrollment is
+  // queued automatically below).
+  if (!member_id && req.body.payroll_id) {
+    const p = db.prepare('SELECT * FROM payroll_dues WHERE id = ?').get(req.body.payroll_id);
+    if (!p) return res.status(404).json({ error: 'payroll row not found' });
+    member_id = provisionalFromPayroll(p);
   }
   const m = db.prepare('SELECT * FROM members WHERE id = ?').get(member_id);
   if (!m) return res.status(404).json({ error: 'member not found' });
@@ -619,15 +645,21 @@ app.post('/api/checkin', (req, res) => {
       return { checkin_id: info.lastInsertRowid, ballot_no: ballotNo };
     })();
     audit(db, 'checkin', `member ${member_id} (${m.last_name}, ${m.first_name}) via ${verification_method}`, station);
-    // "Data record" (in NEP, no active portal account) → queue at the Help
-    // Table to collect email/phone for a post-meeting portal invite. They
-    // already have their ballot; this never blocks or slows check-in.
-    if (getConfig(db, 'collect_datarecord_contact') === 'on' && portalOk(m.portal_status) === false) {
+    // Auto-queue at the Help Table (they already HAVE their ballot; this
+    // never blocks or slows check-in):
+    //  - "data record": in NEP, no portal account → collect contact for invite
+    //  - payroll-only provisional: not in NEP at all → enroll + collect contact
+    const isPayrollOnly = m.source === 'payroll';
+    if (getConfig(db, 'collect_datarecord_contact') === 'on' &&
+        (portalOk(m.portal_status) === false || isPayrollOnly)) {
+      const reason = isPayrollOnly
+        ? 'Payroll-only — enroll in NEP (collect email/phone + QR card)'
+        : 'Data record — collect contact for portal invite';
       const dup = db.prepare("SELECT id FROM discrepancies WHERE member_id = ? AND status = 'pending'").get(member_id);
       if (!dup) {
         db.prepare(`INSERT INTO discrepancies (member_id, name, reason, from_station, kind)
-          VALUES (?, ?, 'Data record — collect contact for portal invite', ?, 'collect_contact')`)
-          .run(member_id, `${m.last_name}, ${m.first_name}`, station);
+          VALUES (?, ?, ?, ?, 'collect_contact')`)
+          .run(member_id, `${m.last_name}, ${m.first_name}`, reason, station);
       }
       result.collect_contact = true;
     }
@@ -761,26 +793,13 @@ app.post('/api/discrepancy/:id/resolve', requireAdmin, (req, res) => {
   const tx = db.transaction(() => {
     let member_id = d.member_id;
 
-    // Payroll-only person getting a ballot → create a provisional member —
-    // BUT only if one wasn't already created for this payroll row in an
-    // earlier resolution. Re-using the existing member_id means the unique
-    // active-check-in index will (correctly) block a second ballot.
+    // Payroll-only person getting a ballot → create (or reuse) the
+    // provisional member; reuse means the unique active-check-in index will
+    // correctly block a second ballot.
     const pm = /payroll_id:(\d+)/.exec(d.note || '');
     if (!member_id && pm && b.issue_ballot) {
       const p = db.prepare('SELECT * FROM payroll_dues WHERE id = ?').get(pm[1]);
-      if (p && p.member_id) {
-        member_id = p.member_id;              // already enrolled — reuse, don't duplicate
-      } else if (p) {
-        const full = [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(' ');
-        const info = db.prepare(`INSERT INTO members
-          (member_no, last_name, first_name, middle_name, full_name, dues_status, dues_ok,
-           payroll_ok, source, norm_last, norm_first)
-          VALUES ('', ?, ?, ?, ?, 'Payroll dues', 1, 1, 'payroll', ?, ?)`)
-          .run(p.last_name, p.first_name, p.middle_name, full,
-            match.normalizeName(p.last_name), match.normalizeName(p.first_name));
-        member_id = info.lastInsertRowid;
-        db.prepare('UPDATE payroll_dues SET member_id = ? WHERE id = ?').run(member_id, p.id);
-      }
+      if (p) member_id = provisionalFromPayroll(p);
     }
 
     // Capture contact for the enrollment follow-up.

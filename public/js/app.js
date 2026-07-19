@@ -284,10 +284,33 @@
     html += '<div class="dues-pill" style="background:#fef9c3;color:#a16207;border:2px solid #facc15">' +
       'NOT IN NEP DATABASE — enroll at the Help Table</div>';
     html += '<div class="banner yellow">On the payroll dues list but <strong>not in NEP</strong>. ' +
-      'Gets a ballot &mdash; send to the Help Table to enroll (capture email/phone) and issue.</div>';
-    html += '<button class="big warn mt" id="sendDisc">&rarr; Send to Help Table</button>';
+      'Issue the ballot here &mdash; they are added to the Help Table list automatically ' +
+      'to enroll (email/phone + registration card). Point them there on their way.</div>';
+    html += '<button class="big primary mt" id="doCheckinPayroll">&#10003; Check In + Issue Ballot</button>';
+    html += '<button class="warn mt" id="sendDisc" style="width:100%">&rarr; Send to Help Table (no ballot here)</button>';
     html += '<button class="ghost mt" id="closeMember" style="width:100%">Back</button>';
     $('memberCard').innerHTML = html;
+    $('doCheckinPayroll').onclick = function () {
+      if (!station) { showStationModal(); return; }
+      this.disabled = true;
+      api('/api/checkin', {
+        method: 'POST',
+        body: JSON.stringify({ payroll_id: p.payroll_id, station: station,
+          verification_method: 'payroll_dues', method_note: 'payroll-only — issued at main table' })
+      }).then(function (r) {
+        if (r.status === 200) {
+          showSuccess(r.body);
+        } else if (r.status === 409 && r.body.error === 'already_checked_in') {
+          showDuplicate(r.body);
+        } else if (r.status === 0) {
+          alert('No connection — the check-in did NOT go through. Check signal and tap again.');
+          if ($('doCheckinPayroll')) $('doCheckinPayroll').disabled = false;
+        } else {
+          alert('Check-in failed: ' + (r.body.error || r.status));
+          if ($('doCheckinPayroll')) $('doCheckinPayroll').disabled = false;
+        }
+      });
+    };
     $('sendDisc').onclick = function () { sendToDiscrepancy(p); };
     $('closeMember').onclick = closeMember;
     $('memberCard').classList.remove('hidden');

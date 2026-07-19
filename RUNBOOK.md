@@ -56,9 +56,10 @@ Check-in email as the "Meeting page link" so the confirmation emails use it too.
 - 🔴 **RED — in NEP but NOT on payroll** → no ballot at the main table; "Send to
   Help Table," where a human checks the printed payroll and can override.
   (NEP can be stale — promoted out, etc.)
-- 🟡 **YELLOW — on payroll but not in NEP** → confirmed dues-payer; sent to the
-  Help Table for a ballot + enrollment (capture personal email/phone —
-  @dc.gov is rejected — and hand a registration QR card).
+- 🟡 **YELLOW — on payroll but not in NEP** → confirmed dues-payer; **issue the
+  ballot at the main table** (green button on their card). They're auto-added
+  to the Help Table list — point them there to enroll (personal email/phone —
+  @dc.gov is rejected — plus a registration QR card).
 - 🟢➜🚩 **Data record** (in NEP, no portal account) → gets the ballot at the main
   table AND is auto-added to the Help Table queue; just point them to that
   table so their email/phone gets collected for a portal invite.
