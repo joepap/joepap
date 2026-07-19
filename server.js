@@ -1226,12 +1226,24 @@ if (require.main === module) {
   const keyFile = path.join(certDir, 'server-key.pem');
   const certFile = path.join(certDir, 'server-cert.pem');
   if (fs.existsSync(keyFile) && fs.existsSync(certFile)) {
-    https.createServer({ key: fs.readFileSync(keyFile), cert: fs.readFileSync(certFile) }, app)
-      .listen(HTTPS_PORT, HOST, () => {
-        console.log(`HTTPS : https://localhost:${HTTPS_PORT}`);
-        for (const a of lanAddresses()) console.log(`        https://${a.address}:${HTTPS_PORT}  (${a.iface})`);
-        console.log('iPads must use the HTTPS URL for camera scanning (see RUNBOOK.md).');
-      });
+    // The local HTTPS listener is a nice-to-have (offline LAN mode). When
+    // Tailscale Funnel is configured with --https=8443 it OWNS that port and
+    // this bind fails with EADDRINUSE — which must never take down the whole
+    // app (HTTP on 8080 is what Funnel proxies to). Log and carry on.
+    const hs = https.createServer({ key: fs.readFileSync(keyFile), cert: fs.readFileSync(certFile) }, app);
+    hs.on('error', (e) => {
+      if (e.code === 'EADDRINUSE') {
+        console.log(`HTTPS : port ${HTTPS_PORT} already in use (Tailscale Funnel probably owns it) — ` +
+          'local HTTPS skipped; the public URL still works via Funnel → HTTP ' + HTTP_PORT + '.');
+      } else {
+        console.log('HTTPS : failed to start (' + e.message + ') — continuing with HTTP only.');
+      }
+    });
+    hs.listen(HTTPS_PORT, HOST, () => {
+      console.log(`HTTPS : https://localhost:${HTTPS_PORT}`);
+      for (const a of lanAddresses()) console.log(`        https://${a.address}:${HTTPS_PORT}  (${a.iface})`);
+      console.log('iPads must use the HTTPS URL for camera scanning (see RUNBOOK.md).');
+    });
   } else {
     console.log('No certs found in ./certs — HTTPS disabled.');
     console.log('Camera scanning on iPads REQUIRES HTTPS. Run: npm run certs   (see RUNBOOK.md)');
