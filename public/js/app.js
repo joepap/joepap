@@ -43,16 +43,26 @@
       localStorage.setItem('station36', station);
       localStorage.setItem('station36_pin', stationPin);
       localStorage.setItem('station36_role', stationRole);
-      // The Help Table's tool is the Help Table dashboard — send them there.
+      // Every non-check-in station routes straight to its own screen (each
+      // has its own PIN gate). The moderator lives on the queue server —
+      // same hostname, no port.
       if (stationRole === 'help') { window.location = '/discrepancy.html'; return; }
+      if (stationRole === 'admin') { window.location = '/admin.html'; return; }
+      if (stationRole === 'mod') { window.location = 'https://' + location.hostname + '/mod'; return; }
       $('stationChip').textContent = '\u{1F464} ' + station;
       $('stationModal').classList.add('hidden');
     });
   };
   // Reflect the chosen role in the button label so "Start checking people in"
-  // isn't shown when they're actually heading to the Help Table.
+  // isn't shown when they're actually heading somewhere else.
+  var ROLE_LABELS = {
+    checkin: 'Start checking people in',
+    help: 'Open the Help Table →',
+    admin: 'Open the Admin Dashboard →',
+    mod: 'Open the Line Moderator →'
+  };
   if ($('stationRole')) $('stationRole').onchange = function () {
-    $('stationSave').textContent = this.value === 'help' ? 'Open the Help Table →' : 'Start checking people in';
+    $('stationSave').textContent = ROLE_LABELS[this.value] || ROLE_LABELS.checkin;
   };
   $('stationChip').onclick = function () { showStationModal(); };
   if (!station || !stationPin) showStationModal();

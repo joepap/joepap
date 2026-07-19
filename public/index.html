@@ -104,10 +104,12 @@
       <input type="text" id="stationName" placeholder="e.g. Joe P." autocomplete="off">
       <label for="stationPin">Station password (from the organizer)</label>
       <input type="text" id="stationPin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Password">
-      <label for="stationRole">Which table are you working?</label>
+      <label for="stationRole">Which station are you working?</label>
       <select id="stationRole">
         <option value="checkin">Check-in table (search &amp; scan, issue ballots)</option>
         <option value="help">Secondary Help Table (resolve flags, collect contact)</option>
+        <option value="admin">Admin Dashboard (live counts &amp; turnout)</option>
+        <option value="mod">Line Moderator (run the question line)</option>
       </select>
       <button class="primary big mt" id="stationSave">Start checking people in</button>
     </div>
