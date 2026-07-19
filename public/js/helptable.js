@@ -139,10 +139,13 @@
     }
 
     function refresh() {
-      // Never yank the DOM out from under someone typing — if focus is in any
-      // of our inputs, skip this tick; the next one (after blur) catches up.
+      // Never yank the DOM out from under someone typing INTO A QUEUE CARD
+      // (the contact fields we're about to rebuild). Focus in the search box
+      // is fine — that lives in a separate section we never touch here, so new
+      // arrivals must still poll in live while the worker searches.
       var ae = document.activeElement;
-      if (ae && root.contains(ae) && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) {
+      var queueEl = q('.ht-queue');
+      if (ae && queueEl && queueEl.contains(ae) && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) {
         return Promise.resolve();
       }
       return api('/api/discrepancy/list').then(function (r) {
