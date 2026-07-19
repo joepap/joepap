@@ -3,12 +3,14 @@
 *IAFF Local 36 · one page, print this*
 
 You handle everyone the main check-in tables can't finish on their own.
-Open **`<server-link>/discrepancy.html`** on your device, enter the admin PIN.
+Open **`<server-link>/discrepancy.html`** on your device (the address says
+"discrepancy" — it opens the Help Table), enter the admin PIN. Or use the
+**Help Table tab inside the Admin page** — same queue, same PIN.
 Keep the **printed payroll list** (and the original scanned report) at your table.
 
 ## Who lands in your queue, and what to do
 
-**🟢 "GET CONTACT" — data record** (checked in, got a ballot, just needs contact)
+**🟢 "GOT BALLOT · GET CONTACT" — data record** (checked in, got a ballot, just needs contact)
 1. These people are **already done voting** — they have their ballot. Nothing to
    decide.
 2. They're in NEP but have **no online portal account**. Get a **personal email**
@@ -40,6 +42,11 @@ If someone walks up who **isn't** in your list yet, use the **"Look up anyone"**
 search box at the top: type their last name (or member #), tap their name, and
 they drop into your queue so you can resolve them right there. The queue entry
 still records the paper trail.
+
+Someone who's in **no list at all** (search finds nothing, not on the paper
+payroll either): the main table already logged them as "not on roster" — check
+the paper payroll yourself, and wave the E-board over to decide. No ballot
+without that call.
 
 ## Good to know
 

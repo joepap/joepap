@@ -1125,6 +1125,7 @@ app.get('/api/config', (req, res) => {
     // Booleans only — never echo the admin PIN itself.
     admin_equals_station: getConfig(db, 'admin_pin') === getConfig(db, 'station_pin'),
     admin_is_default: getConfig(db, 'admin_pin') === '3636',
+    collect_datarecord_contact: getConfig(db, 'collect_datarecord_contact'),
     // Check-in email settings — the password itself never leaves the server,
     // only whether one is stored.
     mail_enabled: getConfig(db, 'mail_enabled'),
@@ -1141,7 +1142,8 @@ app.get('/api/config', (req, res) => {
 
 app.post('/api/config', requireAdmin, (req, res) => {
   const allowed = ['stale_days', 'ballot_numbering', 'admin_pin', 'station_pin', 'email_ok_groups', 'email_bad_groups',
-    'mail_enabled', 'mail_host', 'mail_port', 'mail_user', 'mail_from', 'mail_subject', 'mail_body', 'meeting_link'];
+    'mail_enabled', 'mail_host', 'mail_port', 'mail_user', 'mail_from', 'mail_subject', 'mail_body', 'meeting_link',
+    'collect_datarecord_contact'];
   for (const k of allowed) {
     if (req.body[k] !== undefined) setConfig(db, k, req.body[k]);
   }

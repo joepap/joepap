@@ -371,6 +371,7 @@
       $('emailOkGroups').value = c.email_ok_groups || '';
       $('emailBadGroups').value = c.email_bad_groups || '';
       $('curStationPin').textContent = c.station_pin || '';
+      $('collectDataRecord').checked = c.collect_datarecord_contact !== 'off';
       $('mailHost').value = c.mail_host || '';
       $('mailPort').value = c.mail_port || '587';
       $('mailUser').value = c.mail_user || '';
@@ -422,7 +423,8 @@
       stale_days: $('staleDays').value,
       ballot_numbering: $('ballotNumbering').value,
       email_ok_groups: $('emailOkGroups').value,
-      email_bad_groups: $('emailBadGroups').value
+      email_bad_groups: $('emailBadGroups').value,
+      collect_datarecord_contact: $('collectDataRecord').checked ? 'on' : 'off'
     };
     var np = $('newPin').value.trim();
     if (np) body.admin_pin = np;

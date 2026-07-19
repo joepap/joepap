@@ -92,7 +92,7 @@
     <h3>Payroll dues list (the dues authority)</h3>
     <p class="muted small">The DC payroll union-dues report as a CSV/xlsx with columns
       <code>emplid, last, first, middle, ssn4, grade, step</code>. Once loaded, being on this
-      list is what makes a member GREEN (eligible). Members not on it go to the Discrepancy
+      list is what makes a member GREEN (eligible). Members not on it go to the Help
       Table; people on it but not in NEP show up yellow (payroll-only).</p>
     <input type="file" id="payrollFile" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
     <button class="primary mt" id="doPayrollImport">Import payroll list</button>
@@ -206,6 +206,9 @@
     <input type="text" id="emailOkGroups">
     <label for="emailBadGroups">Email PROBLEM groups (comma list — bounced / no-email / returned mail)</label>
     <input type="text" id="emailBadGroups">
+    <div class="mt"><label><input type="checkbox" id="collectDataRecord" style="width:20px;height:20px">
+      Auto-queue "data records" (NEP members with no portal account) at the Help Table on
+      check-in to collect email/phone &mdash; untick if the Help Table gets flooded</label></div>
     <label for="newStationPin">Change station password (what volunteers enter — current: <b id="curStationPin"></b>; leave blank to keep)</label>
     <input type="text" id="newStationPin" autocomplete="off">
     <label for="newPin">Change admin PIN (leave blank to keep)</label>

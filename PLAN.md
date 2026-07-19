@@ -24,8 +24,8 @@ again.
   no online portal account checks in, they get their ballot at the main table
   *and* automatically appear on the Help Table screen as a "GET CONTACT" card —
   collect a personal email/phone for a portal invite after the meeting. Works
-  for everyone in that situation. (There's an on/off switch in Admin if it ever
-  floods the Help Table.)
+  for everyone in that situation. (The on/off switch lives in Admin →
+  Settings: "Auto-queue data records at the Help Table.")
 - **Help Table click bug fixed.** Clicking a name now reliably opens the card.
   The real culprit was almost certainly an old cached copy of the page on that
   device — I've now forced the app to always load fresh code, so it can't happen
@@ -53,8 +53,6 @@ again.
 - **Search finally accepts "John Smith" and even just a first name** — before, it
   only matched the last name, so natural typing returned nothing.
 - Admin dashboard shows **turnout %**, eligible count, and remaining.
-- Admin **warns you** if the admin PIN is still 3636 or the same as the station
-  password.
 - Reset / replace now make you type the live count (e.g. `RESET-247`) so you
   can't wipe a live event by reflex.
 - "Not on roster" and the portal banner reworded to "Help table"; audit-log
@@ -76,6 +74,11 @@ before pushing.
    match exactly so it imports clean.
 
 ---
+
+> **Update:** items 4 (Admin+Help Table tabs), 10 (beep/buzz) and 11
+> (rank/assignment on search rows) are DONE. Check-in email is configured and
+> ON (sends from joseph.papariello@iaff36.org). PINs stay 3636 everywhere by
+> choice. Remaining items below were declined or deferred.
 
 ## 📋 Decisions for you — pick what you want, I'll build it
 

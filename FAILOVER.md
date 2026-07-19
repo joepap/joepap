@@ -27,9 +27,10 @@ Then, after the final roster + payroll import on the mini, copy the data over
 scp josephpapariello@dcjoe-claude-macmini.tail5dba36.ts.net:"Desktop/claude/local36/data/*" ~/local36-backup/data/
 ```
 
-Dry-run once: `npm start` in `~/local36-backup`, open http://localhost:8080,
-confirm the roster and payroll counts look right, Ctrl-C. The laptop is now a
-warm spare.
+Dry-run once: `npm start` in `~/local36-backup`, open
+http://localhost:8080/admin.html (PIN 3636) and check the "Roster size" and
+"On payroll (eligible)" tiles look right, Ctrl-C. The laptop is now a warm
+spare.
 
 ## During the event: keep the data safe off the mini
 
@@ -45,12 +46,16 @@ the paper flow at the tables can reconstruct.
 
 ## If the mini actually dies
 
-1. On the MacBook, restore the freshest data (pick the newest file in
-   `~/local36-backup/backups-from-mini/`):
+1. On the MacBook, restore the freshest data (these commands pick the newest
+   file automatically):
    ```
-   cp ~/local36-backup/backups-from-mini/checkin-live-*.db ~/local36-backup/data/checkin.db   # newest one
-   cp ~/local36-backup/backups-from-mini/queue-*.db ~/local36-backup/data/queue.db            # newest one
+   cp "$(ls -t ~/local36-backup/backups-from-mini/checkin-*.db | head -1)" ~/local36-backup/data/checkin.db
+   cp "$(ls -t ~/local36-backup/backups-from-mini/queue-*.db   | head -1)" ~/local36-backup/data/queue.db
    ```
+   If the app won't start or the counts look short, the newest file was a
+   mid-write "live" copy — re-run the commands using the newest **dated
+   snapshot** instead (`checkin-YYYYMMDD-HHMM.db`); those are always
+   consistent.
 2. Start both servers:
    ```
    cd ~/local36-backup && npm start        # terminal 1 (check-in)
@@ -77,8 +82,11 @@ the paper flow at the tables can reconstruct.
 
 ## Reality check
 
+- **Once the laptop is live, leave the mini OFF/unplugged for the rest of the
+  meeting.** If it comes back up, two servers would both issue ballots against
+  diverging databases — one server at a time, always.
 - Anyone checked in during the gap minutes may not be in the restored copy —
-  if a "already checked in?" dispute comes up, the Discrepancy Table decides.
+  if a "already checked in?" dispute comes up, the Help Table decides.
 - The laptop must stay on power + internet (hotspot is fine) for the rest of
   the meeting, lid open.
 - After the event, exports come from the laptop (it now holds the truth).

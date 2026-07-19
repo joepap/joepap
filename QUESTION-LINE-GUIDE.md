@@ -23,12 +23,12 @@ print the QR image directly. Post copies at the mic and around the room.)*
 - Not there / passes / out of order: **swipe LEFT** (or tap **✗**) — skipped.
 - Fat-fingered someone? **undo** next to their name under "Recently handled" —
   they go back to their original spot in line, not the back.
-- **Someone without a phone**: type their name in the **"Add someone without a
-  phone…"** box and hit **+**. They join the end of the line like everyone else —
-  tell them their number, since they can't see the screen ("you're #6, listen
-  for your name").
-- **Before the meeting starts**: tap **"Clear entire line"** once to wipe any
-  test entries.
+- **Someone without a phone**: type their name in the **"Name (no phone)"**
+  box (and a word or two in **"Topic"** so grouping catches them), then hit
+  **+**. They join the end of the line like everyone else — tell them their
+  number, since they can't see the screen ("you're #6, listen for your name").
+- **Before the meeting starts**: tap **"Clear entire line (start of
+  meeting)"** and confirm the popup to wipe any test entries.
 
 ### Grouping questions by topic
 
@@ -60,7 +60,8 @@ sync on both phones automatically.
 - The list is first-come, first-served by when they submitted. There's no
   reordering — only done / skip / undo, plus topic grouping to highlight related
   questions.
-- Members who leave the line themselves just disappear from your list.
+- Members who leave the line themselves show up under "Recently handled" as
+  SKIPPED — that wasn't you; they left on their own.
 - If your phone dies or you close the tab, nothing is lost — open /mod on any
   phone, enter the PIN, and keep going.
 
@@ -70,4 +71,5 @@ sync on both phones automatically.
    link stays the same every time.
 2. Before the event: open `<link>/display`, print the QR, post copies at the
    mic and around the room.
-3. Moderator phone: open `<link>/mod`, enter the PIN, tap "Clear entire line".
+3. Moderator phone: open `<link>/mod`, enter the PIN, tap "Clear entire line
+   (start of meeting)" and confirm.
