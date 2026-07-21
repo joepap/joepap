@@ -1124,6 +1124,27 @@ app.get('/api/export/audit-log.csv', requireAdmin, (req, res) => {
   sendCsv(res, 'audit-log.csv', ['ts', 'action', 'detail', 'station'], rows);
 });
 
+// EVERYTHING in one Excel workbook — a sheet per dataset plus a Summary tab.
+// Read-only build streamed to the browser; downloadable from any computer.
+app.get('/api/export/workbook.xlsx', requireAdmin, (req, res) => {
+  const XLSX = require('xlsx');
+  const { buildWorkbook } = require('./lib/workbook');
+  const Database = require('better-sqlite3');
+  const qFile = path.join(require('./lib/db').DATA_DIR, 'queue.db');
+  let qdb = null;
+  try { if (fs.existsSync(qFile)) qdb = new Database(qFile, { readonly: true }); } catch (e) { /* no queue sheet */ }
+  try {
+    const wb = buildWorkbook(db, qdb);
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const name = 'Local36_Ratification_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.set('Content-Disposition', `attachment; filename="${name}"`);
+    res.send(buf);
+  } finally {
+    if (qdb) qdb.close();
+  }
+});
+
 // ---------- event reset ----------
 
 // Wipe EVENT data (check-ins, corrections, not-found, discrepancies, audit,

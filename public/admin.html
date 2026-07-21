@@ -131,6 +131,10 @@
   <section class="card">
     <h3>Exports — during / after the meeting</h3>
     <div class="input-row">
+      <button class="primary" data-export="/api/export/workbook.xlsx"
+        style="flex:1 1 100%">⬇ EVERYTHING — one Excel workbook (all sheets below + summary + roster + question line)</button>
+    </div>
+    <div class="input-row mt">
       <button class="blue" data-export="/api/export/checkins.csv">Check-in log</button>
       <button class="blue" data-export="/api/export/contact-corrections.csv">Contact corrections</button>
       <button class="blue" data-export="/api/export/notfound.csv">Not-found list</button>
