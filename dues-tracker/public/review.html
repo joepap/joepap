@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review — Local 36 Dues Tracker</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <div class="org">
+      <div class="l1">DC Fire Fighters · Local 36</div>
+      <div class="l2">Dues Tracker — Review</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <a href="#" id="backLink">← Back to the report</a>
+</header>
+<main>
+
+<section class="card" id="pinCard">
+  <h3>Password</h3>
+  <div class="input-row mt">
+    <input type="password" id="pinBox" inputmode="numeric" placeholder="Password" autocomplete="off">
+    <button class="primary" id="pinSave">Open</button>
+  </div>
+</section>
+
+<div id="appBody" class="hidden">
+
+  <section class="card">
+    <h3 id="revTitle">Review</h3>
+    <p class="muted small">Each item shows the <b>actual scanned line</b> above the fields the
+      computer read from it. Fix what's wrong (or confirm it's right) — you're the tiebreaker,
+      not the machine. <b>Enter</b> saves and jumps to the next one.</p>
+    <div id="revProgress"></div>
+  </section>
+
+  <div id="reviewList"></div>
+
+  <section class="card hidden" id="allDone">
+    <div class="banner green">All reviewed ✓</div>
+    <a class="btn primary big" id="doneLink" href="#">Back to the report — finalize &amp; compare</a>
+  </section>
+
+</div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/review.js"></script>
+</body>
+</html>

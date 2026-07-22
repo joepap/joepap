@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local 36 Dues Tracker</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <div class="org">
+      <div class="l1">DC Fire Fighters · Local 36</div>
+      <div class="l2">Dues Tracker</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+</header>
+<main>
+
+<section class="card" id="pinCard">
+  <h3>Password</h3>
+  <p class="muted small">Staff password to view · admin PIN to import and edit.</p>
+  <div class="input-row mt">
+    <input type="password" id="pinBox" inputmode="numeric" placeholder="Password" autocomplete="off">
+    <button class="primary" id="pinSave">Open</button>
+  </div>
+</section>
+
+<div id="appBody" class="hidden">
+
+  <section class="card">
+    <h3>Right now</h3>
+    <div class="stat-grid" id="statGrid"><span class="muted">loading…</span></div>
+    <div id="trendWrap" class="mt hidden">
+      <h4>Dues payers per report</h4>
+      <svg class="spark" id="spark" preserveAspectRatio="none"></svg>
+      <div class="muted small" id="sparkLabels"></div>
+    </div>
+  </section>
+
+  <section class="card" id="uploadCard">
+    <h3>Import a new report</h3>
+    <p class="muted small">Upload the scanned payroll dues report (PDF). The app reads every page,
+      flags anything it isn't sure about for you to fix by eye, then compares against the previous
+      report.</p>
+    <label>Report date (the date on the report itself)</label>
+    <input type="date" id="reportDate">
+    <label>Dues year to mark in NEP</label>
+    <input type="number" id="duesYear" min="2020" max="2099" step="1">
+    <label>Report PDF</label>
+    <input type="file" id="pdfFile" accept="application/pdf,.pdf">
+    <button class="primary big mt" id="doUpload">Upload &amp; read the report</button>
+    <div class="muted mt" id="uploadStatus"></div>
+
+    <details class="mt">
+      <summary class="muted">Have it as a spreadsheet instead? (electronic feed / hand-typed)</summary>
+      <label>CSV or Excel file</label>
+      <input type="file" id="sheetFile" accept=".csv,.xlsx,.xls">
+      <div id="sheetMapArea" class="hidden">
+        <p class="muted small mt">Match the file's columns:</p>
+        <div class="input-row" id="sheetMapGrid"></div>
+        <button class="primary mt" id="doSheetImport">Import spreadsheet</button>
+      </div>
+      <div class="muted mt" id="sheetStatus"></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h3>All imports <span class="muted small">— every report ever loaded, permanent history</span></h3>
+    <div id="importList"><span class="muted">none yet — upload the first report above</span></div>
+  </section>
+
+  <section class="card" id="settingsCard">
+    <h3>Settings <span class="muted small" id="settingsRole"></span></h3>
+    <div id="settingsBody"></div>
+  </section>
+
+</div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/index.js"></script>
+</body>
+</html>

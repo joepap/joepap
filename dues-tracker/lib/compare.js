@@ -1,0 +1,163 @@
+'use strict';
+/*
+ * Compare an import against the previous one: who stopped paying, who's
+ * new, what changed. Keyed on emplid (stable per person). Fallback: fuzzy
+ * name matching (same engine the check-in app used) pairs up rows whose
+ * emplids the OCR mangled, so a misread digit never turns one real person
+ * into a false "stopped" + false "new" pair.
+ */
+const match = require('./match');
+const { audit } = require('./db');
+
+// Same bar payroll.js used to link payroll rows to roster members: at 88+
+// a name match is reliably the same person.
+const NAME_THRESHOLD = 88;
+const VALID_EMPLID = /^0\d{7}$/;
+
+function activeRows(db, importId) {
+  return db.prepare(
+    'SELECT * FROM rows WHERE import_id = ? AND excluded = 0').all(importId);
+}
+
+/** The import this one should be compared against: the most recent
+ *  finalized import that comes before it (by report date, then upload). */
+function previousImport(db, imp) {
+  return db.prepare(`
+    SELECT * FROM imports WHERE status = 'ready' AND id != ?
+      AND (COALESCE(NULLIF(report_date,''), substr(uploaded_at,1,10)) || '~' || id)
+        < (COALESCE(NULLIF(?,''), substr(?,1,10)) || '~' || ?)
+    ORDER BY COALESCE(NULLIF(report_date,''), substr(uploaded_at,1,10)) DESC, id DESC
+    LIMIT 1`).get(imp.id, imp.report_date, imp.uploaded_at, imp.id);
+}
+
+function displayName(r) {
+  return r.name || [r.last_name, r.first_name].filter(Boolean).join(', ');
+}
+
+function diffDetail(prev, cur) {
+  const bits = [];
+  if (prev.grade !== cur.grade) bits.push(`grade ${prev.grade || '—'} → ${cur.grade || '—'}`);
+  if (prev.step !== cur.step) bits.push(`step ${prev.step || '—'} → ${cur.step || '—'}`);
+  const nameScore = match.scoreCandidate(
+    { lastName: prev.last_name, firstName: prev.first_name },
+    { norm_last: cur.norm_last, norm_first: cur.norm_first });
+  if (nameScore < NAME_THRESHOLD) {
+    bits.push(`name "${displayName(prev)}" → "${displayName(cur)}"`);
+  }
+  return bits;
+}
+
+/**
+ * Run (or re-run) the comparison for an import. Existing treasurer notes /
+ * "handled" checkmarks survive a re-run — they're carried over by
+ * (kind, emplid-or-name) key. Returns a summary object.
+ */
+function runCompare(db, importId) {
+  const imp = db.prepare('SELECT * FROM imports WHERE id = ?').get(importId);
+  if (!imp) throw new Error('import not found');
+  const prev = previousImport(db, imp);
+
+  const curRows = activeRows(db, importId);
+  const findings = [];   // {kind, emplid, name, detail, prev_row_id, cur_row_id, matched_by}
+
+  if (prev) {
+    const prevRows = activeRows(db, prev.id);
+    const prevBy = new Map(), curBy = new Map();
+    const prevLoose = [], curLoose = [];   // rows whose emplid isn't trustworthy
+    for (const r of prevRows) {
+      if (VALID_EMPLID.test(r.emplid) && !prevBy.has(r.emplid)) prevBy.set(r.emplid, r);
+      else prevLoose.push(r);
+    }
+    for (const r of curRows) {
+      if (VALID_EMPLID.test(r.emplid) && !curBy.has(r.emplid)) curBy.set(r.emplid, r);
+      else curLoose.push(r);
+    }
+
+    // Same emplid on both reports — look for grade/step/name changes.
+    for (const [emplid, p] of prevBy) {
+      const c = curBy.get(emplid);
+      if (!c) continue;
+      const bits = diffDetail(p, c);
+      if (bits.length) {
+        findings.push({ kind: 'changed', emplid, name: displayName(c),
+          detail: bits.join('; '), prev_row_id: p.id, cur_row_id: c.id, matched_by: 'emplid' });
+      }
+    }
+
+    // Candidates for stopped/new, before the fuzzy rescue pass.
+    const stopPool = [...[...prevBy.values()].filter(p => !curBy.has(p.emplid)), ...prevLoose];
+    const newPool = [...[...curBy.values()].filter(c => !prevBy.has(c.emplid)), ...curLoose];
+
+    // Fuzzy rescue: a strong name match across the pools = same person whose
+    // emplid was OCR-mangled on one of the two reports.
+    const pairs = [];
+    for (let i = 0; i < stopPool.length; i++) {
+      for (let j = 0; j < newPool.length; j++) {
+        const s = match.scoreCandidate(
+          { lastName: stopPool[i].last_name, firstName: stopPool[i].first_name },
+          { norm_last: newPool[j].norm_last, norm_first: newPool[j].norm_first });
+        if (s >= NAME_THRESHOLD) pairs.push({ i, j, s });
+      }
+    }
+    pairs.sort((a, b) => b.s - a.s);
+    const usedI = new Set(), usedJ = new Set();
+    for (const pr of pairs) {
+      if (usedI.has(pr.i) || usedJ.has(pr.j)) continue;
+      usedI.add(pr.i); usedJ.add(pr.j);
+      const p = stopPool[pr.i], c = newPool[pr.j];
+      const bits = diffDetail(p, c);
+      if (p.emplid !== c.emplid) {
+        bits.unshift(`emplid read differs (likely OCR): was "${p.emplid || '?'}", now "${c.emplid || '?'}"`);
+      }
+      findings.push({ kind: 'changed', emplid: c.emplid || p.emplid, name: displayName(c),
+        detail: bits.join('; ') || 'matched by name across reports',
+        prev_row_id: p.id, cur_row_id: c.id, matched_by: 'name' });
+    }
+
+    stopPool.forEach((p, i) => {
+      if (usedI.has(i)) return;
+      findings.push({ kind: 'stopped', emplid: p.emplid, name: displayName(p),
+        detail: `on the ${prev.report_date || prev.uploaded_at.slice(0, 10)} report` +
+                ` (grade ${p.grade || '—'} step ${p.step || '—'}), missing now`,
+        prev_row_id: p.id, cur_row_id: null, matched_by: 'emplid' });
+    });
+    newPool.forEach((c, j) => {
+      if (usedJ.has(j)) return;
+      findings.push({ kind: 'new', emplid: c.emplid, name: displayName(c),
+        detail: `first seen on this report (grade ${c.grade || '—'} step ${c.step || '—'})`,
+        prev_row_id: null, cur_row_id: c.id, matched_by: 'emplid' });
+    });
+  }
+
+  // Preserve treasurer bookkeeping across re-runs.
+  const old = db.prepare('SELECT * FROM changes WHERE import_id = ?').all(importId);
+  const oldKey = new Map(old.map(o => [`${o.kind}|${o.emplid}|${o.name}`, o]));
+
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM changes WHERE import_id = ?').run(importId);
+    const ins = db.prepare(`INSERT INTO changes
+      (import_id, kind, emplid, name, detail, prev_row_id, cur_row_id, matched_by, status, note, handled_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    for (const f of findings) {
+      const o = oldKey.get(`${f.kind}|${f.emplid}|${f.name}`);
+      ins.run(importId, f.kind, f.emplid, f.name, f.detail, f.prev_row_id, f.cur_row_id,
+        f.matched_by, o ? o.status : 'open', o ? o.note : '', o ? o.handled_at : null);
+    }
+    db.prepare(`UPDATE imports SET status = 'ready', compared_to = ?,
+        finalized_at = COALESCE(finalized_at, datetime('now','localtime')) WHERE id = ?`)
+      .run(prev ? prev.id : null, importId);
+  });
+  tx();
+
+  const count = k => findings.filter(f => f.kind === k).length;
+  const summary = {
+    comparedTo: prev ? { id: prev.id, label: prev.report_date || prev.uploaded_at.slice(0, 10) } : null,
+    stopped: count('stopped'), new: count('new'), changed: count('changed'),
+    total: curRows.length
+  };
+  audit(db, 'compare', `#${importId} vs #${prev ? prev.id : '—'}: ` +
+    `${summary.stopped} stopped, ${summary.new} new, ${summary.changed} changed`);
+  return summary;
+}
+
+module.exports = { runCompare, previousImport, NAME_THRESHOLD };

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report — Local 36 Dues Tracker</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <div class="org">
+      <div class="l1">DC Fire Fighters · Local 36</div>
+      <div class="l2">Dues Tracker</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <a href="/">← All reports</a>
+</header>
+<main>
+
+<section class="card" id="pinCard">
+  <h3>Password</h3>
+  <div class="input-row mt">
+    <input type="password" id="pinBox" inputmode="numeric" placeholder="Password" autocomplete="off">
+    <button class="primary" id="pinSave">Open</button>
+  </div>
+</section>
+
+<div id="appBody" class="hidden">
+
+  <section class="card" id="headCard">
+    <h3 id="impTitle">Report</h3>
+    <div id="impStatusArea"></div>
+  </section>
+
+  <section class="card hidden" id="reviewCard">
+    <h3>Step 1 — review what the OCR wasn't sure about</h3>
+    <div id="reviewSummary"></div>
+    <a class="btn blue big mt" id="reviewLink" href="#">Open the review screen</a>
+  </section>
+
+  <section class="card hidden" id="finalizeCard">
+    <h3 id="finalizeTitle">Step 2 — compare against the previous report</h3>
+    <div id="finalizeInfo" class="muted small"></div>
+    <button class="primary big mt" id="doFinalize">Finalize &amp; compare</button>
+    <div class="muted mt" id="finalizeStatus"></div>
+  </section>
+
+  <section class="card hidden" id="changesCard">
+    <h3>What changed <span class="muted small" id="changesVs"></span></h3>
+    <div class="tabs" id="chTabs">
+      <button data-kind="stopped" class="active">Stopped <span id="nStopped"></span></button>
+      <button data-kind="new">New <span id="nNew"></span></button>
+      <button data-kind="changed">Changed <span id="nChanged"></span></button>
+    </div>
+    <div id="changesList"></div>
+  </section>
+
+  <section class="card hidden" id="exportCard">
+    <h3>Downloads</h3>
+    <p class="muted small">The NEP workbook has the “mark paid” list for the year, the
+      stopped-payers follow-up sheet, and the full snapshot for the records.</p>
+    <a class="btn primary big" id="nepLink" href="#">⬇ Download NEP import workbook (.xlsx)</a>
+  </section>
+
+  <section class="card hidden" id="rowsCard">
+    <h3>All rows on this report</h3>
+    <div class="input-row">
+      <input type="search" id="rowSearch" placeholder="Search name or emplid…">
+      <select id="rowFilter">
+        <option value="all">All rows</option>
+        <option value="flagged">Still flagged</option>
+        <option value="edited">Hand-corrected</option>
+        <option value="excluded">Excluded (junk)</option>
+      </select>
+    </div>
+    <div class="table-scroll mt">
+      <table class="data"><thead><tr>
+        <th>Page</th><th>Emplid</th><th>Name</th><th>Grade</th><th>Step</th><th>Conf.</th><th></th>
+      </tr></thead><tbody id="rowsBody"></tbody></table>
+    </div>
+    <div class="muted small mt" id="rowsNote"></div>
+  </section>
+
+  <section class="card hidden" id="dangerCard">
+    <h3>Remove this import</h3>
+    <p class="muted small">Only for a botched upload (wrong file, double upload). Reports that a
+      later import was compared against can't be removed — history stays intact.</p>
+    <button class="danger" id="doDelete">Delete this import…</button>
+  </section>
+
+</div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/import.js"></script>
+</body>
+</html>

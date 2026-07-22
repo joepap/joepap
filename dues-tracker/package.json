@@ -1,0 +1,25 @@
+{
+  "name": "local36-dues-tracker",
+  "version": "1.0.0",
+  "description": "IAFF Local 36 payroll dues tracker — scan import, OCR review, biweekly comparison, NEP export",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "node scripts/fetch-tessdata.js",
+    "test": "node --test test/*.test.js",
+    "make-test-scan": "node scripts/make-test-scan.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "mupdf": "^1.26.4",
+    "nodemailer": "^9.0.3",
+    "tesseract.js": "^5.1.1",
+    "xlsx": "^0.18.5"
+  }
+}
