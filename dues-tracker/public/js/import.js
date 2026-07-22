@@ -132,14 +132,19 @@
     $('nChanged').textContent = '(' + by.changed.length + ')';
 
     var list = by[curKind] || [];
+    // Never rebuild while a note is being typed — but a focused BUTTON must
+    // not block the rebuild, or "✓ Handled" would never visibly update.
     var ae = document.activeElement;
-    if (ae && $('changesList').contains(ae)) return;   // don't rebuild under typing
+    if (ae && ae.tagName === 'INPUT' && $('changesList').contains(ae)) return;
 
     $('changesList').innerHTML = list.length ? list.map(function (ch) {
+      var scanLink = ch.cur_row_id
+        ? ' · <a href="/review.html?id=' + impId + '&row=' + ch.cur_row_id + '">check the scan</a>'
+        : '';
       return '<div class="chitem' + (ch.status === 'handled' ? ' handled' : '') + '" data-ch="' + ch.id + '">' +
         '<div><div class="nm">' + esc(ch.name || '(no name)') + '</div>' +
         '<div class="muted small mono">' + esc(ch.emplid || 'no emplid') +
-        (ch.matched_by === 'name' ? ' · matched by name' : '') + '</div></div>' +
+        (ch.matched_by === 'name' ? ' · matched by name' : '') + scanLink + '</div></div>' +
         '<div class="dt">' + esc(ch.detail) + '</div>' +
         '<input type="text" class="ch-note" placeholder="note (retired, error, called…)" value="' + esc(ch.note) + '">' +
         '<button class="' + (ch.status === 'handled' ? 'ghost' : 'primary') + ' ch-btn">' +

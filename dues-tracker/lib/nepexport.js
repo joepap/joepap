@@ -12,7 +12,8 @@ function buildNepWorkbook(db, importId) {
   if (!imp) throw new Error('import not found');
   const prev = imp.compared_to
     ? db.prepare('SELECT * FROM imports WHERE id = ?').get(imp.compared_to) : null;
-  const year = imp.dues_year || String(new Date().getFullYear());
+  // Digits only — this value lands inside a SQL column alias below.
+  const year = (imp.dues_year || '').replace(/\D/g, '') || String(new Date().getFullYear());
   const label = i => (i.report_date || i.uploaded_at.slice(0, 10));
 
   const wb = XLSX.utils.book_new();

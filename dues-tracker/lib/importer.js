@@ -114,6 +114,22 @@ async function processImport(db, importId) {
     try { doc.destroy(); } catch (e) { /* wasm cleanup */ }
   }
 
+  // Vocabulary cross-check: a report has a small set of real grades, each
+  // appearing many times. A grade seen once or twice is almost always a
+  // misread ("LI-01" for "LT-01") that sailed past the confidence bar —
+  // flag it. A genuinely rare rank costs one extra confirm; a silent
+  // misread would cost a phantom "grade changed" finding every import.
+  const totalParsed = db.prepare(
+    'SELECT COUNT(*) c FROM rows WHERE import_id = ? AND excluded = 0').get(importId).c;
+  if (totalParsed >= 60) {
+    db.prepare(`UPDATE rows SET needs_review = 1,
+        review_reason = CASE WHEN review_reason = '' THEN 'unusual grade — possible misread'
+                             ELSE review_reason || '; unusual grade — possible misread' END
+      WHERE import_id = ? AND excluded = 0 AND needs_review = 0 AND grade != '' AND grade IN (
+        SELECT grade FROM rows WHERE import_id = ? AND excluded = 0 AND grade != ''
+        GROUP BY grade HAVING COUNT(*) <= 2)`).run(importId, importId);
+  }
+
   // The same emplid twice in one report is either an OCR misread or a real
   // report anomaly — either way a human should look at both rows.
   db.prepare(`UPDATE rows SET needs_review = 1,

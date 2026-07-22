@@ -260,7 +260,8 @@ async function scanify(textPdf, uglyRowsPerPage) {
   const added = makeRoster(nNew * 3).filter(r => !rosterA.some(a => a.emplid === r.emplid)).slice(0, nNew);
   rosterB.push(...added);
   const changed = [];
-  const shuffled = rosterB.filter(r => !added.includes(r)).slice();
+  // Only people below the top step — "step 10 → 10" wouldn't be a change.
+  const shuffled = rosterB.filter(r => !added.includes(r) && parseInt(r.step, 10) < 10);
   for (let i = 0; i < nGrade; i++) {
     const r = shuffled[Math.floor(rnd() * shuffled.length)];
     if (changed.some(c => c.emplid === r.emplid)) { i--; continue; }

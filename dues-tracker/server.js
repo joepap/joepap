@@ -129,7 +129,7 @@ app.post('/api/imports', requireAdmin, pdfUpload.single('file'), (req, res) => {
     'INSERT INTO imports (filename, kind, report_date, dues_year) VALUES (?, ?, ?, ?)')
     .run(f.originalname || 'report.pdf', 'pdf',
          String(req.body.report_date || '').slice(0, 10),
-         String(req.body.dues_year || getConfig(db, 'dues_year') || '').slice(0, 4));
+         String(req.body.dues_year || getConfig(db, 'dues_year') || '').replace(/\D/g, '').slice(0, 4));
   const id = info.lastInsertRowid;
   fs.renameSync(f.path, importer.uploadPath(id, 'pdf'));
   audit(db, 'import_uploaded', `#${id} ${f.originalname} (${Math.round(f.size / 1024)} KB)`);
@@ -162,7 +162,7 @@ app.post('/api/sheet/import', requireAdmin, sheetUpload.single('file'), (req, re
     'INSERT INTO imports (filename, kind, report_date, dues_year, status) VALUES (?, ?, ?, ?, ?)')
     .run(req.file.originalname || 'sheet', 'sheet',
          String(req.body.report_date || '').slice(0, 10),
-         String(req.body.dues_year || getConfig(db, 'dues_year') || '').slice(0, 4),
+         String(req.body.dues_year || getConfig(db, 'dues_year') || '').replace(/\D/g, '').slice(0, 4),
          'review');
   const id = info.lastInsertRowid;
   fs.writeFileSync(importer.uploadPath(id, 'sheet'), req.file.buffer);
@@ -295,6 +295,13 @@ app.post('/api/imports/:id/finalize', requireAdmin, async (req, res) => {
   const mailResult = await mailer.sendImportEmail(db, imp, summary);
   if (mailResult !== 'skipped') audit(db, 'mail_import_summary', `#${imp.id}: ${mailResult}`);
   res.json({ summary, mail: mailResult });
+  // Cheap insurance: snapshot the whole database after each finalize.
+  // Biweekly cadence -> a handful of small files a year in data/backups/.
+  try {
+    const bdir = path.join(DATA_DIR, 'backups');
+    fs.mkdirSync(bdir, { recursive: true });
+    await db.backup(path.join(bdir, `dues-${new Date().toISOString().slice(0, 10)}.db`));
+  } catch (e) { audit(db, 'backup_failed', e.message); }
 });
 
 app.post('/api/changes/:id', requireAdmin, (req, res) => {

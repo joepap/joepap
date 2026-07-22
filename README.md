@@ -7,6 +7,12 @@ at the venue, no external services, no telemetry.
 
 **Event-day instructions: see [RUNBOOK.md](RUNBOOK.md).**
 
+> **Also in this repo (this branch): the [Dues Tracker](dues-tracker/README.md)**
+> — the biweekly payroll dues-report workflow (scan → OCR → review → compare →
+> NEP export). A separate self-contained app in `dues-tracker/` on its own
+> port (8200) with its own database; it shares nothing with check-in except
+> code patterns and the password convention.
+
 ## Quick start
 
 ```

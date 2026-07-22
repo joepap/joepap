@@ -149,7 +149,10 @@ function parseRow(rowWords) {
   }
   // Scan specks read as stray punctuation; the report prints "LAST,FIRST"
   // with no space — canonicalize so OCR tokenization noise isn't a "diff".
-  grade = grade.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '');
+  // Grades print in CAPS: case-fold and drop non-ASCII junk so "CpT-01" /
+  // "FF¥F-02" style misreads can't masquerade as grade changes.
+  grade = grade.replace(/[^\x20-\x7E]/g, '')
+    .replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '').toUpperCase();
   const nameRaw = nameToks.join(' ').replace(/\s*,\s*/g, ',').trim();
   const nm = splitName(nameRaw);
   const reasons = [...nm.reasons];
