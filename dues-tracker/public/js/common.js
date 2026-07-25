@@ -50,7 +50,17 @@
           sessionStorage.setItem('dues36_role', role);
           sessionStorage.setItem('dues36_name', name);
           var chip = document.getElementById('whoChip');
-          if (chip) chip.textContent = name + (role === 'admin' ? ' · admin' : '');
+          if (chip) {
+            chip.textContent = name + (role === 'admin' ? ' · admin' : '') + '  ✕';
+            chip.title = 'Sign out';
+            chip.style.cursor = 'pointer';
+            chip.onclick = function () {
+              if (!confirm('Sign out?')) return;
+              sessionStorage.removeItem('dues36_pin');
+              sessionStorage.removeItem('dues36_role');
+              location.reload();
+            };
+          }
           card.classList.add('hidden');
           body.classList.remove('hidden');
           onReady(role);
