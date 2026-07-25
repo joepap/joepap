@@ -40,7 +40,7 @@ function asEmplid(tok) {
 function letterCount(t) { return (t.match(/[A-Za-z]/g) || []).length; }
 function digitCount(t) { return (t.match(/\d/g) || []).length; }
 
-const HEADER_RE = /EMPL\s?ID|EMPLID|\bNAME\b|\bGRADE\b|\bSTEP\b|\bPAGE\b|REPORT|REGISTER|DEDUCT|DEPARTMENT|RUN\s?DATE|TOTAL|UNION\s?DUES|AGENCY|EMPLOYEE/i;
+const HEADER_RE = /EMPL\s?ID|EMPLID|\bNAME\b|\bGRADE\b|\bSTEP\b|\bPAGE\b|REPORT|REGISTER|DEDUCT|DEPARTMENT|RUN\s?DATE|TOTAL|UNION\s?DUES|AGENCY|EMPLOYEE|ASSOC|\bBANK\b|VENDOR|FAIRFAX|ALEXANDRIA|RETIREMENT|COLUMBIA|PAY\s?(PERIOD|END|RUN)/i;
 // A "LAST,FIRST"-shaped fragment — the signature of a member row even when
 // the emplid was mangled beyond recognition.
 const NAMEISH_RE = /[A-Za-z]{2,}\s?[.,]\s?[A-Za-z]{2,}/;
@@ -123,8 +123,8 @@ function parseRow(rowWords) {
 
   // Everything after the anchor: name, then trailing columns. Parsed from
   // the RIGHT — step is the last 1–2 digit number near the end, grade sits
-  // just before it — so letter-bearing grades ("FF-1") never get swallowed
-  // into the name, and extra columns (amounts, ssn4) don't shift anything.
+  // just before it — so letter-bearing grades ("1C") never get swallowed
+  // into the name, and extra columns don't shift anything.
   const after = toks.slice(anchorIdx + 1);
   let stepIdx = -1;
   for (let i = after.length - 1; i >= Math.max(0, after.length - 4); i--) {
@@ -132,18 +132,35 @@ function parseRow(rowWords) {
     if (d && d.value.length >= 1 && d.value.length <= 2) { stepIdx = i; break; }
   }
   let grade = '', step = '', nameEnd;
+  let gradeBlankMarker = false;
   if (stepIdx > 0) {
     step = String(parseInt(digitize(after[stepIdx].replace(/[.,]/g, '')).value, 10));
     grade = after[stepIdx - 1];
     nameEnd = stepIdx - 1;
+    // The real report prints "**" in the grade column for a few rows —
+    // that's a legitimate blank, not a misread.
+    if (/^\*+$/.test(grade)) { gradeBlankMarker = true; grade = ''; }
     // A grade should be short and not name-shaped; if it looks like part of
     // the name (e.g. step read but grade column empty), give it back.
-    if (grade.length > 8 || grade.includes(',')) { nameEnd = stepIdx; grade = ''; }
+    else if (grade.length > 8 || grade.includes(',')) { nameEnd = stepIdx; grade = ''; }
   } else {
     nameEnd = after.length;
   }
-  const nameToks = after.slice(0, nameEnd);
-  // Strip digit-heavy tokens (ssn4, amounts) off the end of the name.
+  let nameToks = after.slice(0, nameEnd);
+  // The DC report has an "Emp Rec" column (a lone 0/1) between emplid and
+  // name. On a grainy scan it reads as anything — "0", "Q", "[¢}", "8}" —
+  // so strip leading tokens until one shaped like a name: starts with a
+  // letter and has at least two letters ("O'Brien,Sean" and "Ng,Amy" pass).
+  while (nameToks.length && !/^[A-Za-z](?=(?:[^A-Za-z]*[A-Za-z]))/.test(nameToks[0])) nameToks.shift();
+  // The name column ends where the code/money columns begin: deduction
+  // codes ("DU0405" — also misread as "DU040S"/"Duo40s"), dollar amounts,
+  // masked SSNs. Truncate at the first such token — otherwise codes to the
+  // right ("LAA", "D13") would read as part of the name. The ≥2-real-digits
+  // guard keeps genuine surnames ("Bliss") out of the code pattern.
+  const STOP_TOK = /^(?:(?=(?:[^0-9]*[0-9]){2})[A-Za-z]{2,3}[0-9OoIlSsBZz]{3,5}|\d+[.,]\d{2}|x{2,}.*|\*+)$/;
+  const stopAt = nameToks.findIndex(t => STOP_TOK.test(t));
+  if (stopAt !== -1) nameToks = nameToks.slice(0, stopAt);
+  // Strip digit-heavy tokens (ssn4, dept numbers) off the end of the name.
   while (nameToks.length && digitCount(nameToks[nameToks.length - 1]) > letterCount(nameToks[nameToks.length - 1])) {
     nameToks.pop();
   }
@@ -153,12 +170,20 @@ function parseRow(rowWords) {
   // "FF¥F-02" style misreads can't masquerade as grade changes.
   grade = grade.replace(/[^\x20-\x7E]/g, '')
     .replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '').toUpperCase();
+  // Real DC grades are two chars, digit-first ("04", "1C", "7B" — suffix
+  // letters only A-D). Tesseract systematically confuses 1/I, 0/O, 5/S,
+  // 1/L there ("IC" for "1C", "OL" for "01", "0S" for "05") — consistent
+  // enough that the rare-grade check can't catch it. Normalize.
+  if (grade.length === 2) {
+    grade = grade.replace(/^I/, '1').replace(/^O/, '0')
+      .replace(/^(\d)O$/, '$10').replace(/^(\d)L$/, '$11').replace(/^(\d)S$/, '$15');
+  }
   const nameRaw = nameToks.join(' ').replace(/\s*,\s*/g, ',').trim();
   const nm = splitName(nameRaw);
   const reasons = [...nm.reasons];
   if (emplidFixes > 0) reasons.push(`emplid needed ${emplidFixes} character fix${emplidFixes > 1 ? 'es' : ''}`);
   if (!nameRaw) reasons.push('no name read');
-  if (!grade) reasons.push('no grade read');
+  if (!grade && !gradeBlankMarker) reasons.push('no grade read');
   if (!step) reasons.push('no step read');
 
   return finish(rowWords, { emplid, name: nameRaw, ...nm, grade, step, reasons, emplidFixes });

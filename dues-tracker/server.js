@@ -368,6 +368,16 @@ app.post('/api/rows/:id', requireAdmin, (req, res) => {
   res.json({ row: db.prepare('SELECT * FROM rows WHERE id = ?').get(row.id) });
 });
 
+// ---------- auto-verify low-confidence rows against the member databases ----------
+app.post('/api/imports/:id/autoverify', requireAdmin, (req, res) => {
+  const imp = db.prepare('SELECT * FROM imports WHERE id = ?').get(req.params.id);
+  if (!imp) return res.status(404).json({ error: 'not found' });
+  const result = reconcile.verifyRowsAgainstRosters(db, imp.id);
+  importer.refreshCounts(db, imp.id);
+  audit(db, 'autoverify', `#${imp.id}: ${result.verified}/${result.checked} cleared by ${who(req)}`);
+  res.json(result);
+});
+
 // ---------- finalize + compare ----------
 app.post('/api/imports/:id/finalize', requireAdmin, async (req, res) => {
   const imp = db.prepare('SELECT * FROM imports WHERE id = ?').get(req.params.id);

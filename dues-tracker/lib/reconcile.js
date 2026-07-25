@@ -20,7 +20,12 @@ const MATCH_THRESHOLD = 88;   // same bar payroll.js used — reliable "same per
 
 /** Insert a roster snapshot. records = parsed rows, mapping = {field: column}. */
 function importRoster(db, source, records, mapping, filename) {
-  const get = (r, k) => String(mapping[k] ? (r[mapping[k]] || '') : '').trim();
+  // IAFF's "ResultsGrid" export wraps some cells in raw HTML links —
+  // strip tags and entities so mapped values come out clean.
+  const get = (r, k) => String(mapping[k] ? (r[mapping[k]] || '') : '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ').trim();
   const info = db.prepare('INSERT INTO rosters (source, filename, total) VALUES (?, ?, ?)')
     .run(source, filename || '', records.length);
   const rosterId = info.lastInsertRowid;
@@ -75,8 +80,31 @@ function statusBreakdown(db, rosterId) {
     GROUP BY label ORDER BY c DESC`).all(rosterId);
 }
 
-const isRetired = m => /retire/i.test(m.status + ' ' + m.work_status);
-const isActiveish = m => /active/i.test(m.status + ' ' + m.work_status) && !isRetired(m);
+/**
+ * Classify a roster member as active / retired / other. Covers both
+ * vocabularies: NEP Member Status ("Active", "Active Retired", "Drop",
+ * "Deceased", "Alumni", "Life", "Honorary"...) with Work Status filling
+ * blanks only — the real export has 34 "Drop" members whose Work Status
+ * still says "Active Member", so Member Status must win. IAFF Member
+ * Type: MEM = active, MRM = retired, HMM = honorary ("other").
+ */
+function classify(m) {
+  const pick = (m.status || '').trim() || (m.work_status || '').trim();
+  if (/\bMRM\b/i.test(pick) || /retire/i.test(pick)) return 'retired';
+  if (/\bMEM\b/i.test(pick) || /^active\b/i.test(pick)) return 'active';
+  return 'other';
+}
+const isRetired = m => classify(m) === 'retired';
+const isActiveish = m => classify(m) === 'active';
+
+/** Member numbers comparable across systems: IAFF pads to 7 digits
+ *  ("0977123"), NEP stores unpadded ("977123") — and 122 NEP rows carry a
+ *  date-shaped bulk-import placeholder that must never match anything. */
+function normMemberNo(v) {
+  const s = String(v || '');
+  if (s.includes('/')) return '';
+  return s.replace(/\D/g, '').replace(/^0+/, '');
+}
 
 // ---------- fuzzy matching (payroll.js pattern) ----------
 
@@ -196,12 +224,13 @@ function reconcile(db) {
   if (nep.length && iaff.length) {
     const iaffByNo = new Map();
     for (const m of iaff) {
-      const no = m.member_no.replace(/\D/g, '');
+      const no = normMemberNo(m.member_no);
       if (no && !iaffByNo.has(no)) iaffByNo.set(no, m);
     }
     const pairedIaff = new Set(), pairedNep = new Set();
     for (const m of nep) {
-      const hit = m.member_no ? iaffByNo.get(m.member_no.replace(/\D/g, '')) : null;
+      const no = normMemberNo(m.member_no);
+      const hit = no ? iaffByNo.get(no) : null;
       if (hit && !pairedIaff.has(hit.id)) { pairedIaff.add(hit.id); pairedNep.add(m.id); }
     }
     const nepLeft = nep.filter(m => !pairedNep.has(m.id));
@@ -241,6 +270,57 @@ function reconcile(db) {
   return out;
 }
 
+/**
+ * Auto-verify OCR rows against the membership databases: a low-confidence
+ * row whose emplid is pattern-valid AND whose name strongly matches a real
+ * NEP/IAFF member was read correctly — the match is independent evidence
+ * (a misread name won't hit 92 against the same person). Only touches rows
+ * flagged purely for low confidence; structural complaints (bad emplid,
+ * missing name, duplicate emplid) always stay with the human.
+ */
+function verifyRowsAgainstRosters(db, importId) {
+  const members = [];
+  for (const src of ['nep', 'iaff']) {
+    const r = latestRoster(db, src);
+    if (r) members.push(...rosterMembers(db, r.id));
+  }
+  if (!members.length) return { checked: 0, verified: 0, remaining: null, error: 'no rosters loaded' };
+  const buckets = buildBuckets(members);
+  // Identity must read clean (valid emplid + a name) AND the pay fields
+  // must look sane: DC grades are two chars, digit first, suffix A–D; step
+  // present. A row whose grade cell collapsed ("LAA", missing step) stays
+  // with the human even when the name matches — the name only vouches for
+  // WHO, not for grade and step.
+  const rows = db.prepare(`SELECT * FROM rows WHERE import_id = ? AND excluded = 0
+    AND needs_review = 1 AND reviewed = 0 AND review_reason = ''
+    AND emplid GLOB '0[0-9][0-9][0-9][0-9][0-9][0-9][0-9]' AND first_name != ''
+    AND step != '' AND grade GLOB '[0-9][0-9A-D]'`).all(importId);
+  const upd = db.prepare(`UPDATE rows SET needs_review = 0, reviewed = 1,
+    review_reason = 'auto-verified: name matches the member databases' WHERE id = ?`);
+  let verified = 0;
+  const VERIFY_THRESHOLD = 92;   // stricter than the 88 linking bar — verification, not linking
+  const tx = db.transaction(() => {
+    for (const row of rows) {
+      const q = { lastName: row.last_name, firstName: row.first_name };
+      const normLast = match.normalizeName(row.last_name);
+      let best = 0;
+      const seen = new Set();
+      for (const tok of normLast.split(' ')) {
+        const k = tok[0]; if (!k) continue;
+        for (const m of (buckets.get(k) || [])) {
+          if (seen.has(m.id)) continue;
+          seen.add(m.id);
+          const s = match.scoreCandidate(q, m);
+          if (s > best) { best = s; if (best >= 100) break; }
+        }
+      }
+      if (best >= VERIFY_THRESHOLD) { upd.run(row.id); verified++; }
+    }
+  });
+  tx();
+  return { checked: rows.length, verified };
+}
+
 /** The reconcile workbook: one sheet per action list + a summary. */
 function buildReconcileWorkbook(db) {
   const XLSX = require('xlsx');
@@ -273,4 +353,5 @@ function buildReconcileWorkbook(db) {
   return wb;
 }
 
-module.exports = { importRoster, latestRoster, statusBreakdown, reconcile, buildReconcileWorkbook, MATCH_THRESHOLD };
+module.exports = { importRoster, latestRoster, statusBreakdown, reconcile,
+  buildReconcileWorkbook, verifyRowsAgainstRosters, MATCH_THRESHOLD };

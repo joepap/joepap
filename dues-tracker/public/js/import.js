@@ -94,6 +94,24 @@
       '</div><div class="lbl">' + esc(label) + '</div></div>';
   }
 
+  // ------- auto-verify -------
+  $('doAutoVerify').onclick = function () {
+    $('doAutoVerify').disabled = true;
+    $('doAutoVerify').textContent = 'checking against the member databases…';
+    api('/api/imports/' + impId + '/autoverify', { method: 'POST' }).then(function (r) {
+      $('doAutoVerify').disabled = false;
+      if (r.status !== 200 || r.body.error) {
+        $('doAutoVerify').textContent = '✗ ' + ((r.body && r.body.error) || 'failed') +
+          (r.body && r.body.error === 'no rosters loaded' ? ' — upload the NEP download first' : '');
+        return;
+      }
+      $('doAutoVerify').textContent = '✓ ' + r.body.verified + ' of ' + r.body.checked +
+        ' cleared — the rest need your eyes';
+      refresh();
+      loadRows();
+    });
+  };
+
   // ------- finalize -------
   $('doFinalize').onclick = function () {
     $('doFinalize').disabled = true;

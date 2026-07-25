@@ -83,6 +83,78 @@ test('clusterRows groups words by line and sorts left-to-right', () => {
   assert.deepEqual(rows[0].map(w => w.text), ['A', 'B']);
 });
 
+// The REAL DC report layout (structure verbatim from a live scan, names
+// invented): Dept-ID, masked SSN, emplid, Emp Rec, mixed-case Name,
+// deduction code, three money columns, bargaining unit, SRV, grade, step.
+test('real DCHR layout: full row with SRV code and 2-digit grade', () => {
+  const r = parse.parseRow(words('FB-11520007 xxx-xx-0777 00035373 0 Doe,Michael B DU0405 49.19 49.09 0.10 LAA D13 04 5'));
+  assert.equal(r.emplid, '00035373');
+  assert.equal(r.name, 'Doe,Michael B');
+  assert.equal(r.last_name, 'Doe');
+  assert.equal(r.first_name, 'Michael');
+  assert.equal(r.grade, '04');
+  assert.equal(r.step, '5');
+});
+
+test('real DCHR layout: blank SRV column, letter-digit grade', () => {
+  const r = parse.parseRow(words('FB-11350003 xxx-xx-4007 00127994 0 Poe,Andrew DU0405 49.19 49.09 0.10 LAA 1C 4'));
+  assert.equal(r.emplid, '00127994');
+  assert.equal(r.name, 'Poe,Andrew');
+  assert.equal(r.grade, '1C');
+  assert.equal(r.step, '4');
+});
+
+test('real DCHR layout: suffix in name, hyphenated, multi-token given names', () => {
+  const r = parse.parseRow(words('FB-11300003 xxx-xx-3726 00002951 0 Adkins Jr.,Donald L DU0405 49.19 49.09 0.10 LAA D13 1B 9'));
+  assert.equal(r.name, 'Adkins Jr.,Donald L');
+  assert.equal(r.last_name, 'Adkins Jr.');
+  assert.equal(r.first_name, 'Donald');
+  const r2 = parse.parseRow(words('FB-11500002 xxx-xx-7038 00061004 0 Roe-Babin,Nigel Halim Babatunde DU0405 49.19 49.09 0.10 LAA A01 1D 7'));
+  assert.equal(r2.first_name, 'Nigel');
+  assert.equal(r2.middle_name, 'Halim Babatunde');
+  assert.equal(r2.grade, '1D');
+});
+
+test('real DCHR layout: ** grade is a legit blank, not a misread', () => {
+  const r = parse.parseRow(words('FB-11620003 xxx-xx-8941 00126644 0 Albright,Julian DU0405 49.19 49.09 0.10 LAA ** 4'));
+  assert.equal(r.grade, '');
+  assert.equal(r.step, '4');
+  assert.ok(!r.review_reasons.some(x => /grade/.test(x)), 'no grade complaint for **');
+});
+
+test('real DCHR layout: OCR junk in the Emp Rec column never pollutes the name', () => {
+  for (const junk of ['[¢}', 'Q', '8}', '[o}', 'a', '0}']) {
+    const r = parse.parseRow(words(`FB-11420000 xxx-xx-3740 00127980 ${junk} Sullivan,Jason Michael DU0405 49.19 49.09 0.10 LAA 01 4`));
+    assert.equal(r.name, 'Sullivan,Jason Michael', 'junk: ' + junk);
+  }
+  // …but real short/apostrophe surnames survive the junk filter.
+  const r2 = parse.parseRow(words("FB-11420000 xxx-xx-3740 00127980 0 O'Brien,Sean DU0405 49.19 49.09 0.10 LAA 01 4"));
+  assert.equal(r2.last_name, "O'Brien");
+  const r3 = parse.parseRow(words('FB-11420000 xxx-xx-3740 00127980 0 Ng,Amy DU0405 49.19 49.09 0.10 LAA 1C 2'));
+  assert.equal(r3.last_name, 'Ng');
+});
+
+test('real DCHR layout: misread deduction codes stop the name; surnames do not', () => {
+  const r = parse.parseRow(words('FB-11330005 xxx-xx-1338 00133041 0 Sullivan,Kevin James DU040S 49.19 49.09 0.10 LAA 01 3'));
+  assert.equal(r.name, 'Sullivan,Kevin James');
+  const r2 = parse.parseRow(words('FB-11330005 xxx-xx-1338 00133041 0 Bliss,Mark DU0405 49.19 49.09 0.10 LAA 1B 5'));
+  assert.equal(r2.name, 'Bliss,Mark');
+});
+
+test('grade OCR confusions normalize to the real DC vocabulary', () => {
+  const g = s => parse.parseRow(words(`FB-1 xxx-xx-1 00133041 0 Doe,Jane DU0405 49.19 49.09 0.10 LAA ${s} 3`)).grade;
+  assert.equal(g('IC'), '1C');
+  assert.equal(g('IB'), '1B');
+  assert.equal(g('OL'), '01');
+  assert.equal(g('0S'), '05');
+});
+
+test('real DCHR layout: bank/vendor header lines are dropped', () => {
+  assert.equal(parse.parseRow(words('FIRE FIGHTERS ASSOC. LOCAL#36')), null);
+  assert.equal(parse.parseRow(words('Government Of The District Of Columbia')), null);
+  assert.equal(parse.parseRow(words('Pay Period : 05/31/2026 To: 06/13/2026')), null);
+});
+
 test('low word confidence flows into row confidence', () => {
   // Structurally perfect (so it earns the +10 cross-check bonus) but the
   // pixels were barely readable — must still land under the 80 threshold.
