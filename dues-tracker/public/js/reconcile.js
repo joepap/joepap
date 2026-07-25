@@ -22,6 +22,7 @@
 
   Dues.gate(function () {
     $('recXlsx').href = '/api/reconcile.xlsx?pin=' + encodeURIComponent(Dues.pin());
+    $('repairXlsx').href = '/api/nep-repair.xlsx?pin=' + encodeURIComponent(Dues.pin());
     refresh();
     setInterval(refresh, 30000);
   });

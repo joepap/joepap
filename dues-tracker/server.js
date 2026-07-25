@@ -179,9 +179,25 @@ app.post('/api/roster/import', requireAdmin, sheetUpload.single('file'), (req, r
   catch (e) { return res.status(400).json({ error: 'Could not read that file: ' + e.message }); }
   if (!parsed.records.length) return res.status(400).json({ error: 'No rows found in that file.' });
   const result = reconcile.importRoster(db, source, parsed.records, mapping, req.file.originalname);
+  // Keep the original file: the NEP repair workbook rebuilds an upload
+  // sheet with the export's exact headers from it.
+  fs.writeFileSync(path.join(importer.UPLOADS_DIR, `roster-${result.rosterId}`), req.file.buffer);
   audit(db, 'roster_imported', `${source.toUpperCase()} #${result.rosterId} ` +
     `${req.file.originalname}: ${result.total} members by ${who(req)}`);
   res.json(result);
+});
+
+// The NEP repair workbook: IAFF-number backfill (safe list), same-name
+// quarantine, placeholders, contradictions, upload-ready sheet.
+app.get('/api/nep-repair.xlsx', requireStaff, (req, res) => {
+  const XLSX = require('xlsx');
+  let out;
+  try { out = require('./lib/nepfix').buildNepRepairWorkbook(db); }
+  catch (e) { return res.status(400).json({ error: e.message }); }
+  const buf = XLSX.write(out.wb, { type: 'buffer', bookType: 'xlsx' });
+  res.set('Content-Disposition', `attachment; filename="nep-repair-${new Date().toISOString().slice(0, 10)}.xlsx"`);
+  res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(buf);
+  audit(db, 'export_nep_repair', `safe:${out.counts.safe} review:${out.counts.review} by ${who(req)}`);
 });
 
 // The sync dashboard: dues vs NEP vs IAFF, computed fresh on every call.
