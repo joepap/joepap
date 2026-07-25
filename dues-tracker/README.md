@@ -1,9 +1,12 @@
 # Local 36 Dues Tracker
 
-The biweekly payroll dues-report workflow, until an electronic feed exists.
-A separate app from the check-in system — its own port (**8200**), its own
-database (`dues-tracker/data/dues.db`), same passwords (staff **3636** to
-view, admin **6363** to import/edit — change both in Settings).
+The biweekly payroll dues-report workflow, until an electronic feed exists —
+and the member-status dashboard for the executive board and union employees.
+A separate app from the check-in system: its own port (**8200**), its own
+database (`dues-tracker/data/dues.db`), same sign-in convention (your name +
+the staff password **3636** to view; the admin PIN **6363** to import/edit —
+both changeable in Settings). Every sign-in and every edit is logged with
+the name entered.
 
 ## What it does
 
@@ -42,18 +45,24 @@ Autostart at boot (runs alongside the check-in app's own autostart):
 bash scripts/install-autostart.sh
 ```
 
-Reach it from your other devices over Tailscale. **Recommended: tailnet-only**
-(member PII behind a 4-digit PIN doesn't belong on the public internet, and
-only the treasurer uses this):
+Make it public so the e-board and employees can open it from anywhere —
+same Funnel setup as the check-in app (persists across reboots):
 
 ```bash
-tailscale serve --bg --https=10000 8200
-# → https://<mini-name>.ts.net:10000  (only devices on your tailnet)
+tailscale funnel --bg --https=10000 8200
+# → https://<mini-name>.ts.net:10000   (wrap in a TinyURL before sharing)
 ```
 
-(8080/8443/8090 and Funnel ports 443/8443 are taken by the live check-in +
-question-line apps. Tailscale's third HTTPS port, 10000, is free — if you
-ever truly need public access, `tailscale funnel --bg --https=10000 8200`.)
+(`tailscale` = `/Applications/Tailscale.app/Contents/MacOS/Tailscale`.
+Funnel only offers three HTTPS ports: 443 and 8443 already carry the
+question line and check-in; 10000 is the free one.)
+
+Because this sits on the public internet permanently, the sign-in asks for
+a **name + password** (the name goes in the activity log, like check-in
+stations), and 50 wrong passwords lock sign-in for 15 minutes so the
+4-digit password can't be guessed by a bot. The **staff password views;
+only the admin PIN can import, edit, or change settings** — share 3636
+with the board, keep 6363 to yourself.
 
 ## Where things live
 

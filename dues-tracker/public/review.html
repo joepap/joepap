@@ -16,13 +16,17 @@
     </div>
   </div>
   <div class="spacer"></div>
+  <span class="station-chip" id="whoChip"></span>
   <a href="#" id="backLink">← Back to the report</a>
 </header>
 <main>
 
 <section class="card" id="pinCard">
-  <h3>Password</h3>
-  <div class="input-row mt">
+  <h3>Sign in</h3>
+  <label>Your name</label>
+  <input type="text" id="nameBox" placeholder="First and last name" autocomplete="off" autocapitalize="words">
+  <label>Password</label>
+  <div class="input-row">
     <input type="password" id="pinBox" inputmode="numeric" placeholder="Password" autocomplete="off">
     <button class="primary" id="pinSave">Open</button>
   </div>

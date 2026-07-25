@@ -7,7 +7,7 @@
 
   Dues.gate(function (role) {
     isAdmin = role === 'admin';
-    $('reportDate').value = new Date().toISOString().slice(0, 10);
+    if ($('reportDate')) $('reportDate').value = new Date().toISOString().slice(0, 10);
     refresh();
     setInterval(refresh, 5000);
     if (isAdmin) loadSettings();
@@ -34,7 +34,9 @@
     api('/api/state').then(function (r) {
       if (r.status !== 200) return;
       var d = r.body;
-      if (!$('duesYear').value && d.dues_year) $('duesYear').value = d.dues_year;
+      // Staff view replaces the upload card, so these fields may not exist.
+      var dy = $('duesYear');
+      if (dy && !dy.value && d.dues_year) dy.value = d.dues_year;
 
       var latest = d.latest;
       $('statGrid').innerHTML = latest

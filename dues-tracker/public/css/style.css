@@ -31,6 +31,11 @@ header.appbar .brand .org .l2 { font-size: .74rem; font-weight: 700; letter-spac
 header.appbar .spacer { flex: 1; }
 header.appbar a { color: #fff; font-weight: 700; text-decoration: none; padding: 6px 12px;
   border: 1px solid rgba(255,255,255,.4); border-radius: 999px; font-size: .9rem; }
+.station-chip {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.4);
+  color: #fff; padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: .9rem;
+}
+.station-chip:empty { display: none; }
 main { max-width: 980px; margin: 0 auto; padding: 16px; }
 
 .card {

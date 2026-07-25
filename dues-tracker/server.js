@@ -11,9 +11,11 @@
  * (data/dues.db), same passwords convention (staff 3636 / admin 6363).
  *
  * Run:     node server.js
- * Expose:  tailscale serve --bg --https=10000 8200     (tailnet-only)
- *          — or funnel for public; see README.md. 8080/8443/8090 are taken
- *          by the live check-in + question-line apps on the same mini.
+ * Expose:  tailscale funnel --bg --https=10000 8200    (public — the e-board
+ *          and union employees check member status here; sign-in is name +
+ *          staff password, with a wrong-password lockout). 8080/8443/8090
+ *          and Funnel ports 443/8443 are taken by the live check-in +
+ *          question-line apps on the same mini; 10000 is the free one.
  */
 const path = require('path');
 const fs = require('fs');
@@ -48,12 +50,47 @@ function isStaff(req) {
   const staff = getConfig(db, 'staff_pin');
   return isAdmin(req) || pinsOf(req).some(p => p && p === staff);
 }
+/** Who is doing this — the signed-in name, for the activity log. */
+function who(req) {
+  const n = String(req.get('X-User-Name') || (req.body || {}).name || '')
+    .replace(/[^\w .,'-]/g, '').trim().slice(0, 40);
+  return n || 'unknown';
+}
+
+// Wrong-password lockout. This app faces the public internet permanently
+// (the check-in app only did on event day), so brute-forcing the 4-digit
+// passwords must be slow: 50 wrong tries = locked out for 15 minutes.
+// Keyed by IP where visible; behind Tailscale Funnel everything arrives as
+// localhost, so in practice it's one shared bucket — fine for this size
+// of team, and it makes a sweep of the PIN space take weeks, not minutes.
+const FAILS = new Map();
+const FAIL_LIMIT = 50, FAIL_WINDOW_MS = 15 * 60 * 1000;
+function lockedOut(req) {
+  const f = FAILS.get(req.ip || 'x');
+  if (!f) return false;
+  if (Date.now() > f.until) { FAILS.delete(req.ip || 'x'); return false; }
+  return f.count >= FAIL_LIMIT;
+}
+function notePinFail(req) {
+  const k = req.ip || 'x';
+  const f = FAILS.get(k) || { count: 0, until: 0 };
+  f.count++; f.until = Date.now() + FAIL_WINDOW_MS;
+  FAILS.set(k, f);
+  if (f.count === FAIL_LIMIT) audit(db, 'lockout', `too many wrong passwords from ${k}`);
+}
+const LOCKED_MSG = 'Too many wrong passwords — locked for 15 minutes.';
+
 function requireStaff(req, res, next) {
+  if (lockedOut(req)) return res.status(429).json({ error: LOCKED_MSG });
   if (isStaff(req)) return next();
+  if (pinsOf(req).some(p => p)) notePinFail(req);
   res.status(401).json({ error: 'PIN required' });
 }
 function requireAdmin(req, res, next) {
+  if (lockedOut(req)) return res.status(429).json({ error: LOCKED_MSG });
   if (isAdmin(req)) return next();
+  // A valid staff pin on an admin endpoint is a role problem, not an attack.
+  if (!isStaff(req) && pinsOf(req).some(p => p)) notePinFail(req);
   res.status(401).json({ error: 'Admin PIN required' });
 }
 
@@ -89,9 +126,15 @@ const sheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize
 
 // ---------- auth check ----------
 app.post('/api/auth', (req, res) => {
+  if (lockedOut(req)) return res.status(429).json({ error: LOCKED_MSG });
   const pin = String((req.body || {}).pin || '');
-  if (pin === getConfig(db, 'admin_pin')) return res.json({ role: 'admin' });
-  if (pin === getConfig(db, 'staff_pin')) return res.json({ role: 'staff' });
+  const role = pin === getConfig(db, 'admin_pin') ? 'admin'
+    : pin === getConfig(db, 'staff_pin') ? 'staff' : null;
+  if (role) {
+    audit(db, 'sign_in', `${who(req)} (${role})`);
+    return res.json({ role });
+  }
+  if (pin) notePinFail(req);
   res.status(401).json({ error: 'Wrong password' });
 });
 
@@ -132,7 +175,7 @@ app.post('/api/imports', requireAdmin, pdfUpload.single('file'), (req, res) => {
          String(req.body.dues_year || getConfig(db, 'dues_year') || '').replace(/\D/g, '').slice(0, 4));
   const id = info.lastInsertRowid;
   fs.renameSync(f.path, importer.uploadPath(id, 'pdf'));
-  audit(db, 'import_uploaded', `#${id} ${f.originalname} (${Math.round(f.size / 1024)} KB)`);
+  audit(db, 'import_uploaded', `#${id} ${f.originalname} (${Math.round(f.size / 1024)} KB) by ${who(req)}`);
   importer.enqueue(db, id);
   res.json({ id });
 });
@@ -187,7 +230,7 @@ app.post('/api/sheet/import', requireAdmin, sheetUpload.single('file'), (req, re
     db.prepare('INSERT INTO pages (import_id, page, mode) VALUES (?, 1, ?)').run(id, 'sheet');
   })();
   importer.refreshCounts(db, id);
-  audit(db, 'sheet_imported', `#${id} ${req.file.originalname}: ${parsed.records.length} rows`);
+  audit(db, 'sheet_imported', `#${id} ${req.file.originalname}: ${parsed.records.length} rows by ${who(req)}`);
   res.json({ id, rows: parsed.records.length });
 });
 
@@ -255,7 +298,7 @@ app.post('/api/rows/:id', requireAdmin, (req, res) => {
 
   if (action === 'exclude') {
     db.prepare('UPDATE rows SET excluded = 1, reviewed = 1 WHERE id = ?').run(row.id);
-    audit(db, 'row_excluded', `#${row.id} (${row.name || row.ocr_text.slice(0, 40)})`);
+    audit(db, 'row_excluded', `#${row.id} (${row.name || row.ocr_text.slice(0, 40)}) by ${who(req)}`);
   } else if (action === 'restore') {
     db.prepare('UPDATE rows SET excluded = 0 WHERE id = ?').run(row.id);
   } else if (action === 'confirm') {
@@ -273,7 +316,7 @@ app.post('/api/rows/:id', requireAdmin, (req, res) => {
       .run(emplid, name, nm.last, nm.first, nm.middle,
         String(b.grade || '').trim().slice(0, 12), String(b.step || '').trim().slice(0, 4),
         match.normalizeName(nm.last), match.normalizeName(nm.first), row.id);
-    audit(db, 'row_corrected', `#${row.id}: "${row.ocr_text.slice(0, 50)}" → ${emplid} ${name}`);
+    audit(db, 'row_corrected', `#${row.id}: "${row.ocr_text.slice(0, 50)}" → ${emplid} ${name} by ${who(req)}`);
   } else {
     return res.status(400).json({ error: 'bad action' });
   }
@@ -326,7 +369,7 @@ app.get('/api/imports/:id/nep.xlsx', requireStaff, (req, res) => {
   const label = (imp.report_date || imp.uploaded_at.slice(0, 10)).replace(/[^0-9-]/g, '');
   res.set('Content-Disposition', `attachment; filename="dues-nep-import-${label}.xlsx"`);
   res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(buf);
-  audit(db, 'export_nep', `#${imp.id}`);
+  audit(db, 'export_nep', `#${imp.id} by ${who(req)}`);
 });
 
 // ---------- settings ----------
@@ -353,7 +396,7 @@ app.post('/api/config', requireAdmin, (req, res) => {
       setConfig(db, k, String(req.body[k]).trim());
     }
   }
-  audit(db, 'config_changed', Object.keys(req.body).filter(k => k !== 'mail_pass').join(', '));
+  audit(db, 'config_changed', Object.keys(req.body).filter(k => k !== 'mail_pass').join(', ') + ` by ${who(req)}`);
   res.json({ ok: true });
 });
 
@@ -386,7 +429,7 @@ app.post('/api/imports/:id/delete', requireAdmin, (req, res) => {
     try { fs.unlinkSync(importer.uploadPath(imp.id, kind)); } catch (e) { /* absent */ }
   }
   fs.rmSync(path.join(importer.PAGES_DIR, String(imp.id)), { recursive: true, force: true });
-  audit(db, 'import_deleted', `#${imp.id} ${imp.filename} (${imp.total_rows} rows)`);
+  audit(db, 'import_deleted', `#${imp.id} ${imp.filename} (${imp.total_rows} rows) by ${who(req)}`);
   res.json({ ok: true });
 });
 
