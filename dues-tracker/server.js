@@ -26,6 +26,7 @@ const { open, getConfig, setConfig, audit, DATA_DIR } = require('./lib/db');
 const importer = require('./lib/importer');
 const compare = require('./lib/compare');
 const nepexport = require('./lib/nepexport');
+const reconcile = require('./lib/reconcile');
 const mailer = require('./lib/mailer');
 const parse = require('./lib/parse');
 const match = require('./lib/match');
@@ -102,6 +103,7 @@ const page = name => (req, res) => {
 app.get('/', page('index.html'));
 app.get('/import.html', page('import.html'));
 app.get('/review.html', page('review.html'));
+app.get('/reconcile.html', page('reconcile.html'));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css'), { cacheControl: false, etag: true }));
 app.use('/js', express.static(path.join(__dirname, 'public', 'js'), { cacheControl: false, etag: true }));
 app.get('/logo.png', (req, res) => {
@@ -153,7 +155,46 @@ app.get('/api/state', requireStaff, (req, res) => {
     .map(i => ({ label: i.report_date || i.uploaded_at.slice(0, 10), total: i.total_rows,
                  stopped: i.stopped, new_payers: i.new_payers }))
     .reverse();
-  res.json({ imports, latest, trend, dues_year: getConfig(db, 'dues_year') });
+  const rosterInfo = {};
+  for (const src of ['nep', 'iaff']) {
+    const r = reconcile.latestRoster(db, src);
+    rosterInfo[src] = r ? { id: r.id, total: r.total, loaded: r.uploaded_at.slice(0, 10),
+      snapshots: db.prepare('SELECT COUNT(*) c FROM rosters WHERE source = ?').get(src).c } : null;
+  }
+  res.json({ imports, latest, trend, rosters: rosterInfo, dues_year: getConfig(db, 'dues_year') });
+});
+
+// ---------- membership rosters (NEP / IAFF) ----------
+app.post('/api/roster/import', requireAdmin, sheetUpload.single('file'), (req, res) => {
+  const source = String(req.body.source || '');
+  if (source !== 'nep' && source !== 'iaff') return res.status(400).json({ error: 'bad source' });
+  let mapping;
+  try { mapping = JSON.parse(req.body.mapping || '{}'); }
+  catch (e) { return res.status(400).json({ error: 'bad mapping' }); }
+  if (!(mapping.last_name || mapping.full_name)) {
+    return res.status(400).json({ error: 'Map at least Last name (or Full name).' });
+  }
+  let parsed;
+  try { parsed = tabular.parseUpload(req.file.buffer, req.file.originalname); }
+  catch (e) { return res.status(400).json({ error: 'Could not read that file: ' + e.message }); }
+  if (!parsed.records.length) return res.status(400).json({ error: 'No rows found in that file.' });
+  const result = reconcile.importRoster(db, source, parsed.records, mapping, req.file.originalname);
+  audit(db, 'roster_imported', `${source.toUpperCase()} #${result.rosterId} ` +
+    `${req.file.originalname}: ${result.total} members by ${who(req)}`);
+  res.json(result);
+});
+
+// The sync dashboard: dues vs NEP vs IAFF, computed fresh on every call.
+app.get('/api/reconcile', requireStaff, (req, res) => {
+  res.json(reconcile.reconcile(db));
+});
+
+app.get('/api/reconcile.xlsx', requireStaff, (req, res) => {
+  const XLSX = require('xlsx');
+  const buf = XLSX.write(reconcile.buildReconcileWorkbook(db), { type: 'buffer', bookType: 'xlsx' });
+  res.set('Content-Disposition', `attachment; filename="local36-reconcile-${new Date().toISOString().slice(0, 10)}.xlsx"`);
+  res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(buf);
+  audit(db, 'export_reconcile', `by ${who(req)}`);
 });
 
 // ---------- create import (PDF scan) ----------

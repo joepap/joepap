@@ -17,6 +17,7 @@
   </div>
   <div class="spacer"></div>
   <span class="station-chip" id="whoChip"></span>
+  <a href="/reconcile.html">Member Sync</a>
 </header>
 <main>
 
@@ -70,6 +71,33 @@
       </div>
       <div class="muted mt" id="sheetStatus"></div>
     </details>
+  </section>
+
+  <section class="card" id="rosterCard">
+    <h3>Membership databases <span class="muted small">— for the Member Sync dashboard</span></h3>
+    <p class="muted small">Upload the latest downloads here whenever you pull them. Every upload is
+      kept as a snapshot; the newest one is what the
+      <a href="/reconcile.html">Member Sync dashboard</a> compares against the dues report.</p>
+    <div class="input-row" style="align-items:flex-start">
+      <div>
+        <h4 class="mt">NEP (ConnectPlus) member download <span class="muted small" id="nepInfo"></span></h4>
+        <input type="file" id="nepFile" accept=".csv,.xlsx,.xls">
+        <div id="nepMapArea" class="hidden">
+          <div class="input-row" id="nepMapGrid"></div>
+          <button class="primary mt" id="doNepImport">Import NEP members</button>
+        </div>
+        <div class="muted mt small" id="nepStatus"></div>
+      </div>
+      <div>
+        <h4 class="mt">IAFF member export <span class="muted small" id="iaffInfo"></span></h4>
+        <input type="file" id="iaffFile" accept=".csv,.xlsx,.xls">
+        <div id="iaffMapArea" class="hidden">
+          <div class="input-row" id="iaffMapGrid"></div>
+          <button class="primary mt" id="doIaffImport">Import IAFF members</button>
+        </div>
+        <div class="muted mt small" id="iaffStatus"></div>
+      </div>
+    </div>
   </section>
 
   <section class="card">

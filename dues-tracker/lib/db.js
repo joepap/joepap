@@ -115,6 +115,35 @@ function migrate(db) {
       action TEXT NOT NULL,
       detail TEXT NOT NULL DEFAULT ''
     );
+
+    -- Membership databases for reconciliation: NEP (ConnectPlus) and the
+    -- IAFF's own record of our members. Every upload is a permanent
+    -- snapshot, same rule as dues imports; the newest per source is
+    -- "current" for the reconcile screen.
+    CREATE TABLE IF NOT EXISTS rosters (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source TEXT NOT NULL CHECK (source IN ('nep','iaff')),
+      filename TEXT NOT NULL DEFAULT '',
+      uploaded_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      total INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS roster_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      roster_id INTEGER NOT NULL REFERENCES rosters(id),
+      member_no TEXT NOT NULL DEFAULT '',
+      emplid TEXT NOT NULL DEFAULT '',
+      last_name TEXT NOT NULL DEFAULT '',
+      first_name TEXT NOT NULL DEFAULT '',
+      middle_name TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT '',
+      work_status TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      norm_last TEXT NOT NULL DEFAULT '',
+      norm_first TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS ix_roster_members_roster ON roster_members(roster_id);
+    CREATE INDEX IF NOT EXISTS ix_roster_members_norm ON roster_members(norm_last);
   `);
 
   const defaults = {

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Member Sync — Local 36 Dues Tracker</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <div class="org">
+      <div class="l1">DC Fire Fighters · Local 36</div>
+      <div class="l2">Member Sync Dashboard</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <span class="station-chip" id="whoChip"></span>
+  <a href="/">← Home</a>
+</header>
+<main>
+
+<section class="card" id="pinCard">
+  <h3>Sign in</h3>
+  <label>Your name</label>
+  <input type="text" id="nameBox" placeholder="First and last name" autocomplete="off" autocapitalize="words">
+  <label>Password</label>
+  <div class="input-row">
+    <input type="password" id="pinBox" inputmode="numeric" placeholder="Password" autocomplete="off">
+    <button class="primary" id="pinSave">Open</button>
+  </div>
+</section>
+
+<div id="appBody" class="hidden">
+
+  <section class="card">
+    <h3>The three databases</h3>
+    <div class="stat-grid" id="srcGrid"><span class="muted">loading…</span></div>
+    <div id="breakdowns" class="mt"></div>
+  </section>
+
+  <section class="card">
+    <h3>Where they disagree</h3>
+    <p class="muted small">Matched by name with the same engine the ratification check-in used
+      (nicknames, hyphenated names, OCR typos). NEP↔IAFF match by member number first.</p>
+    <div class="tabs" id="recTabs"></div>
+    <div class="table-scroll"><table class="data"><thead id="recHead"></thead><tbody id="recBody"></tbody></table></div>
+  </section>
+
+  <section class="card">
+    <h3>Download</h3>
+    <a class="btn primary big" id="recXlsx" href="#">⬇ Reconciliation workbook (.xlsx) — every list as a sheet</a>
+  </section>
+
+</div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/reconcile.js"></script>
+</body>
+</html>

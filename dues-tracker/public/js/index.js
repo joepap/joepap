@@ -10,13 +10,75 @@
     if ($('reportDate')) $('reportDate').value = new Date().toISOString().slice(0, 10);
     refresh();
     setInterval(refresh, 5000);
-    if (isAdmin) loadSettings();
-    else {
+    if (isAdmin) {
+      loadSettings();
+      wireRosterUpload('nep');
+      wireRosterUpload('iaff');
+    } else {
       $('uploadCard').innerHTML = '<h3>Import a new report</h3>' +
-        '<p class="muted">Importing needs the admin PIN — sign out and back in with it.</p>';
+        '<p class="muted">Importing needs the admin PIN — sign out (✕ next to your name) and back in with it.</p>';
+      $('rosterCard').innerHTML = '<h3>Membership databases</h3>' +
+        '<p class="muted">Uploading needs the admin PIN. The numbers are on the ' +
+        '<a href="/reconcile.html">Member Sync dashboard</a>.</p>';
       $('settingsBody').innerHTML = '<p class="muted">Admin PIN required.</p>';
     }
   });
+
+  // ---------- membership roster uploads (NEP / IAFF) ----------
+  var ROSTER_FIELDS = [
+    ['member_no', 'Member #'], ['emplid', 'Emplid (if present)'], ['full_name', 'Full name'],
+    ['last_name', 'Last name'], ['first_name', 'First name'], ['middle_name', 'Middle'],
+    ['status', 'Member status'], ['work_status', 'Work status'], ['email', 'Email'], ['phone', 'Phone']];
+  var ROSTER_GUESS = {
+    member_no: /member.?(no|num|id)|iaff.?num/i, emplid: /empl/i,
+    full_name: /^(full.?name|member.?name|name)$/i, last_name: /last/i, first_name: /first/i,
+    middle_name: /middle|^mi$/i, status: /^(member.?)?status$/i, work_status: /work.?status/i,
+    email: /e.?mail/i, phone: /phone|cell|mobile/i };
+
+  function wireRosterUpload(src) {
+    var file = $(src + 'File');
+    if (!file) return;
+    file.addEventListener('change', function () {
+      var f = this.files[0];
+      if (!f) return;
+      var fd = new FormData();
+      fd.append('file', f);
+      api('/api/sheet/preview', { method: 'POST', body: fd }).then(function (r) {
+        if (r.status !== 200) { $(src + 'Status').textContent = '✗ ' + (r.body.error || 'could not read file'); return; }
+        $(src + 'Status').textContent = r.body.total + ' rows detected — match the columns, then Import';
+        $(src + 'MapArea').classList.remove('hidden');
+        $(src + 'MapGrid').innerHTML = ROSTER_FIELDS.map(function (fld) {
+          var picked = false;
+          return '<div><label>' + fld[1] + '</label><select data-field="' + fld[0] + '">' +
+            '<option value="">— none —</option>' +
+            r.body.headers.map(function (h) {
+              var sel = !picked && ROSTER_GUESS[fld[0]].test(h) ? (picked = true, ' selected') : '';
+              return '<option value="' + esc(h) + '"' + sel + '>' + esc(h) + '</option>';
+            }).join('') + '</select></div>';
+        }).join('');
+      });
+    });
+    $('do' + (src === 'nep' ? 'Nep' : 'Iaff') + 'Import').onclick = function () {
+      var f = file.files[0];
+      if (!f) return;
+      var mapping = {};
+      Array.prototype.forEach.call($(src + 'MapGrid').querySelectorAll('select'), function (s) {
+        if (s.value) mapping[s.getAttribute('data-field')] = s.value;
+      });
+      if (!mapping.last_name && !mapping.full_name) { alert('Map Last name or Full name.'); return; }
+      var fd = new FormData();
+      fd.append('file', f);
+      fd.append('source', src);
+      fd.append('mapping', JSON.stringify(mapping));
+      $(src + 'Status').textContent = 'importing…';
+      api('/api/roster/import', { method: 'POST', body: fd }).then(function (r) {
+        if (r.status !== 200) { $(src + 'Status').textContent = '✗ ' + (r.body.error || 'failed'); return; }
+        $(src + 'Status').textContent = '✓ ' + r.body.total + ' members imported — see Member Sync';
+        $(src + 'MapArea').classList.add('hidden');
+        refresh();
+      });
+    };
+  }
 
   function stat(num, label, cls) {
     return '<div class="stat"><div class="num ' + (cls || '') + '">' + num +
@@ -39,14 +101,24 @@
       if (dy && !dy.value && d.dues_year) dy.value = d.dues_year;
 
       var latest = d.latest;
-      $('statGrid').innerHTML = latest
+      var ro = d.rosters || {};
+      $('statGrid').innerHTML = (latest
         ? stat(latest.total_rows, 'Dues payers (latest report)') +
           stat(latest.stopped, 'Stopped last time', latest.stopped ? 'red' : '') +
           stat(latest.new_payers, 'New payers', latest.new_payers ? 'green' : '') +
           stat(latest.changed, 'Grade/step changes') +
           stat(d.imports.length, 'Reports on file')
         : '<span class="muted">No finalized reports yet. Upload the first one below — ' +
-          'it becomes the baseline the next report is compared against.</span>';
+          'it becomes the baseline the next report is compared against.</span>') +
+        (ro.nep ? stat(ro.nep.total, 'NEP members (' + ro.nep.loaded + ')') : '') +
+        (ro.iaff ? stat(ro.iaff.total, 'IAFF per cap (' + ro.iaff.loaded + ')') : '');
+      var info = function (id, r) {
+        var el = $(id);
+        if (el) el.textContent = r ? '— ' + r.total + ' members, loaded ' + r.loaded +
+          (r.snapshots > 1 ? ' (' + r.snapshots + ' snapshots kept)' : '') : '— none loaded yet';
+      };
+      info('nepInfo', ro.nep);
+      info('iaffInfo', ro.iaff);
 
       drawTrend(d.trend || []);
 
