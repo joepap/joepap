@@ -65,10 +65,13 @@ profiles):
    double-matches, and class conflicts live on the CHECK BY HAND sheet
    only. The 82 "matches two IAFF people" rows are the likeliest merged
    profiles — start there.
-2. **Before any upload**: confirm with NEP support what the bulk import
-   matches on. If the answer is "names," stop — that's how the merge
-   disaster happened. It must key on their internal record ID.
-3. Test with 5 rows before 880.
+2. **Confirmed**: bulk upload works, and columns must match the NEP
+   spreadsheet headers exactly — which the workbook's UPLOAD sheet
+   already does. Still open with NEP support: **what the import matches
+   on** to find the existing member. (Backstop: the SAFE sheet only
+   contains members whose name is unique within NEP, so even name-keyed
+   matching can't hit the wrong current record.)
+3. **Confirmed**: test with ~5 rows before the full 880.
 4. Also fold in: the **contact corrections** captured at the ratification
    check-in (export from the check-in app's admin) — same quarantine rules.
 5. After cleanup, re-download NEP, re-upload here, and watch the
