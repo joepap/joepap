@@ -2,6 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const parse = require('../lib/parse');
+const match = require('../lib/match');
 
 function words(str, conf) {
   // Fake a row of OCR words with plausible boxes.
@@ -62,6 +63,40 @@ test('missing grade/step caps confidence below review threshold', () => {
   const r = parse.parseRow(words('01234567 SMITH,JOHN'));
   assert.ok(r.confidence <= 70);
   assert.ok(r.review_reasons.some(x => /grade|step/.test(x)));
+});
+
+// Real name shapes from the DC report, found by reconciling against NEP.
+test('splitName: suffix in its own comma field does not become the first name', () => {
+  const n = parse.splitName('Robinson,Jr.,Karl H');
+  assert.equal(n.last, 'Robinson Jr.');
+  assert.equal(n.first, 'Karl');
+  assert.equal(n.middle, 'H');
+});
+
+test('splitName: middle-initial-first rows are read in the right order', () => {
+  const a = parse.splitName('Ordile,K. Gregory');   // = Gregory K. Ordile
+  assert.equal(a.first, 'Gregory');
+  assert.equal(a.middle, 'K.');
+  assert.ok(a.reasons.some(r => /middle-initial-first/.test(r)));
+  const b = parse.splitName('Mastri,G Nicholas');   // = Nicholas G. Mastri
+  assert.equal(b.first, 'Nicholas');
+  assert.equal(b.middle, 'G');
+});
+
+test('splitName: ordinary LAST,FIRST MIDDLE is untouched by the initial rule', () => {
+  const n = parse.splitName('Artz,Randolph Stuart');
+  assert.equal(n.first, 'Randolph');
+  assert.equal(n.middle, 'Stuart');
+  assert.equal(n.reasons.length, 0);
+  const m = parse.splitName('Smith,John A');        // trailing initial stays middle
+  assert.equal(m.first, 'John');
+  assert.equal(m.middle, 'A');
+});
+
+test('nickname groups cover the names this local actually uses', () => {
+  assert.ok(match.firstNameScore('RANDOLPH', 'RANDY') >= 95);
+  assert.ok(match.firstNameScore('TERRENCE', 'TERRY') >= 95);
+  assert.ok(match.firstNameScore('JEREMIAH', 'JEREMY') >= 95);
 });
 
 test('splitName handles LAST,FIRST M and flags missing commas', () => {

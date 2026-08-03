@@ -71,17 +71,37 @@ function clusterRows(words) {
   return rows;
 }
 
+const SUFFIX_RE = /^(JR|SR|II|III|IV|V)\.?$/i;
+// A middle initial: one letter, optionally with a period.
+const INITIAL_RE = /^[A-Za-z]\.?$/;
+
 /** Split "LAST,FIRST M" (or best effort without a comma) into parts. */
 function splitName(nameRaw) {
   const reasons = [];
   let last = '', first = '', middle = '';
   const cleaned = nameRaw.replace(/\s*,\s*/g, ',').trim();
   if (cleaned.includes(',')) {
-    const i = cleaned.indexOf(',');
-    last = cleaned.slice(0, i).trim();
-    const rest = cleaned.slice(i + 1).trim().split(/\s+/).filter(Boolean);
-    first = rest[0] || '';
-    middle = rest.slice(1).join(' ');
+    // The report writes a suffix as its own comma field: "Robinson,Jr.,Karl H".
+    // Fold it back onto the last name so the first name isn't read as "Jr.".
+    const parts = cleaned.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 3 && SUFFIX_RE.test(parts[1])) {
+      last = parts[0] + ' ' + parts[1];
+      parts.splice(1, 1);
+    } else {
+      last = parts[0];
+    }
+    const rest = parts.slice(1).join(' ').trim().split(/\s+/).filter(Boolean);
+    // Some rows print the MIDDLE INITIAL FIRST: "Ordile,K. Gregory" is
+    // Gregory K. Ordile, and "Mastri,G Nicholas" is Nicholas G. Mastri.
+    // An initial followed by a real given name means that order.
+    if (rest.length >= 2 && INITIAL_RE.test(rest[0]) && /^[A-Za-z]{2,}/.test(rest[1])) {
+      first = rest[1];
+      middle = [rest[0], ...rest.slice(2)].join(' ');
+      reasons.push('name printed middle-initial-first on the report');
+    } else {
+      first = rest[0] || '';
+      middle = rest.slice(1).join(' ');
+    }
   } else {
     const toks = cleaned.split(/\s+/).filter(Boolean);
     if (toks.length >= 2) { last = toks[0]; first = toks[1]; middle = toks.slice(2).join(' '); }
