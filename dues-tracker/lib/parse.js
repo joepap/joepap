@@ -131,7 +131,18 @@ function parseRow(rowWords) {
 
   if (anchorIdx === -1) {
     if (HEADER_RE.test(joined) || !NAMEISH_RE.test(joined)) return null; // header / junk
-    // Looks like a person but no readable emplid — surface it, don't drop it.
+    // No usable emplid — but the row still has a readable NAME, and the name
+    // is what links this person to the membership databases. Fall back to the
+    // masked SSN column as the left anchor: the name always sits after it
+    // (past the emplid and Emp Rec columns). Without this the whole line ends
+    // up in the name field, and the person looks like a stranger.
+    // Real emplids are 8 digits; the scan sometimes reads 9 ("00099503" as
+    // "000939503"), which is exactly why the anchor failed here.
+    const ssnIdx = toks.findIndex(t => /[xX*%¥]{2}/.test(t) && /\d{3,4}$/.test(t));
+    if (ssnIdx !== -1 && ssnIdx + 1 < toks.length) {
+      return buildRow(rowWords, toks, ssnIdx, '', 0,
+        ['employee ID unreadable — name taken from the line instead']);
+    }
     const nm = splitName(joined.replace(/[^A-Za-z ,.'-]/g, ' ').replace(/\s+/g, ' ').trim());
     return finish(rowWords, {
       emplid: '', name: joined, ...nm,
@@ -140,6 +151,23 @@ function parseRow(rowWords) {
       forceReview: true
     });
   }
+  return buildRow(rowWords, toks, anchorIdx, emplid, emplidFixes, []);
+}
+
+// Surname particles that legitimately stand alone before the comma token.
+const PARTICLE_RE = /^(van|von|de|del|della|di|da|la|le|mc|mac|st|saint|der|ten|ter|bin|al|el|dos|das|du|des)\.?$/i;
+
+/** Scanner debris sitting in the Emp Rec column ("Qa", "jo}", "[4]") —
+ *  as opposed to a real part of the name. */
+function isLeadingJunk(t) {
+  if (/[^A-Za-z'\-.]/.test(t)) return true;               // braces, digits, symbols
+  const letters = t.replace(/[^A-Za-z]/g, '');
+  return letters.length <= 2 && !PARTICLE_RE.test(t);     // "Qa" yes, "De"/"Mc" no
+}
+
+/** Shared row builder: everything to the right of `anchorIdx` is name then
+ *  trailing columns. Used for both the emplid anchor and the SSN fallback. */
+function buildRow(rowWords, toks, anchorIdx, emplid, emplidFixes, extraReasons) {
 
   // Everything after the anchor: name, then trailing columns. Parsed from
   // the RIGHT — step is the last 1–2 digit number near the end, grade sits
@@ -172,6 +200,14 @@ function parseRow(rowWords) {
   // so strip leading tokens until one shaped like a name: starts with a
   // letter and has at least two letters ("O'Brien,Sean" and "Ng,Amy" pass).
   while (nameToks.length && !/^[A-Za-z](?=(?:[^A-Za-z]*[A-Za-z]))/.test(nameToks[0])) nameToks.shift();
+  // Stronger anchor when it exists: the report prints "LAST,FIRST" with no
+  // space, so the token carrying the comma starts the name. Only slice when
+  // everything before it is junk — a real surname can precede the comma
+  // token ("Adkins Jr.,Donald L", "Van Hagen,John"), and those must survive.
+  const commaAt = nameToks.findIndex(t => t.includes(','));
+  if (commaAt > 0 && nameToks.slice(0, commaAt).every(isLeadingJunk)) {
+    nameToks = nameToks.slice(commaAt);
+  }
   // The name column ends where the code/money columns begin: deduction
   // codes ("DU0405" — also misread as "DU040S"/"Duo40s"), dollar amounts,
   // masked SSNs. Truncate at the first such token — otherwise codes to the
@@ -200,13 +236,14 @@ function parseRow(rowWords) {
   }
   const nameRaw = nameToks.join(' ').replace(/\s*,\s*/g, ',').trim();
   const nm = splitName(nameRaw);
-  const reasons = [...nm.reasons];
+  const reasons = [...(extraReasons || []), ...nm.reasons];
   if (emplidFixes > 0) reasons.push(`emplid needed ${emplidFixes} character fix${emplidFixes > 1 ? 'es' : ''}`);
   if (!nameRaw) reasons.push('no name read');
   if (!grade && !gradeBlankMarker) reasons.push('no grade read');
   if (!step) reasons.push('no step read');
 
-  return finish(rowWords, { emplid, name: nameRaw, ...nm, grade, step, reasons, emplidFixes });
+  return finish(rowWords, { emplid, name: nameRaw, ...nm, grade, step, reasons, emplidFixes,
+    forceReview: !emplid });
 }
 
 function finish(rowWords, p) {

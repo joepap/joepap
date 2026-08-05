@@ -196,3 +196,27 @@ test('low word confidence flows into row confidence', () => {
   const r = parse.parseRow(words('01234567 SMITH,JOHN A 15551 FF-01 5', 52));
   assert.ok(r.confidence < 80);
 });
+
+// Emp Rec debris vs real name parts — found while reconciling the June
+// report against NEP, where 28 rows had lost their names entirely.
+test('real DCHR layout: SSN fallback recovers the name when the emplid is unreadable', () => {
+  // The scan read "00099503" as "000939503" (an extra digit), so the emplid
+  // anchor failed. The name must still come through.
+  const r = parse.parseRow(words('FB-11450003 XXX-XX-6665 000939503 [4] Allen, Jordin A DU0405 49.19 49.09 0.10 LAA LBR 01 7'));
+  assert.equal(r.last_name, 'Allen');
+  assert.equal(r.first_name, 'Jordin');
+  assert.equal(r.emplid, '');
+  assert.ok(r.review_reasons.some(x => /employee ID unreadable/.test(x)));
+});
+
+test('real DCHR layout: leading scan debris is stripped, real name parts are not', () => {
+  const junk = parse.parseRow(words('FB-1 xxx-xx-1 00099503 Qa MacFawn,Owen Daniel DU0405 49.19 49.09 0.10 LAA 01 5'));
+  assert.equal(junk.name, 'MacFawn,Owen Daniel');
+  const brace = parse.parseRow(words('FB-1 xxx-xx-1 00099504 jo} Ryan,Gene T DU0405 49.19 49.09 0.10 LAA 1B 9'));
+  assert.equal(brace.name, 'Ryan,Gene T');
+  // …but a surname before the comma token survives
+  const suffix = parse.parseRow(words('FB-1 xxx-xx-1 00002951 0 Adkins Jr.,Donald L DU0405 49.19 49.09 0.10 LAA D13 1B 9'));
+  assert.equal(suffix.last_name, 'Adkins Jr.');
+  const particle = parse.parseRow(words('FB-1 xxx-xx-1 00099508 0 Van Hagen,John E DU0405 49.19 49.09 0.10 LAA 01 6'));
+  assert.equal(particle.last_name, 'Van Hagen');
+});
