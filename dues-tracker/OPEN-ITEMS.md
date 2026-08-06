@@ -44,6 +44,14 @@ These are leftovers from the old spreadsheet migration. Each needs a look:
 - `Lea, D'Andfe L` and `Lea, D'Andre` — one of these is a typo of the other.
 - `Ne, Dennis`, `S, Ebony` — one-letter surnames, no payroll line.
 
+## Ready to go the moment the field exists
+
+- **PeopleSoft Number backfill.** Joe is adding a `PeopleSoft Number` field
+  to NEP (named after the payroll system). 1,753 members can be filled in
+  from the June report — the match is verified and all six duplicate-emplid
+  flags are cleared. Retirees and alumni stay blank; they are not on a
+  payroll report.
+
 ## Bigger jobs not started
 
 - **Junk IAFF numbers**: 66 members carry a date (mostly `08/08/2025`) where

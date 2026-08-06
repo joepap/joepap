@@ -90,6 +90,19 @@ profiles):
 
 ## E. Standing rules
 
+- **The PeopleSoft number is the join key**, once NEP carries it. Names are
+  a bad key and this project proved it: two members changed surname between
+  exports (Della-Camera → Dunn, Hall → Platz), NEP held a dozen mangled
+  spellings, and families share surnames. The employee ID is on every line
+  of the report, survives a marriage, and is what the reader anchors on
+  before it looks at a name. It also beats the IAFF number — 515 Active
+  members have none.
+
+  **Never backfill it while any row is flagged `duplicate emplid in this
+  import`.** The importer already catches those. In the June report six
+  pairs collided, every one a final digit `9` misread as 5, 2, 3, 2, 8 or
+  2 — stamping them unchecked would have put a wrong number on six people.
+  Clear the flags against the page images first, then backfill.
 - **NEP carries the payroll name.** The DCHR dues report is the name of
   record, because it is what the monthly match runs against — a member
   stored in NEP under a nickname fails to match his own payroll line
