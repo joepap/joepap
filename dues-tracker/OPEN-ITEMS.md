@@ -3,21 +3,52 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 6 Aug 2026, 3,491 members**
-(`data/uploads/roster-17`, gitignored). Dues report: **13 June 2026**, 1,781
-payers. IAFF export: **July 2026**, 2,514 members.
+Roster state at last update: **NEP export of 6 Aug 2026, 04:44 — 3,489 members**
+(`data/uploads/roster-21`, gitignored). Dues report: **13 June 2026**, 1,781
+payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
+1,684 people.
 
-## Do this next
+## Fix first — 13 PeopleSoft numbers are on two members each
 
-- **Paying Active Member.** 1,277 rows keyed on IAFF number are with Joe. Then
-  three more sheets: 311 on email, 111 on phone, 52 with nothing unique to key
-  on. Only the **Yes** values are being written — Joe's call to hold the No's,
-  and a good one: of the 391 rows that would have gone to No, 388 are blank
-  today, not Yes. Marking those No asserts something new rather than correcting
-  anything, and the report is eight weeks old.
-- **Platoon**, last batch: 42 people with no IAFF number, no email and no
-  phone. Needs a different approach — same 42 block the last phone sheet.
-- **Mobile numbers**, remaining: 1 keyed on email, 42 with nothing to key on.
+Every one is a father and his son, and the son is the one working. The
+one-to-one assignment was rebuilt from a fresh roster for each batch and is
+not stable across runs, so the same payroll number went to the father in one
+batch and the son in another. Both writes stuck.
+
+The number belongs to whoever telestaff has working today:
+
+| number | keeps it | must be cleared |
+|---|---|---|
+| 00003670 | Watson Jr., Richard L | Watson, Richard [Active Retired] |
+| 00037151 | Thompson, Jr., Gregory F | Thompson, Gregory F [Active Retired] |
+| 00006773 | Rainwater, Jr, Joseph H | Rainwater, Joseph H [Active Retired] |
+| 00004546 | Johnson, Joseph W | Johnson, Joseph [no status] |
+| 00111758 | Humphries Jr, Clifton D | Humphries, Clifton D [Active Retired] |
+| 00107998 | Carter Jr, James E | Carter, James E [Active Retired] |
+| 00107993 | Baltimore Iii, William J | Baltimore, William J [Active Retired] |
+| 00035200 | Curry, Jr., John W | Curry, John W [Deceased] |
+| 00035267 | Denmark, Jr., Alan L | Denmark, Alan [Active] |
+| 00101069 | Faulkner Jr, John M | Faulkner, John [Active] |
+| 00113842 | Edwards, **Raymond Allen** | Edwards, Raymond C [Active] |
+| 00113839 | Harris, **Jason A** | Harris, Jason M [Active] |
+| 00096802 | Thompson, William L | Thompson, William C. — **and William C should get 00036560** |
+
+Edwards and Harris are the two where the *son* is not the suffixed record —
+telestaff's middle initial is the only thing that separates them, so do not
+resolve these by suffix alone.
+
+The code fix belongs in the assignment: a payroll number must never be
+written to two members, and the tie-break needs the middle initial.
+
+## Still to upload
+
+- **PeopleSoft Number**: 45 members with no IAFF number, no email and no
+  phone — nothing unique to key on. By hand, or after they get contact info.
+- **Chiefs to Drop**: the 18-row sheet does not appear to have been applied —
+  NEP still shows 4 chiefs Active. Thomas L Williams also needs doing by hand
+  (no IAFF number).
+- **Paying Active Member**: 62 keyed on phone, 9 with nothing to key on.
+- **Platoon**: 42 with nothing to key on.
 
 ## Needs adding to NEP itself
 
@@ -97,22 +128,25 @@ mangled beyond matching.
   Active, appointed 2004). The father/son rule held.
 - **The 69 suffix differences.** NEP stores Jr./II/III inside the Last Name
   field. Cosmetic; the matcher already ignores it.
-- **Rank.** NEP wins over telestaff, per Joe.
+- **Rank.** Telestaff wins, reversing the earlier call — NEP's ranks were
+  years out of date and 22 of 37 working chiefs were still filed as Captains
+  and Lieutenants. Every value written must come from NEP's own 53-entry
+  dropdown.
 
 ## Bigger jobs not started
 
-- **Run `lib/audit.js` and work the list.** 2,631 findings against roster-17,
-  114 of them high. Biggest groups after the paying job: 411 IAFF numbers
-  absent from the IAFF's own export, 316 members with no Member Status, 139
-  damaged names, 104 duplicate profiles, 81 records holding nothing but a name.
+- **Run `lib/audit.js` and work the list.** 1,194 findings against roster-21,
+  113 of them high — down from 2,631 at the start of the evening. Biggest
+  groups now: 411 IAFF numbers absent from the IAFF's own export, 316 members
+  with no Member Status, 137 damaged names, 104 duplicate profiles, 85 still
+  unmarked as paying, 81 records holding nothing but a name.
 - **Duplicate profiles**: 104 pairs. 27 have a contact detail that exists only
   on the ghost — copy it across before deleting. 22 more are Jr./Sr. pairs
   reported as *possible father and son* and deliberately not merged.
 - **Junk IAFF numbers**: 25 members whose number is a date, 1 that reads
   `00L#326`.
-- **PeopleSoft Number backfill.** Field not yet added to NEP. 1,753 members
-  ready; all six duplicate-emplid flags cleared. Telestaff also carries the
-  same number, which is a second source for it.
+- **PeopleSoft Number** is live and filled on 1,529 members. Telestaff is the
+  authority for it; see `lib/telestaff.js`.
 - **209 people work in telestaff but are not on the dues report** — active
   employees not paying Local 36 dues. Some are chiefs who may sit outside the
   unit; plenty are firefighters.
