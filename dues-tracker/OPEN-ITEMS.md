@@ -19,6 +19,35 @@ payers. IAFF export: **July 2026**, 2,514 members.
   phone. Needs a different approach — same 42 block the last phone sheet.
 - **Mobile numbers**, remaining: 1 keyed on email, 42 with nothing to key on.
 
+## Needs adding to NEP itself
+
+- **Add `Recruit` to the DC Fire Rank dropdown.** Telestaff has 2 recruits;
+  NEP has no such value, so they are excluded from the rank upload for now.
+  Joe's call that recruits should not be on our sheet at all — revisit once
+  the option exists.
+
+## Ranks still needing a decision
+
+Telestaff rank on the left, no safe equivalent in NEP's 53-value dropdown.
+Their rank is left untouched until Joe says; they still get a PeopleSoft
+number.
+
+| telestaff rank | people |
+|---|---|
+| Captain - EMS Supervisor | 14 |
+| Battalion EMS Supervisor | 9 |
+| PARAMEDIC | 9 — Joe is looking at these |
+| Lieutenant / Captain - Fire Operations Center | 8 |
+| Battalion Chief - EMS | 4 |
+| Battalion Chief - Special Operations | 4 |
+| Fire Liaison Officer | 4 |
+| Lieutenant - Emergency Liaison Officer | 2 |
+| seven one-person ranks | 7 |
+
+Settled already: `Captain - EMS Liaison Officer` → **EMS Captain**;
+`SERGEANT DFC AIDE` → **Sergeant**; `Lieutenant - Staffing Officer` →
+**Lieutenant**; `RECRUIT` → excluded.
+
 ## Waiting on a member to reply
 
 - **Jeffery / Jeffrey Agnew** (#1456943). Payroll *and* telestaff both print
