@@ -157,7 +157,15 @@ function assignOneToOne(as, bs) {
       }
     }
   }
-  pairs.sort((x, y) => y.s - x.s);
+  // Equal scores used to be settled arbitrarily, and an empty leftover record
+  // could beat the real member: the payroll's "Wheeler,Berl D" landed on a
+  // blank "Wheeler Sr., Berl" instead of the live "Wheeler, Berl D", which
+  // then looked like evidence the two were the same person. Five payroll rows
+  // were sitting on a hollow record this way. On a tie, take the record that
+  // actually holds something.
+  const blank = v => !String(v == null ? '' : v).trim();
+  const hollow = b => blank(b.member_no) && blank(b.status) && blank(b.work_status) && blank(b.emplid);
+  pairs.sort((x, y) => y.s - x.s || (hollow(x.b) ? 1 : 0) - (hollow(y.b) ? 1 : 0));
   const out = new Map(), usedB = new Set();
   for (const p of pairs) {
     if (out.has(p.a.id) || usedB.has(p.b.id)) continue;

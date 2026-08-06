@@ -109,3 +109,28 @@ test('workbook builds with all six sheets', () => {
   assert.equal(wb.SheetNames.length, 6);
   assert.equal(wb.SheetNames[0], 'Summary');
 });
+
+test('a tie is never won by an empty leftover record', () => {
+  // The payroll's "Wheeler,Berl D" landed on a blank "Wheeler Sr., Berl"
+  // instead of the live "Wheeler, Berl D", and that misassignment then read
+  // as evidence the two records were one person. Five payroll rows were
+  // sitting on a hollow record this way before it was caught.
+  const db = freshDb();
+  addDues(db, [{ emplid: '00006229', last: 'Wheeler', first: 'Berl' }]);
+  // the empty leftover is inserted FIRST, so insertion order alone favours it
+  reconcile.importRoster(db, 'nep', [
+    { 'Member Number': '', 'Last Name': 'Wheeler Sr.', 'First Name': 'Berl',
+      'Member Status': '', 'Work Status': '' },
+    { 'Member Number': '1115948', 'Last Name': 'Wheeler', 'First Name': 'Berl D',
+      'Member Status': 'Active', 'Work Status': 'Active Member' }
+  ], { member_no: 'Member Number', last_name: 'Last Name', first_name: 'First Name',
+       status: 'Member Status', work_status: 'Work Status' }, 'nep.csv');
+
+  const r = reconcile.reconcile(db);
+  // the live record is the one that got the dues line, so it is not on the
+  // "active but not paying" list; the hollow one has no status so it is not
+  // active-ish and never appears either way
+  assert.equal(r.payingNotInNep.length, 0, 'Berl should match somebody');
+  assert.deepEqual(r.nepActiveNotPaying.map(x => x.name), [],
+    'the live Wheeler record must be the one holding the dues line');
+});

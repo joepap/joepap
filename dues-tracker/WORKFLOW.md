@@ -88,6 +88,34 @@ profiles):
 4. **(planned) Wall dashboard**: a rotating full-screen page for the
    office; all numbers already exist in `/api/reconcile`.
 
+## D2. What we learned building the NEP upload sheets
+
+Hard-won, all of it. Ignore any of these and the upload either bounces or,
+worse, quietly writes to the wrong member.
+
+- **A sheet does one thing.** One field, one key, one action. Joe has to be
+  able to look at it and know what it will do without reading a manual.
+- **Key on NEP's own stored string.** `0557180` is not `557180` — NEP matches
+  exactly, so stripping the leading zero silently matches nobody. 87 members
+  carry a leading zero, nearly all Active Retired.
+- **A key that matches nothing CREATES; a key that matches UPDATES.** That is
+  the whole mechanism. Choose deliberately: to add members, pick a field whose
+  value is absent from NEP; to correct them, pick one that is present.
+- **Email, phone and IAFF number are unique across NEP.** An upload that would
+  put an existing value on a second member is refused. So before writing a
+  phone number, check it twice: the number going into a blank, *and* the
+  number being written back onto whoever held it wrongly. Missing the second
+  check is what bounced the first phone sheet.
+- **Misassigned numbers come in chains.** Bekure's mobile sat on Schlegel;
+  Schlegel's sat on Flores; Flores's own was free. Unwind from the far end —
+  Flores, then Schlegel, then Bekure — or every step collides.
+- **Two rows first, always.** Then the rest. Then a fresh export, and diff it
+  field-by-field against the previous one. That diff has caught a wrong key,
+  a rejected row and two hand edits that nobody mentioned.
+- **Blank cells are unresolved.** Four "clear this field" rows did not apply;
+  Joe reports blanks working elsewhere. Until somebody tests it deliberately,
+  clear fields by hand.
+
 ## E. Standing rules
 
 - **The PeopleSoft number is the join key**, once NEP carries it. Names are
