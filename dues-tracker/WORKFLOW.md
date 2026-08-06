@@ -90,6 +90,21 @@ profiles):
 
 ## E. Standing rules
 
+- **NEP carries the payroll name.** The DCHR dues report is the name of
+  record, because it is what the monthly match runs against — a member
+  stored in NEP under a nickname fails to match his own payroll line
+  every single month. So Margie becomes Margaret, Matt becomes Matthew,
+  Bill becomes William.
+
+  One guard, and it matters: the payroll name only wins when the **scan
+  of it is clean**. A truncated or garbled read is the scanner's fault,
+  not the payroll's — "Vukich, Gregor" and "Tate, Rae" were both the
+  reader dropping letters off names NEP already had right. Before
+  proposing a name change, look at the page image for that line.
+
+  Where the paper is clean but disagrees with **both** NEP and the IAFF
+  (`Schaefer, Matthews`, `Taylor, Reginal`), do not apply the rule
+  silently — that is more likely a payroll typo than a legal name. Ask.
 - Every import and roster upload is a **permanent snapshot** — history is
   never overwritten.
 - The app **never writes to NEP or the IAFF**. It produces reviewed
