@@ -104,4 +104,50 @@ const has = (r, check, who) => r.findings.some(f => f.check === check && (!who |
   assert(f && f.severity === 'high', 'a one-letter surname is a high finding');
 }
 
+// ---- the payroll number -------------------------------------------------
+// One number, one employee. A retired member holding one means it was written
+// to the wrong generation — 13 numbers landed on a father and his son this way.
+{
+  const r = auditRoster([
+    M({ 'Last Name': 'Watson Jr.', 'First Name': 'Richard L', 'Member Status': 'Active',
+        'PeopleSoft Number': '00003670' }),
+    M({ 'Last Name': 'Watson', 'First Name': 'Richard', 'Member Status': 'Active Retired',
+        'PeopleSoft Number': '00003670', 'IAFF Member Number': '237199' })
+  ]);
+  assert(has(r, 'peoplesoft-on-more-than-one-member'), 'a shared payroll number is always wrong');
+  assert(has(r, 'peoplesoft-on-a-non-active-member', 'Watson, Richard'));
+  const f = r.findings.find(x => x.check === 'peoplesoft-on-more-than-one-member');
+  assert(/Watson Jr\., Richard L/.test(f.fix), 'the Active one keeps it, got: ' + f.fix);
+}
+
+// Where both are Active the suffix must NOT decide it — for Edwards and Harris
+// the working man is the one WITHOUT the suffix.
+{
+  const r = auditRoster([
+    M({ 'Last Name': 'Edwards', 'First Name': 'Raymond C', 'Member Status': 'Active', 'PeopleSoft Number': '00113842' }),
+    M({ 'Last Name': 'Edwards', 'First Name': 'Raymond Allen', 'Member Status': 'Active', 'PeopleSoft Number': '00113842' })
+  ]);
+  const f = r.findings.find(x => x.check === 'peoplesoft-on-more-than-one-member');
+  assert(/middle initial/.test(f.fix), 'must send them to telestaff, not to the suffix');
+}
+
+{
+  const r = auditRoster([M({ 'Last Name': 'X', 'First Name': 'Y', 'PeopleSoft Number': '0000EMTB' })]);
+  assert(has(r, 'peoplesoft-not-an-employee-number'));
+}
+
+// A hire date decades from its number's cohort is a merged record.
+{
+  const roster = [];
+  for (let i = 0; i < 60; i++) {
+    roster.push(M({ 'Last Name': 'Person' + i, 'First Name': 'A', 'Member Status': 'Active',
+      'PeopleSoft Number': '001200' + String(10 + i), 'Appointment Date': '06/01/2021' }));
+  }
+  roster[30] = M({ 'Last Name': 'Klinger', 'First Name': 'Wayne D', 'Member Status': 'Active Retired',
+    'PeopleSoft Number': '00120040', 'Appointment Date': '04/23/1982' });
+  const r = auditRoster(roster);
+  assert(has(r, 'hire-date-does-not-fit-the-employee-number', 'Klinger'),
+    'a 1982 hire date among 2021 hires must be flagged');
+}
+
 console.log('audit tests passed');

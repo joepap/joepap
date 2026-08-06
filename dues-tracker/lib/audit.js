@@ -213,7 +213,81 @@ function statusCoherence(P, payingIdx) {
   return out;
 }
 
-/* ---------- 6. records with nothing in them --------------------------- */
+/* ---------- 6. the payroll (PeopleSoft) number ------------------------ */
+const PS_RE = /^0\d{7}$/;
+
+function peoplesoftIntegrity(P, telestaffById) {
+  const out = [];
+  const byNum = new Map();
+  for (const p of P) {
+    const v = L(p.rec['PeopleSoft Number']);
+    if (!v) continue;
+    if (!PS_RE.test(v)) {
+      out.push({ check: 'peoplesoft-not-an-employee-number', severity: 'high', who: p.name,
+        detail: 'PeopleSoft Number reads "' + v + '".', fix: 'Employee numbers are eight digits starting with a zero.' });
+      continue;
+    }
+    if (!byNum.has(v)) byNum.set(v, []);
+    byNum.get(v).push(p);
+    // A payroll number is issued to a serving employee. A retired, deceased or
+    // dropped member holding one means it was written to the wrong generation —
+    // this is how a father ends up wearing his son's number.
+    if (p.status && p.status !== 'Active') {
+      out.push({ check: 'peoplesoft-on-a-non-active-member', severity: 'high', who: p.name,
+        detail: 'Holds payroll number ' + v + ' but Member Status is "' + p.status + '".',
+        fix: 'Clear it. Check whether an Active member of the same name should have it.' });
+    }
+    if (telestaffById && !telestaffById.has(v)) {
+      out.push({ check: 'peoplesoft-unknown-to-telestaff', severity: 'medium', who: p.name,
+        detail: 'Payroll number ' + v + ' is not in the telestaff export.',
+        fix: 'Either they have left, or the number came from a misread scan.' });
+    }
+  }
+  for (const [v, list] of byNum) {
+    if (list.length < 2) continue;
+    const active = list.filter(x => x.status === 'Active');
+    out.push({
+      check: 'peoplesoft-on-more-than-one-member', severity: 'high',
+      who: list.map(x => x.name).join('  /  '),
+      detail: 'All hold payroll number ' + v + '. One number, one employee.',
+      fix: active.length === 1
+        ? 'Keep it on ' + active[0].name + ' — the only Active one — and clear the rest.'
+        : 'Both look active. Telestaff\'s middle initial decides; do not go by Jr./Sr., '
+          + 'which is backwards for some father/son pairs.'
+    });
+  }
+  return out;
+}
+
+/**
+ * Employee numbers are issued roughly in hire order, so a member's appointment
+ * date should sit near those of their number's neighbours. A record claiming a
+ * hire date thirty years off its cohort is holding two people's facts — which
+ * is exactly what a father/son merge looks like from the inside.
+ */
+function cohortMismatch(P, { window = 25, years = 8 } = {}) {
+  const dated = P
+    .filter(p => PS_RE.test(L(p.rec['PeopleSoft Number'])) && /^\d\d\/\d\d\/\d{4}$/.test(p.appt))
+    .map(p => ({ p, n: Number(L(p.rec['PeopleSoft Number'])), y: Number(p.appt.slice(6)) }))
+    .sort((a, b) => a.n - b.n);
+  const out = [];
+  for (let i = 0; i < dated.length; i++) {
+    const lo = Math.max(0, i - window), hi = Math.min(dated.length, i + window + 1);
+    const ys = dated.slice(lo, hi).filter((_, j) => lo + j !== i).map(d => d.y).sort((a, b) => a - b);
+    if (ys.length < 8) continue;
+    const median = ys[Math.floor(ys.length / 2)];
+    const gap = Math.abs(dated[i].y - median);
+    if (gap < years) continue;
+    out.push({ check: 'hire-date-does-not-fit-the-employee-number', severity: gap >= 20 ? 'high' : 'medium',
+      who: dated[i].p.name,
+      detail: 'Payroll number ' + L(dated[i].p.rec['PeopleSoft Number']) + ' sits among people hired around '
+        + median + ', but this record says ' + dated[i].p.appt + ' — ' + gap + ' years out.',
+      fix: 'Usually the number belongs to a younger relative of the same name. Check both.' });
+  }
+  return out;
+}
+
+/* ---------- 7. records with nothing in them --------------------------- */
 function hollowRecords(P) {
   return P.filter(p => !p.iaff && !p.status && !p.appt && !p.rank && !p.email && !p.phone)
     .map(p => ({ check: 'empty-record', severity: 'medium', who: p.name,
@@ -225,8 +299,9 @@ function hollowRecords(P) {
  * Run every check. `payers` is an optional list of {lastName, firstName} from
  * the payroll dues report; `iaffRoster` the raw IAFF export rows.
  */
-function auditRoster(records, { payers, iaffRoster } = {}) {
+function auditRoster(records, { payers, iaffRoster, telestaff } = {}) {
   const P = records.map(person);
+  const telestaffById = telestaff ? new Map(telestaff.map(t => [t.emplid, t])) : null;
 
   // Link the dues report to NEP one-to-one, so "is this member paying" means
   // the same thing here as everywhere else in the app.
@@ -258,6 +333,8 @@ function auditRoster(records, { payers, iaffRoster } = {}) {
     iaffNumbers(P, iaffRoster),
     damagedNames(P),
     statusCoherence(P, payingIdx),
+    peoplesoftIntegrity(P, telestaffById),
+    cohortMismatch(P),
     hollowRecords(P)
   );
   const rank = { high: 0, medium: 1, low: 2, info: 3 };
