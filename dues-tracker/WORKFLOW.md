@@ -112,9 +112,17 @@ worse, quietly writes to the wrong member.
 - **Two rows first, always.** Then the rest. Then a fresh export, and diff it
   field-by-field against the previous one. That diff has caught a wrong key,
   a rejected row and two hand edits that nobody mentioned.
-- **Blank cells are unresolved.** Four "clear this field" rows did not apply;
-  Joe reports blanks working elsewhere. Until somebody tests it deliberately,
-  clear fields by hand.
+- **A blank cell can clear a field — proven for `PeopleSoft Number` only.**
+  Tested deliberately on 11 Aug 2026: two rows keyed on IAFF number with an
+  empty `PeopleSoft Number` emptied it on both members. Earlier the same trick
+  on `Phone Number` did nothing, so this is **not** a universal rule — NEP may
+  treat a plain text field differently from one with validation, a picklist or
+  a uniqueness constraint. Test any new field on two rows before trusting it.
+
+  The corollary is the dangerous half, and it holds regardless: **never put a
+  column in a sheet unless you mean to write it.** A column left blank for
+  tidiness may wipe that field on every row. Include the key, include the
+  fields being changed, and nothing else.
 
 ## E. Standing rules
 
