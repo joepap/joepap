@@ -79,12 +79,17 @@ function duplicateProfiles(P) {
       // A ghost record usually still carries the one thing the real record is
       // missing — a mobile number somebody typed in years ago. Delete it
       // blind and that is gone, which is how contact data quietly rots.
-      const rescue = [];
+      // Contact details block a deletion: they exist nowhere else, so losing
+      // one loses the ability to reach a member. Group membership does not —
+      // it says nothing about whether these are two people, and it is easy to
+      // re-add. Report it so nobody is surprised, but never let it decide.
+      const rescue = [], note = [];
       if (ghost) {
         if (ghost.phone && !keep.phone) rescue.push('phone ' + ghost.rec['Phone Number']);
         if (ghost.email && !keep.email) rescue.push('email ' + ghost.email);
         const onlyGroups = [...ghost.groups].filter(g => !keep.groups.has(g));
-        if (onlyGroups.length) rescue.push('group membership ' + onlyGroups.join(' + '));
+        if (onlyGroups.length) note.push('It is also in ' + onlyGroups.join(' + ') +
+          ', which "' + keep.name + '" is not — re-add if that matters.');
       }
       out.push({
         check: 'duplicate-profile',
@@ -93,11 +98,12 @@ function duplicateProfiles(P) {
         detail: shared.length ? 'They share ' + shared.join(' and ') + '.'
           : ghost ? 'One record is empty — no status, no IAFF number, no rank, no hire date.'
           : 'Same name, and nothing says they are two people.',
-        fix: ghost
+        fix: (ghost
           ? (rescue.length
               ? 'Copy ' + rescue.join(' and ') + ' onto "' + keep.name + '" first, then delete "' + ghost.name + '".'
               : 'Keep "' + keep.name + '", delete "' + ghost.name + '" — it holds nothing worth saving.')
-          : 'Check both, then merge into whichever has the IAFF number.'
+          : 'Check both, then merge into whichever has the IAFF number.') +
+          (note.length ? ' ' + note.join(' ') : '')
       });
     }
   }

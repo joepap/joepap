@@ -151,10 +151,10 @@ const has = (r, check, who) => r.findings.some(f => f.check === check && (!who |
     'a 1982 hire date among 2021 hires must be flagged');
 }
 
-// A shell with nothing but a mailing-list membership is not empty. Kevin
-// Adams, 11 Aug 2026: two blank duplicates whose only content was the Retiree
-// Insurance Group. Judged on phone and email alone they read as safe to delete
-// outright, and he would have come off the insurance list with no trace of it.
+// Group membership is information, not evidence about identity. Joe's rule,
+// 11 Aug: a mailing or insurance list says nothing about whether these are two
+// distinct members, so it must never turn a delete into a hold. It is reported
+// so the membership can be re-added, and that is all.
 {
   const r = auditRoster([
     M({ 'Last Name': 'Adams', 'First Name': 'Kevin A', 'IAFF Member Number': '401190',
@@ -165,20 +165,24 @@ const has = (r, check, who) => r.findings.some(f => f.check === check && (!who |
   ], {});
   const dup = r.findings.filter(f => f.check === 'duplicate-profile');
   assert.strictEqual(dup.length, 1);
+  assert(/holds nothing worth saving/.test(dup[0].fix),
+    'the group must not block the delete, got: ' + dup[0].fix);
   assert(/Retiree Insurance Group/.test(dup[0].fix),
-    'must say to carry the group across first, got: ' + dup[0].fix);
+    'but it must still be reported, got: ' + dup[0].fix);
 }
 
-// ...but a shell in no extra group is still a plain delete.
+// A real contact detail DOES block it — that value exists nowhere else.
 {
   const r = auditRoster([
-    M({ 'Last Name': 'Baden', 'First Name': 'John M', 'IAFF Member Number': '214965',
-        'Member Status': 'Active Retired', Groups: 'All Members' }),
-    M({ 'Last Name': 'Baden', 'First Name': 'John', Groups: 'All Members' })
+    M({ 'Last Name': 'Lewis', 'First Name': 'Larry E', 'IAFF Member Number': '480620',
+        'Member Status': 'Active', 'DC Fire Rank': 'Lieutenant' }),
+    M({ 'Last Name': 'Lewis', 'First Name': 'Larry',
+        'Email': 'larrylewis44@gmail.com', 'Phone Number': '+13018439722' })
   ], {});
   const dup = r.findings.filter(f => f.check === 'duplicate-profile');
   assert.strictEqual(dup.length, 1);
-  assert(/holds nothing worth saving/.test(dup[0].fix), dup[0].fix);
+  assert(/^Copy /.test(dup[0].fix), dup[0].fix);
+  assert(/larrylewis44@gmail.com/.test(dup[0].fix), dup[0].fix);
 }
 
 console.log('audit tests passed');
