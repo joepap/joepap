@@ -7,6 +7,7 @@ The three records that must agree, and who owns the truth for what:
 | **DCHR payroll report** (scanned) | who is actually paying **active** dues | every ~2 weeks, paper → scan |
 | **NEP / ConnectPlus** | who our members are; **retired** dues (year checkboxes) | download any time |
 | **IAFF** | who we pay per-capita for (they bill per head) | download any time |
+| **Telestaff** | employee numbers, current rank, platoon — who is working today | export any time |
 
 Everything below exists in the app today unless marked **(planned)**.
 
@@ -29,6 +30,24 @@ Everything below exists in the app today unless marked **(planned)**.
 5. **Work the stopped list**: retired? quit? payroll error? Mark each
    handled with a note — the notes live forever and ride into every export.
    Each finding links straight to the scanned line ("check the scan").
+
+   **Each stopped payer now arrives with the answer already attached**, taken
+   from the current telestaff upload — so keep telestaff current, it is what
+   makes this work:
+
+   | telestaff says | what it means | what to do |
+   |---|---|---|
+   | now a chief officer | promoted out of the union | set NEP to **Drop** |
+   | not there at all | left the department | retired or resigned — check |
+   | still here, still in the unit | payroll error, or they withdrew | **ask** |
+
+   A promotion is the one that used to slip through. A member made battalion
+   chief is still on the report he was paid under, so he looks like a paying
+   member right up until the next one — Botwin, August 2026. Telestaff knew
+   his rank before the payroll caught up.
+
+   With no telestaff snapshot loaded the list simply says nothing extra,
+   rather than guessing.
 6. **Exports**: the NEP workbook (mark-paid list + stopped follow-up).
    Once NEP adds the requested **"Paying Active Member Dues"** field and
    we know its exact import headers, this sheet will match them verbatim.

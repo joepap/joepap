@@ -97,6 +97,17 @@
         </div>
         <div class="muted mt small" id="iaffStatus"></div>
       </div>
+      <div>
+        <h4 class="mt">Telestaff staffing export <span class="muted small" id="telestaffInfo"></span></h4>
+        <p class="muted small" style="max-width:22em">Who is working today, and what as. Used to
+          explain every stopped payer — promoted out of the union, left the department, or still here.</p>
+        <input type="file" id="telestaffFile" accept=".csv,.xlsx,.xls">
+        <div id="telestaffMapArea" class="hidden">
+          <div class="input-row" id="telestaffMapGrid"></div>
+          <button class="primary mt" id="doTelestaffImport">Import telestaff</button>
+        </div>
+        <div class="muted mt small" id="telestaffStatus"></div>
+      </div>
     </div>
   </section>
 

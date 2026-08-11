@@ -145,3 +145,50 @@ test('the ordinary case still goes through', () => {
   assert.equal(write.length, 2);
   assert.equal(refused.length, 0);
 });
+
+// ---- ranks outside the local ----------------------------------------------
+
+test('chief officers are outside Local 36', () => {
+  ['Battalion Fire Chief', 'Battalion Fire Chief - Homeland Security',
+   'Battalion Chief - EMS', 'Deputy Fire Chief', 'Assistant Fire Chief',
+   'Assistant Chief of Operations', 'Fire Chief']
+    .forEach(r => assert(ts.isOutsideLocal(r), r + ' should be outside'));
+});
+
+test('titles that merely sound like chiefs are ours', () => {
+  // Every one of these is a real rank in NEP or telestaff, and every one is a
+  // dues-paying member. Matching loosely on "battalion" or "assistant" would
+  // drop them.
+  ['Battalion EMS Supervisor', 'Assistant Lieutenant', 'Assistant Marine Pilot',
+   'Assistant Fleet Management Officer', 'Sergeant - DFC Aide',
+   'Captain - ROCC Manager', 'Firefighter', 'Lieutenant', 'Captain']
+    .forEach(r => assert(!ts.isOutsideLocal(r), r + ' should be inside'));
+});
+
+test('a chief’s aide is one of ours, not a chief', () => {
+  assert.equal(ts.isOutsideLocal('Deputy Fire Chief Aide'), false);
+});
+
+// ---- why a payer stopped ---------------------------------------------------
+
+test('promoted into a chief rank: drop them', () => {
+  const r = ts.explainStopped({ rank: 'Battalion Fire Chief', platoon: '' });
+  assert.equal(r.code, 'promoted-out');
+  assert(/Drop/.test(r.action));
+});
+
+test('gone from telestaff: left the department', () => {
+  assert.equal(ts.explainStopped(null).code, 'left-department');
+});
+
+test('still on telestaff in the unit: somebody has to ask', () => {
+  const r = ts.explainStopped({ rank: 'Firefighter', platoon: 'Platoon 2' });
+  assert.equal(r.code, 'still-working');
+  assert(/Platoon 2/.test(r.detail));
+});
+
+test('no telestaff file at all says nothing rather than guessing', () => {
+  // undefined means "we did not look", null means "we looked and they are
+  // not there". Collapsing the two would tell Joe a working member had left.
+  assert.equal(ts.explainStopped(undefined), null);
+});

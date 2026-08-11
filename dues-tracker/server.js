@@ -156,7 +156,7 @@ app.get('/api/state', requireStaff, (req, res) => {
                  stopped: i.stopped, new_payers: i.new_payers }))
     .reverse();
   const rosterInfo = {};
-  for (const src of ['nep', 'iaff']) {
+  for (const src of ['nep', 'iaff', 'telestaff']) {
     const r = reconcile.latestRoster(db, src);
     rosterInfo[src] = r ? { id: r.id, total: r.total, loaded: r.uploaded_at.slice(0, 10),
       snapshots: db.prepare('SELECT COUNT(*) c FROM rosters WHERE source = ?').get(src).c } : null;
@@ -167,12 +167,18 @@ app.get('/api/state', requireStaff, (req, res) => {
 // ---------- membership rosters (NEP / IAFF) ----------
 app.post('/api/roster/import', requireAdmin, sheetUpload.single('file'), (req, res) => {
   const source = String(req.body.source || '');
-  if (source !== 'nep' && source !== 'iaff') return res.status(400).json({ error: 'bad source' });
+  if (!['nep', 'iaff', 'telestaff'].includes(source)) return res.status(400).json({ error: 'bad source' });
   let mapping;
   try { mapping = JSON.parse(req.body.mapping || '{}'); }
   catch (e) { return res.status(400).json({ error: 'bad mapping' }); }
   if (!(mapping.last_name || mapping.full_name)) {
     return res.status(400).json({ error: 'Map at least Last name (or Full name).' });
+  }
+  // Telestaff's whole value is the employee number — it is what makes it the
+  // authority over the scan. A telestaff upload without one is just a list of
+  // names, so refuse it rather than store something that cannot be joined.
+  if (source === 'telestaff' && !mapping.emplid) {
+    return res.status(400).json({ error: 'Telestaff needs the Employee ID column mapped.' });
   }
   let parsed;
   try { parsed = tabular.parseUpload(req.file.buffer, req.file.originalname); }

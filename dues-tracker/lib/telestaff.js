@@ -190,5 +190,54 @@ function planPeoplesoftWrites(candidates) {
   return { write, refused };
 }
 
+/**
+ * Is this rank outside Local 36?
+ *
+ * Chief officers — battalion, deputy, assistant and the Fire Chief — are not
+ * in our bargaining unit. A member who is promoted into one of those ranks
+ * stops paying dues and should become `Drop` in NEP, the way Weinroth and
+ * Schott did. Honorary is a separate decision and stays a human's call.
+ *
+ * Deliberately narrow. "Battalion EMS Supervisor" and "Captain - ROCC
+ * Manager" read like chief titles and are not; matching loosely would drop
+ * paying members. Only the four real chief grades count, and `Fire Chief`
+ * must be the whole rank so that `Assistant Fire Chief` is not matched twice
+ * and `Deputy Fire Chief Aide` — a sergeant's job — is not matched at all.
+ */
+const CHIEF_RE = /^(battalion|deputy|assistant)\s+(fire\s+)?chief\b|^assistant\s+chief\b|^fire\s+chief$/i;
+
+function isOutsideLocal(rank) {
+  const r = cleanName(rank).replace(/\s+/g, ' ').trim();
+  if (/\baide\b/i.test(r)) return false;      // a chief's aide is one of ours
+  return CHIEF_RE.test(r);
+}
+
+/**
+ * Why did this person stop appearing on the dues report?
+ *
+ * Answering it by hand is most of the work in the stopped-payer list, and
+ * telestaff already knows: it says whether they are still employed and what
+ * they are employed as. Three outcomes, and the first is the one that keeps
+ * catching us out — Botwin was still on the June report, already a battalion
+ * chief, and looked like a paying member right up until the next payroll.
+ *
+ * Returns null when there is no telestaff snapshot to consult, so the caller
+ * can tell "nothing to say" apart from "still working, no idea why".
+ */
+function explainStopped(person) {
+  if (person === undefined) return null;
+  if (!person) {
+    return { code: 'left-department', action: 'Retired or resigned — check, then set NEP to Active Retired or Drop.',
+      detail: 'not on the current telestaff export, so no longer employed' };
+  }
+  if (isOutsideLocal(person.rank)) {
+    return { code: 'promoted-out', action: 'Promoted out of the union — set NEP Member Status to Drop.',
+      detail: 'telestaff now has them as ' + person.rank + ', which is outside Local 36' };
+  }
+  return { code: 'still-working', action: 'Still employed in the unit — payroll error, or they withdrew. Ask.',
+    detail: 'telestaff still has them as ' + (person.rank || 'employed') +
+      (person.platoon ? ', ' + person.platoon : '') };
+}
+
 module.exports = { collapse, crossCheck, peoplesoftNumber, planPeoplesoftWrites,
-  cleanName, splitName, padEmplid };
+  isOutsideLocal, explainStopped, cleanName, splitName, padEmplid };

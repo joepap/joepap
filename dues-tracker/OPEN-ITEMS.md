@@ -3,52 +3,37 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 6 Aug 2026, 04:44 — 3,489 members**
-(`data/uploads/roster-21`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 11 Aug 2026, 16:03 — 3,489 members**
+(`data/uploads/roster-26`, gitignored). Dues report: **13 June 2026**, 1,781
 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
-## Fix first — 13 PeopleSoft numbers are on two members each
+## 12 non-Active members still hold a payroll number — parked
 
-Every one is a father and his son, and the son is the one working. The
-one-to-one assignment was rebuilt from a fresh roster for each batch and is
-not stable across runs, so the same payroll number went to the father in one
-batch and the son in another. Both writes stuck.
+Retired, dropped, alumni and life members do not have a payroll number, so
+each of these came from the wrong generation. Every one was independently
+flagged by the cohort test: hire dates 20 to 39 years away from the neighbours
+of the number they hold.
 
-The number belongs to whoever telestaff has working today:
+Kline, Kevin P · Evans, Marc A · Roop, Michael A · Lacore, Michael D ·
+Schaefer, Paul M · Sullivan, Jason · Klinger, Wayne D **[Active Retired]** ·
+Walker, Michael Q · Tyner, Sr., Reginald H **[Alumni]** · Moore, Kenneth R ·
+Thornhill, Thomas B **[Drop]** · Mitchell, Kenneth **[Life]**
 
-| number | keeps it | must be cleared |
-|---|---|---|
-| 00003670 | Watson Jr., Richard L | Watson, Richard [Active Retired] |
-| 00037151 | Thompson, Jr., Gregory F | Thompson, Gregory F [Active Retired] |
-| 00006773 | Rainwater, Jr, Joseph H | Rainwater, Joseph H [Active Retired] |
-| 00004546 | Johnson, Joseph W | Johnson, Joseph [no status] |
-| 00111758 | Humphries Jr, Clifton D | Humphries, Clifton D [Active Retired] |
-| 00107998 | Carter Jr, James E | Carter, James E [Active Retired] |
-| 00107993 | Baltimore Iii, William J | Baltimore, William J [Active Retired] |
-| 00035200 | Curry, Jr., John W | Curry, John W [Deceased] |
-| 00035267 | Denmark, Jr., Alan L | Denmark, Alan [Active] |
-| 00101069 | Faulkner Jr, John M | Faulkner, John [Active] |
-| 00113842 | Edwards, **Raymond Allen** | Edwards, Raymond C [Active] |
-| 00113839 | Harris, **Jason A** | Harris, Jason M [Active] |
-| 00096802 | Thompson, William L | Thompson, William C. — **and William C should get 00036560** |
+**Thornhill is a known problem pair** — Joe: "the thornhill might be confused
+with his son, those two have always been an issue." Do not clear his number
+without working out which man the record describes.
 
-Edwards and Harris are the two where the *son* is not the suffixed record —
-telestaff's middle initial is the only thing that separates them, so do not
-resolve these by suffix alone.
-
-The code fix belongs in the assignment: a payroll number must never be
-written to two members, and the tie-break needs the middle initial.
+Joe parked the whole set on 11 Aug. The clean-up is safe to do — zero duplicate
+payroll numbers remain across all 3,489 members — but nobody is waiting on it.
 
 ## Still to upload
 
 - **PeopleSoft Number**: 45 members with no IAFF number, no email and no
   phone — nothing unique to key on. By hand, or after they get contact info.
-- **Chiefs to Drop**: the 18-row sheet does not appear to have been applied —
-  NEP still shows 4 chiefs Active. Thomas L Williams also needs doing by hand
-  (no IAFF number).
 - **Paying Active Member**: 62 keyed on phone, 9 with nothing to key on.
 - **Platoon**: 42 with nothing to key on.
+- **Thomas L Williams** → Drop, by hand (no IAFF number to key on).
 
 ## Needs adding to NEP itself
 
@@ -132,6 +117,15 @@ mangled beyond matching.
   years out of date and 22 of 37 working chiefs were still filed as Captains
   and Lieutenants. Every value written must come from NEP's own 53-entry
   dropdown.
+- **Chiefs.** Done, 11 Aug. All 201 chief records reviewed; the last four
+  Active ones — Botwin, Robinson, Spielman, Polish — went to Drop and the
+  export confirms exactly four changed fields and nothing else. Botwin was
+  still on the June report because he had only just been promoted, which is
+  what the new stopped-payer explanation exists to catch.
+- **Anthony ("Tony") Prince.** Not a dues payer. Retired 08/2019, not on
+  payroll, not on telestaff, every retired-dues checkbox blank, and his IAFF
+  number 469346 is unknown to the IAFF. Not to be confused with **Johnathan B
+  Prince** (#1485614, PeopleSoft 00098456), who is a paying Active member.
 
 ## Bigger jobs not started
 

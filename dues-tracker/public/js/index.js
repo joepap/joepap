@@ -14,6 +14,7 @@
       loadSettings();
       wireRosterUpload('nep');
       wireRosterUpload('iaff');
+      wireRosterUpload('telestaff');
     } else {
       $('uploadCard').innerHTML = '<h3>Import a new report</h3>' +
         '<p class="muted">Importing needs the admin PIN — sign out (✕ next to your name) and back in with it.</p>';
@@ -28,12 +29,20 @@
   var ROSTER_FIELDS = [
     ['member_no', 'Member #'], ['emplid', 'Emplid (if present)'], ['full_name', 'Full name'],
     ['last_name', 'Last name'], ['first_name', 'First name'], ['middle_name', 'Middle'],
-    ['status', 'Member status'], ['work_status', 'Work status'], ['email', 'Email'], ['phone', 'Phone']];
+    ['status', 'Member status'], ['work_status', 'Work status'], ['email', 'Email'], ['phone', 'Phone'],
+    ['rank', 'Rank'], ['platoon', 'Platoon / shift']];
   var ROSTER_GUESS = {
     member_no: /member.?(no|num|id)|iaff.?num/i, emplid: /empl/i,
     full_name: /^(full.?name|member.?name|name)$/i, last_name: /last/i, first_name: /first/i,
     middle_name: /middle|^mi$/i, status: /^(member.?)?status$/i, work_status: /work.?status/i,
-    email: /e.?mail/i, phone: /phone|cell|mobile/i };
+    email: /e.?mail/i, phone: /phone|cell|mobile|first.?contact/i,
+    // Telestaff calls the platoon "Formula ID" and writes it as a bare 1-4 or DW.
+    rank: /^rank$/i, platoon: /platoon|shift|formula.?id/i };
+  // Telestaff has one name column and no status of its own; showing the
+  // fields it cannot fill just invites someone to map them to the wrong thing.
+  var FIELDS_FOR = {
+    telestaff: ['full_name', 'emplid', 'rank', 'platoon', 'phone'],
+    nep: null, iaff: null };
 
   function wireRosterUpload(src) {
     var file = $(src + 'File');
@@ -47,7 +56,10 @@
         if (r.status !== 200) { $(src + 'Status').textContent = '✗ ' + (r.body.error || 'could not read file'); return; }
         $(src + 'Status').textContent = r.body.total + ' rows detected — match the columns, then Import';
         $(src + 'MapArea').classList.remove('hidden');
-        $(src + 'MapGrid').innerHTML = ROSTER_FIELDS.map(function (fld) {
+        var only = FIELDS_FOR[src];
+        $(src + 'MapGrid').innerHTML = ROSTER_FIELDS.filter(function (fld) {
+          return !only || only.indexOf(fld[0]) !== -1;
+        }).map(function (fld) {
           var picked = false;
           return '<div><label>' + fld[1] + '</label><select data-field="' + fld[0] + '">' +
             '<option value="">— none —</option>' +
@@ -58,7 +70,7 @@
         }).join('');
       });
     });
-    $('do' + (src === 'nep' ? 'Nep' : 'Iaff') + 'Import').onclick = function () {
+    $('do' + src.charAt(0).toUpperCase() + src.slice(1) + 'Import').onclick = function () {
       var f = file.files[0];
       if (!f) return;
       var mapping = {};
@@ -66,6 +78,7 @@
         if (s.value) mapping[s.getAttribute('data-field')] = s.value;
       });
       if (!mapping.last_name && !mapping.full_name) { alert('Map Last name or Full name.'); return; }
+      if (src === 'telestaff' && !mapping.emplid) { alert('Map the Employee ID column.'); return; }
       var fd = new FormData();
       fd.append('file', f);
       fd.append('source', src);
@@ -119,6 +132,7 @@
       };
       info('nepInfo', ro.nep);
       info('iaffInfo', ro.iaff);
+      info('telestaffInfo', ro.telestaff);
 
       drawTrend(d.trend || []);
 

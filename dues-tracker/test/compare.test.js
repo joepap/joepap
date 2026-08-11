@@ -103,3 +103,126 @@ test('excluded rows are invisible to the comparison', () => {
   const s = compare.runCompare(db, b);
   assert.equal(s.stopped + s.new + s.changed, 0);
 });
+
+// ---- explaining why a payer stopped ---------------------------------------
+
+function addTelestaff(db, people) {
+  const id = db.prepare("INSERT INTO rosters (source, filename, total) VALUES ('telestaff','t.csv',?)")
+    .run(people.length).lastInsertRowid;
+  const ins = db.prepare(`INSERT INTO roster_members
+    (roster_id, emplid, last_name, first_name, rank, platoon, norm_last, norm_first)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+  for (const p of people) {
+    ins.run(id, p.emplid, p.last, p.first, p.rank || 'Firefighter', p.platoon || '',
+      match.normalizeName(p.last), match.normalizeName(p.first));
+  }
+  return id;
+}
+
+// Botwin, August 2026: on the June report as a paying member, already a
+// battalion chief in telestaff, gone from the next report. Nothing in the app
+// said why, so he sat in NEP as Active.
+test('a payer who stopped after being promoted out is named as such', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00007652', last: 'BOTWIN', first: 'JONATHAN' });
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+
+  addTelestaff(db, [
+    { emplid: '00007652', last: 'Botwin', first: 'Jonathan M', rank: 'Battalion Fire Chief' },
+    { emplid: '00099407', last: 'Smith', first: 'John', rank: 'Firefighter', platoon: 'Platoon 1' }
+  ]);
+
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  const s = compare.runCompare(db, b);
+
+  assert.equal(s.stopped, 1);
+  assert.equal(s.stoppedBecause.promotedOut, 1);
+  const f = db.prepare("SELECT * FROM changes WHERE import_id = ? AND kind = 'stopped'").get(b);
+  assert.equal(f.reason, 'promoted-out');
+  assert(/Battalion Fire Chief/.test(f.detail));
+  assert(/set NEP Member Status to Drop/.test(f.detail));
+});
+
+test('a payer telestaff has never heard of has left the department', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00007652', last: 'RETIREE', first: 'ROBERT' });
+  compare.runCompare(db, a);
+  addTelestaff(db, [{ emplid: '00099407', last: 'Smith', first: 'John' }]);
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stoppedBecause.leftDepartment, 1);
+});
+
+test('still working and still in the unit is a real question, not an answer', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00007652', last: 'WITHDREW', first: 'WILLIAM' });
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+  addTelestaff(db, [
+    { emplid: '00007652', last: 'Withdrew', first: 'William', rank: 'Sergeant', platoon: 'Platoon 3' },
+    { emplid: '00099407', last: 'Smith', first: 'John' }
+  ]);
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stoppedBecause.stillWorking, 1);
+  const f = db.prepare("SELECT * FROM changes WHERE import_id = ? AND kind = 'stopped'").get(b);
+  assert(/payroll error, or they withdrew/.test(f.detail));
+});
+
+// Without a telestaff upload the old behaviour must survive unchanged —
+// silence, not a guess.
+test('no telestaff snapshot leaves stopped payers unexplained', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00007652', last: 'GONE', first: 'GEORGE' });
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stopped, 1);
+  assert.equal(s.stoppedBecause.unexplained, 1);
+  assert.equal(s.stoppedBecause.leftDepartment, 0);
+});
+
+// The scan mangles employee numbers, so the name is the fallback — but only
+// when it points at exactly one person. Two brothers must not resolve.
+test('a mangled employee number falls back to a clear name match', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00007653', last: 'BOTWIN', first: 'JONATHAN' });
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+  addTelestaff(db, [
+    { emplid: '00007652', last: 'Botwin', first: 'Jonathan M', rank: 'Battalion Fire Chief' },
+    { emplid: '00099407', last: 'Smith', first: 'John' }
+  ]);
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  assert.equal(compare.runCompare(db, b).stoppedBecause.promotedOut, 1);
+});
+
+test('two people with the same name settle nothing', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00007653', last: 'HARRIS', first: 'JASON' });
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+  addTelestaff(db, [
+    { emplid: '00113839', last: 'Harris', first: 'Jason', rank: 'Battalion Fire Chief' },
+    { emplid: '00118028', last: 'Harris', first: 'Jason', rank: 'Firefighter' },
+    { emplid: '00099407', last: 'Smith', first: 'John' }
+  ]);
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stoppedBecause.promotedOut, 0, 'must not pick one of two Jason Harrises');
+  assert.equal(s.stoppedBecause.leftDepartment, 1);
+});

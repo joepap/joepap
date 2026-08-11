@@ -13,6 +13,7 @@
  * number first, name as fallback.
  */
 const match = require('./match');
+const telestaff = require('./telestaff');
 
 const MATCH_THRESHOLD = 88;   // same bar payroll.js used — reliable "same person"
 
@@ -31,10 +32,33 @@ function importRoster(db, source, records, mapping, filename) {
   const rosterId = info.lastInsertRowid;
   const ins = db.prepare(`INSERT INTO roster_members
     (roster_id, member_no, emplid, last_name, first_name, middle_name,
-     status, work_status, email, phone, norm_last, norm_first)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+     status, work_status, email, phone, rank, platoon, norm_last, norm_first)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  // Telestaff needs its own reader, not a column mapping. It repeats a person
+  // once per shift, trade and leave entry, decorates the name with the house
+  // assignment ("Long, Kenneth W. {E18}"), drops the leading zeros off the
+  // employee number and writes the platoon as a bare "2". lib/telestaff.js
+  // already handles all of that and is tested; feed it the mapped columns
+  // under the names it expects rather than reimplementing any of it here.
+  const rows = source === 'telestaff'
+    ? telestaff.collapse(records.map(r => ({
+        Name: get(r, 'full_name'), Rank: get(r, 'rank'),
+        'Formula ID': get(r, 'platoon'), 'First Contact': get(r, 'phone'),
+        'Employee ID': get(r, 'emplid')
+      }))).map(p => ({
+        member_no: '', emplid: p.emplid, last: p.last_name, first: p.first_name,
+        middle: '', status: '', work_status: '', email: '', phone: p.phone,
+        rank: p.rank, platoon: p.platoon
+      }))
+    : null;
+
   const tx = db.transaction(() => {
-    for (const r of records) {
+    for (const row of rows || []) {
+      ins.run(rosterId, row.member_no, row.emplid, row.last, row.first, row.middle,
+        row.status, row.work_status, row.email, row.phone, row.rank, row.platoon,
+        match.normalizeName(row.last), match.normalizeName(row.first));
+    }
+    for (const r of rows ? [] : records) {
       let last = get(r, 'last_name'), first = get(r, 'first_name'), middle = get(r, 'middle_name');
       const full = get(r, 'full_name');
       if (full && !last) {
@@ -52,12 +76,15 @@ function importRoster(db, source, records, mapping, filename) {
       }
       ins.run(rosterId, get(r, 'member_no'), get(r, 'emplid').replace(/\D/g, ''),
         last, first, middle, get(r, 'status'), get(r, 'work_status'),
-        get(r, 'email'), get(r, 'phone'),
+        get(r, 'email'), get(r, 'phone'), get(r, 'rank'), get(r, 'platoon'),
         match.normalizeName(last), match.normalizeName(first));
     }
+    // Telestaff collapses to one row per person, so the file's row count is
+    // not the member count; store what we actually kept.
+    if (rows) db.prepare('UPDATE rosters SET total = ? WHERE id = ?').run(rows.length, rosterId);
   });
   tx();
-  return { rosterId, total: records.length };
+  return { rosterId, total: rows ? rows.length : records.length };
 }
 
 function latestRoster(db, source) {

@@ -116,13 +116,14 @@ function migrate(db) {
       detail TEXT NOT NULL DEFAULT ''
     );
 
-    -- Membership databases for reconciliation: NEP (ConnectPlus) and the
-    -- IAFF's own record of our members. Every upload is a permanent
-    -- snapshot, same rule as dues imports; the newest per source is
-    -- "current" for the reconcile screen.
+    -- Membership databases for reconciliation: NEP (ConnectPlus), the
+    -- IAFF's own record of our members, and telestaff, the department's
+    -- staffing export. Every upload is a permanent snapshot, same rule as
+    -- dues imports; the newest per source is "current" for the reconcile
+    -- screen.
     CREATE TABLE IF NOT EXISTS rosters (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      source TEXT NOT NULL CHECK (source IN ('nep','iaff')),
+      source TEXT NOT NULL CHECK (source IN ('nep','iaff','telestaff')),
       filename TEXT NOT NULL DEFAULT '',
       uploaded_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
       total INTEGER NOT NULL DEFAULT 0
@@ -145,6 +146,54 @@ function migrate(db) {
     CREATE INDEX IF NOT EXISTS ix_roster_members_roster ON roster_members(roster_id);
     CREATE INDEX IF NOT EXISTS ix_roster_members_norm ON roster_members(norm_last);
   `);
+
+  // Databases created before telestaff was a source carry the old two-source
+  // CHECK constraint, and CREATE TABLE IF NOT EXISTS will not replace it.
+  // SQLite cannot alter a constraint, so rebuild the table in place. The
+  // snapshots themselves are copied across untouched — losing one would
+  // break the "history is never overwritten" rule the whole app rests on.
+  const rostersSql = db.prepare(
+    "SELECT sql FROM sqlite_master WHERE type='table' AND name='rosters'").get();
+  if (rostersSql && !/telestaff/.test(rostersSql.sql)) {
+    // SQLite's documented table-rebuild procedure. `foreign_keys` must be
+    // turned off OUTSIDE the transaction — inside one it is silently ignored,
+    // and dropping the old table then fails because roster_members points at
+    // it. `foreign_key_check` before the commit proves nothing was orphaned.
+    db.pragma('foreign_keys = OFF');
+    try {
+      db.transaction(() => {
+        db.exec(`
+          CREATE TABLE rosters_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source TEXT NOT NULL CHECK (source IN ('nep','iaff','telestaff')),
+            filename TEXT NOT NULL DEFAULT '',
+            uploaded_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+            total INTEGER NOT NULL DEFAULT 0
+          );
+          INSERT INTO rosters_new (id, source, filename, uploaded_at, total)
+            SELECT id, source, filename, uploaded_at, total FROM rosters;
+          DROP TABLE rosters;
+          ALTER TABLE rosters_new RENAME TO rosters;`);
+        const orphans = db.pragma('foreign_key_check');
+        if (orphans.length) throw new Error('roster rebuild would orphan ' + orphans.length + ' rows');
+      })();
+    } finally {
+      db.pragma('foreign_keys = ON');
+    }
+  }
+
+  // Telestaff is the authority on rank and platoon; the other two sources
+  // simply leave these blank. Additive, so an existing database keeps every
+  // row it had.
+  const cols = new Set(db.prepare('PRAGMA table_info(roster_members)').all().map(c => c.name));
+  if (!cols.has('rank')) db.exec("ALTER TABLE roster_members ADD COLUMN rank TEXT NOT NULL DEFAULT ''");
+  if (!cols.has('platoon')) db.exec("ALTER TABLE roster_members ADD COLUMN platoon TEXT NOT NULL DEFAULT ''");
+
+  // Why a payer stopped, decided against telestaff — 'promoted-out',
+  // 'left-department' or 'still-working'. Kept as its own column, not just
+  // buried in the detail sentence, so the follow-up list can group by it.
+  const chg = new Set(db.prepare('PRAGMA table_info(changes)').all().map(c => c.name));
+  if (!chg.has('reason')) db.exec("ALTER TABLE changes ADD COLUMN reason TEXT NOT NULL DEFAULT ''");
 
   const defaults = {
     // Same convention as the check-in app: staff password for viewing,

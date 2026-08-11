@@ -7,6 +7,7 @@
  * into a false "stopped" + false "new" pair.
  */
 const match = require('./match');
+const telestaff = require('./telestaff');
 const { audit } = require('./db');
 
 // Same bar payroll.js used to link payroll rows to roster members: at 88+
@@ -45,6 +46,44 @@ function diffDetail(prev, cur) {
     bits.push(`name "${displayName(prev)}" → "${displayName(cur)}"`);
   }
   return bits;
+}
+
+/**
+ * The current telestaff snapshot, as a lookup by employee number plus a
+ * by-name fallback. Returns null when telestaff has never been uploaded, so
+ * a stopped payer stays unexplained rather than being called "left the
+ * department" on the strength of a file we do not have.
+ */
+function telestaffIndex(db) {
+  const r = db.prepare(
+    "SELECT id FROM rosters WHERE source = 'telestaff' ORDER BY id DESC LIMIT 1").get();
+  if (!r) return null;
+  const people = db.prepare('SELECT * FROM roster_members WHERE roster_id = ?').all(r.id);
+  if (!people.length) return null;
+  return { byEmplid: new Map(people.map(p => [p.emplid, p])), people };
+}
+
+/**
+ * Why a payer stopped. Telestaff knows: it says whether they still work here
+ * and what as. Look them up by employee number, and fall back to a strong
+ * name match only when that number is one telestaff has never heard of —
+ * a weak match here would put a wrong explanation next to a member's name,
+ * which is worse than no explanation at all.
+ */
+function explainStop(idx, row) {
+  if (!idx) return null;
+  let person = VALID_EMPLID.test(row.emplid) ? idx.byEmplid.get(row.emplid) : undefined;
+  if (!person && row.last_name) {
+    const hits = idx.people
+      .map(p => ({ p, s: match.scoreCandidate(
+        { lastName: row.last_name, firstName: row.first_name || '' }, p) }))
+      .filter(x => x.s >= 95)
+      .sort((a, b) => b.s - a.s);
+    // One clear winner only. Two people scoring the same is a family, and
+    // guessing between them is how a father gets his son's record.
+    if (hits.length === 1 || (hits.length > 1 && hits[0].s > hits[1].s)) person = hits[0].p;
+  }
+  return telestaff.explainStopped(person || null);
 }
 
 /**
@@ -114,11 +153,19 @@ function runCompare(db, importId) {
         prev_row_id: p.id, cur_row_id: c.id, matched_by: 'name' });
     }
 
+    // Why each one stopped is most of the work in this list, and telestaff
+    // can answer it. The case that keeps catching us out is a promotion:
+    // a member made battalion chief still shows on the report he was paid
+    // under, then vanishes from the next one, and nothing said why.
+    const tsIdx = telestaffIndex(db);
     stopPool.forEach((p, i) => {
       if (usedI.has(i)) return;
+      const why = explainStop(tsIdx, p);
       findings.push({ kind: 'stopped', emplid: p.emplid, name: displayName(p),
         detail: `on the ${prev.report_date || prev.uploaded_at.slice(0, 10)} report` +
-                ` (grade ${p.grade || '—'} step ${p.step || '—'}), missing now`,
+                ` (grade ${p.grade || '—'} step ${p.step || '—'}), missing now` +
+                (why ? ` — ${why.detail}. ${why.action}` : ''),
+        reason: why ? why.code : null,
         prev_row_id: p.id, cur_row_id: null, matched_by: 'emplid' });
     });
     newPool.forEach((c, j) => {
@@ -136,11 +183,12 @@ function runCompare(db, importId) {
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM changes WHERE import_id = ?').run(importId);
     const ins = db.prepare(`INSERT INTO changes
-      (import_id, kind, emplid, name, detail, prev_row_id, cur_row_id, matched_by, status, note, handled_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      (import_id, kind, emplid, name, detail, reason, prev_row_id, cur_row_id, matched_by, status, note, handled_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
     for (const f of findings) {
       const o = oldKey.get(`${f.kind}|${f.emplid}|${f.name}`);
-      ins.run(importId, f.kind, f.emplid, f.name, f.detail, f.prev_row_id, f.cur_row_id,
+      ins.run(importId, f.kind, f.emplid, f.name, f.detail, f.reason || '',
+        f.prev_row_id, f.cur_row_id,
         f.matched_by, o ? o.status : 'open', o ? o.note : '', o ? o.handled_at : null);
     }
     db.prepare(`UPDATE imports SET status = 'ready', compared_to = ?,
@@ -150,13 +198,22 @@ function runCompare(db, importId) {
   tx();
 
   const count = k => findings.filter(f => f.kind === k).length;
+  const why = c => findings.filter(f => f.reason === c).length;
   const summary = {
     comparedTo: prev ? { id: prev.id, label: prev.report_date || prev.uploaded_at.slice(0, 10) } : null,
     stopped: count('stopped'), new: count('new'), changed: count('changed'),
+    stoppedBecause: {
+      promotedOut: why('promoted-out'),
+      leftDepartment: why('left-department'),
+      stillWorking: why('still-working'),
+      unexplained: findings.filter(f => f.kind === 'stopped' && !f.reason).length
+    },
     total: curRows.length
   };
   audit(db, 'compare', `#${importId} vs #${prev ? prev.id : '—'}: ` +
-    `${summary.stopped} stopped, ${summary.new} new, ${summary.changed} changed`);
+    `${summary.stopped} stopped, ${summary.new} new, ${summary.changed} changed` +
+    (summary.stoppedBecause.promotedOut
+      ? ` (${summary.stoppedBecause.promotedOut} promoted out of the union)` : ''));
   return summary;
 }
 
