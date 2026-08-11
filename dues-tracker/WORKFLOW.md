@@ -114,6 +114,18 @@ worse, quietly writes to the wrong member.
 
 - **A sheet does one thing.** One field, one key, one action. Joe has to be
   able to look at it and know what it will do without reading a manual.
+- **One upload, one file — never a second tab.** NEP's importer takes a single
+  sheet, so a workbook with two tabs means rebuilding the second one by hand
+  before it can be uploaded at all. On 11 Aug a two-tab restore left Malinowski
+  unfixed for exactly that reason; the tab was there and simply never ran. When
+  a job needs two keys, send two files and number them in the order to run.
+- **Set the field rules on NEP's step 4.** `Fill Blanks Only` writes a value
+  only where the member's field is empty, so it cannot overwrite good data —
+  prefer it to `Trust File` even when the target is known to be blank, because
+  the two behave identically when we are right and only one is safe when we are
+  wrong. Put `Never Update` on the key field and on the names: an upload that
+  cannot touch the column it matches on cannot go wrong. `Trust File` is for a
+  create, where there is nothing to protect.
 - **Key on NEP's own stored string.** `0557180` is not `557180` — NEP matches
   exactly, so stripping the leading zero silently matches nobody. 87 members
   carry a leading zero, nearly all Active Retired.
