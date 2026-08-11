@@ -97,12 +97,11 @@ function rosterMembers(db, rosterId) {
 }
 
 /** Counts by status value — the dashboard breakdown ("Active", "Active
- *  Retired", …). Uses status, falling back to work_status when blank. */
+ *  Retired", …). Member Status only; a blank counts as blank, because that is
+ *  a member nobody has classified and the dashboard should say so. */
 function statusBreakdown(db, rosterId) {
   return db.prepare(`
-    SELECT CASE WHEN status != '' THEN status
-                WHEN work_status != '' THEN work_status
-                ELSE '(blank)' END AS label, COUNT(*) c
+    SELECT CASE WHEN status != '' THEN status ELSE '(blank)' END AS label, COUNT(*) c
     FROM roster_members WHERE roster_id = ?
     GROUP BY label ORDER BY c DESC`).all(rosterId);
 }
@@ -110,13 +109,19 @@ function statusBreakdown(db, rosterId) {
 /**
  * Classify a roster member as active / retired / other. Covers both
  * vocabularies: NEP Member Status ("Active", "Active Retired", "Drop",
- * "Deceased", "Alumni", "Life", "Honorary"...) with Work Status filling
- * blanks only — the real export has 34 "Drop" members whose Work Status
- * still says "Active Member", so Member Status must win. IAFF Member
- * Type: MEM = active, MRM = retired, HMM = honorary ("other").
+ * "Deceased", "Alumni", "Life", "Honorary"...) and IAFF Member Type
+ * (MEM = active, MRM = retired, HMM = honorary → "other").
+ *
+ * **Member Status is the only NEP status.** Work Status is not maintained —
+ * Joe's rule, 11 Aug — and the export bears it out: 1,085 members have none at
+ * all, and of the 2,239 carrying both, 142 disagree about whether the person is
+ * working, including 39 "Drop" members and 5 "Deceased" ones still marked
+ * "Active Member". Falling back to it filled in 119 blanks, 115 of them as
+ * active, which is a guess wearing the costume of a fact. A blank Member
+ * Status now classifies as "other" and shows up as work to do.
  */
 function classify(m) {
-  const pick = (m.status || '').trim() || (m.work_status || '').trim();
+  const pick = (m.status || '').trim();
   if (/\bMRM\b/i.test(pick) || /retire/i.test(pick)) return 'retired';
   if (/\bMEM\b/i.test(pick) || /^active\b/i.test(pick)) return 'active';
   return 'other';

@@ -157,6 +157,22 @@ worse, quietly writes to the wrong member.
 
 ## E. Standing rules
 
+- **`Member Status` is the only NEP status. `Work Status` is not maintained.**
+  Joe's rule, 11 Aug, and the export proves it: 1,085 members have no Work
+  Status at all, and of the 2,239 carrying both, 142 disagree about whether the
+  person is working — including 39 `Drop` members and 5 `Deceased` ones still
+  filed as "Active Member". Never read it, never reconcile against it, never
+  report a Member-vs-Work disagreement as a finding.
+
+  The code used to fall back to it when Member Status was blank, which quietly
+  classified 119 unclassified members — 115 of them as active. A blank Member
+  Status is a member nobody has categorised, and the reports should say so.
+- **The IAFF's status is `Member Type`: MEM, MRM, HMM.** Active, retired,
+  honorary. The column headed `Change Status` is an HTML link whose label reads
+  "Active" on every single row — comparing against it shows perfect agreement
+  and means nothing. Aligning NEP's Member Status with `Member Type` is the
+  goal; today 1,965 of the 2,159 members the IAFF recognises already agree.
+
 - **The PeopleSoft number is the join key**, once NEP carries it. Names are
   a bad key and this project proved it: two members changed surname between
   exports (Della-Camera → Dunn, Hall → Platz), NEP held a dozen mangled

@@ -20,7 +20,19 @@ or a public artifact):
 | `roster-NN` (highest N) | the NEP export — the database we are correcting | nothing on its own; it is the thing under audit |
 | `import-5.pdf` → `data/dues.db` | the scanned DCHR payroll dues report, read by OCR | **who is paying dues**, and nothing else without checking |
 | `telestaff-*.csv` | the department's own staffing export, typed | **employee numbers, current rank, platoon, mobile** |
-| `iaff-latest.csv` | the IAFF national export | **IAFF member numbers**, and a second opinion on name spelling |
+| `iaff-latest.csv` | the IAFF national export | **IAFF member numbers**, **`Member Type`** (MEM/MRM/HMM = active/retired/honorary), and a second opinion on name spelling |
+
+Two field traps, both found the expensive way:
+
+- **`Work Status` in NEP is not maintained — never read it.** `Member Status` is
+  the only status. 1,085 members have no Work Status, and 142 of those that do
+  contradict their Member Status, including `Deceased` members marked "Active
+  Member". A blank Member Status means nobody has classified that member; do
+  not fill the gap from Work Status.
+- **The IAFF's `Change Status` column is not a status.** It is an `<a>` tag
+  whose label is "Active" on all 2,514 rows. The real field is `Member Type`.
+  Any check that reports total agreement with `Change Status` is measuring
+  nothing.
 
 The library code is the accumulated knowledge — read it before you reason from
 scratch:

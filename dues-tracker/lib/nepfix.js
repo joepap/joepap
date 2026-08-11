@@ -19,8 +19,9 @@ const { latestRoster } = require('./reconcile');
 
 const LINK = 88;      // same-person link threshold (event-proven)
 
+// Member Status only — Work Status is not maintained. See lib/reconcile.js.
 function classifyForIaff(m) {
-  const pick = (m.status || '').trim() || (m.work_status || '').trim();
+  const pick = (m.status || '').trim();
   if (/\bMRM\b/i.test(pick) || /retire|\blife\b/i.test(pick)) return 'retired'; // Life sits at IAFF as MRM
   if (/\bMEM\b/i.test(pick) || /^active\b/i.test(pick)) return 'active';
   if (/\bHMM\b/i.test(pick) || /honor/i.test(pick)) return 'honorary';
@@ -74,6 +75,14 @@ function buildNepRepairWorkbook(db) {
   if (!nepRoster || !iaffRoster) throw new Error('Upload both the NEP and IAFF files first.');
   const nep = db.prepare('SELECT * FROM roster_members WHERE roster_id = ?').all(nepRoster.id);
   const iaff = db.prepare('SELECT * FROM roster_members WHERE roster_id = ?').all(iaffRoster.id);
+
+  // The IAFF's own numbers, stripped to bare digits so a leading zero on
+  // either side still matches.
+  const iaffByNumber = new Map();
+  for (const m of iaff) {
+    const n = String(m.member_no || '').replace(/\D/g, '').replace(/^0+/, '');
+    if (n) iaffByNumber.set(n, m);
+  }
 
   // Name-ambiguity maps per side (the father/son trap).
   const dupCount = list => {
@@ -192,18 +201,22 @@ function buildNepRepairWorkbook(db) {
     } else seenKey.set(k, m);
   }
 
-  // Member Status vs Work Status contradictions inside NEP.
+  // Members the IAFF still carries whom NEP says we should not be billed for.
+  // This replaces the old Member-Status-vs-Work-Status check, which produced
+  // 142 findings against a field nobody maintains — noise, and worse, noise
+  // that implied Work Status was worth reconciling. The IAFF bills per head,
+  // so a dead or dropped member they still carry is the contradiction that
+  // actually costs us something.
+  const NOT_BILLABLE = /^(deceased|drop|dropped|alumni|retired|quit|resigned)$/i;
   const contradictions = [];
   for (const m of nep) {
-    const s = (m.status || '').trim(), w = (m.work_status || '').trim();
-    if (!s || !w) continue;
-    const sc = classifyForIaff({ status: s, work_status: '' });
-    const wc = classifyForIaff({ status: w, work_status: '' });
-    if ((sc === 'other' && wc === 'active') || (sc === 'active' && wc === 'other') ||
-        (sc === 'retired' && wc === 'active' && !/active retired/i.test(s))) {
-      contradictions.push({ ...nepPerson(m),
-        note: `Member Status "${s}" vs Work Status "${w}" — cannot both be true` });
-    }
+    const s = (m.status || '').trim();
+    if (!NOT_BILLABLE.test(s)) continue;
+    const num = (m.member_no || '').replace(/\D/g, '').replace(/^0+/, '');
+    if (!num || !iaffByNumber.has(num)) continue;
+    contradictions.push({ ...nepPerson(m),
+      note: `NEP says "${s}" but the IAFF still carries #${m.member_no}` +
+        ` as ${iaffByNumber.get(num).status || 'a member'} — we are paying per-capita on them` });
   }
 
   // Upload-ready sheet with NEP's EXACT export headers, only for the safe
