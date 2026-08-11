@@ -30,7 +30,11 @@ function person(r) {
     phone: digits(r['Phone Number']).slice(-10),
     rank: L(r['DC Fire Rank']), company: L(r['Current Company']),
     platoon: L(r['Platoon']), appt: L(r['Appointment Date']).slice(0, 10),
-    paying: L(r['Paying Active Member']), notes: L(r['Notes'])
+    paying: L(r['Paying Active Member']), notes: L(r['Notes']),
+    // NEP's mailing and insurance lists. A record with nothing else on it can
+    // still be the only one carrying "Retiree Insurance Group", and deleting
+    // it drops the member off that list silently — there is no other trace.
+    groups: new Set(L(r['Groups']).split(',').map(s => s.trim()).filter(Boolean))
   };
 }
 
@@ -79,6 +83,8 @@ function duplicateProfiles(P) {
       if (ghost) {
         if (ghost.phone && !keep.phone) rescue.push('phone ' + ghost.rec['Phone Number']);
         if (ghost.email && !keep.email) rescue.push('email ' + ghost.email);
+        const onlyGroups = [...ghost.groups].filter(g => !keep.groups.has(g));
+        if (onlyGroups.length) rescue.push('group membership ' + onlyGroups.join(' + '));
       }
       out.push({
         check: 'duplicate-profile',

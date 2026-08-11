@@ -5,7 +5,8 @@ const { auditRoster } = require('../lib/audit');
 const M = o => Object.assign({
   'Last Name': '', 'First Name': '', 'Member Status': '', 'Work Status': '',
   'IAFF Member Number': '', 'Email': '', 'Phone Number': '', 'DC Fire Rank': '',
-  'Current Company': '', 'Platoon': '', 'Appointment Date': '', 'Paying Active Member': '', 'Notes': ''
+  'Current Company': '', 'Platoon': '', 'Appointment Date': '', 'Paying Active Member': '', 'Notes': '',
+  'Groups': ''
 }, o);
 const has = (r, check, who) => r.findings.some(f => f.check === check && (!who || f.who.includes(who)));
 
@@ -148,6 +149,36 @@ const has = (r, check, who) => r.findings.some(f => f.check === check && (!who |
   const r = auditRoster(roster);
   assert(has(r, 'hire-date-does-not-fit-the-employee-number', 'Klinger'),
     'a 1982 hire date among 2021 hires must be flagged');
+}
+
+// A shell with nothing but a mailing-list membership is not empty. Kevin
+// Adams, 11 Aug 2026: two blank duplicates whose only content was the Retiree
+// Insurance Group. Judged on phone and email alone they read as safe to delete
+// outright, and he would have come off the insurance list with no trace of it.
+{
+  const r = auditRoster([
+    M({ 'Last Name': 'Adams', 'First Name': 'Kevin A', 'IAFF Member Number': '401190',
+        'Member Status': 'Active Retired', 'DC Fire Rank': 'Firefighter',
+        Groups: 'All Members, Retired Members - NO Emails' }),
+    M({ 'Last Name': 'Adams', 'First Name': 'KEVIN',
+        Groups: 'All Members, Retired Members - NO Emails, Retiree Insurance Group' })
+  ], {});
+  const dup = r.findings.filter(f => f.check === 'duplicate-profile');
+  assert.strictEqual(dup.length, 1);
+  assert(/Retiree Insurance Group/.test(dup[0].fix),
+    'must say to carry the group across first, got: ' + dup[0].fix);
+}
+
+// ...but a shell in no extra group is still a plain delete.
+{
+  const r = auditRoster([
+    M({ 'Last Name': 'Baden', 'First Name': 'John M', 'IAFF Member Number': '214965',
+        'Member Status': 'Active Retired', Groups: 'All Members' }),
+    M({ 'Last Name': 'Baden', 'First Name': 'John', Groups: 'All Members' })
+  ], {});
+  const dup = r.findings.filter(f => f.check === 'duplicate-profile');
+  assert.strictEqual(dup.length, 1);
+  assert(/holds nothing worth saving/.test(dup[0].fix), dup[0].fix);
 }
 
 console.log('audit tests passed');

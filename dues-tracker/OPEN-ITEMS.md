@@ -3,8 +3,8 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 11 Aug 2026, 16:03 — 3,489 members**
-(`data/uploads/roster-26`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 11 Aug 2026, 18:11 — 3,471 members**
+(`data/uploads/roster-27`, gitignored). Dues report: **13 June 2026**, 1,781
 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
@@ -126,6 +126,33 @@ mangled beyond matching.
   payroll, not on telestaff, every retired-dues checkbox blank, and his IAFF
   number 469346 is unknown to the IAFF. Not to be confused with **Johnathan B
   Prince** (#1485614, PeopleSoft 00098456), who is a paying Active member.
+
+## Duplicate profiles — 18 deleted, 85 pairs left
+
+Done 11 Aug: 18 empty duplicate records deleted by hand, verified against the
+export — exactly the 18 asked for, nothing else removed, and the three group
+memberships they carried were moved to the surviving record first.
+
+What remains, and why each is held back:
+
+| pairs | why it is not a delete |
+|---|---|
+| 24 | the empty record holds a **different** phone or email — deleting loses it |
+| 23 | no outside source has anyone by that name, so one person cannot be proved |
+| 21 | neither record is empty — both hold real data, a human must choose |
+| 7 | telestaff, the IAFF or payroll knows **two** people by that name |
+| 7 | both records are empty — nothing worth keeping either way |
+| 3 | the empty record holds the **only** phone or email — copy it across first |
+
+The 3 copy-first are the obvious next slice. The 24 conflicts need a person to
+decide which contact is current — Kristina A Harris is the shape of it: two
+records, two different phone numbers, one email that exists on only one.
+
+**Never judge a record empty on phone and email alone.** The Kevin Adams shells
+held nothing but membership of the Retiree Insurance Group; deleting them blind
+would have dropped him off that list with no trace. `lib/audit.js` now counts
+group membership as content, which is why the "holds nothing" pile fell from 56
+to 15.
 
 ## Bigger jobs not started
 
