@@ -92,3 +92,56 @@ test('a confirmed number still reports a scanned name that disagrees', () => {
   assert.equal(r.nameFixes.length, 1);
   assert.equal(r.nameFixes[0].now, 'Crump, Taniya A');
 });
+
+// ---- who may hold a payroll number --------------------------------------
+const N = o => Object.assign({ 'Last Name': '', 'First Name': '', 'Member Status': '' }, o);
+
+test('a retired member is never given a payroll number', () => {
+  // This is the whole bug: the matcher put a payroll row on the retired
+  // father, nothing refused the write, and 13 numbers ended up on two
+  // members each. Clearing them without this guard just resets the clock.
+  const { write, refused } = ts.planPeoplesoftWrites([
+    { member: N({ 'Last Name': 'Watson', 'First Name': 'Richard', 'Member Status': 'Active Retired' }), number: '00003670' }
+  ]);
+  assert.equal(write.length, 0);
+  assert.equal(refused.length, 1);
+  assert(/serving employee/.test(refused[0].reason));
+});
+
+test('deceased, dropped, alumni and life are all refused', () => {
+  for (const status of ['Deceased', 'Drop', 'Alumni', 'Life', 'Retired']) {
+    const { write } = ts.planPeoplesoftWrites([
+      { member: N({ 'Last Name': 'X', 'First Name': 'Y', 'Member Status': status }), number: '00012345' }
+    ]);
+    assert.equal(write.length, 0, status + ' should be refused');
+  }
+});
+
+test('a blank status is NOT treated as non-serving', () => {
+  // 94 members hold a number with no status set. They are on the payroll
+  // report, which is how they got one — refusing them would throw away
+  // good data to satisfy a rule about retirees.
+  const { write } = ts.planPeoplesoftWrites([
+    { member: N({ 'Last Name': 'Johnson', 'First Name': 'Joseph', 'Member Status': '' }), number: '00004546' }
+  ]);
+  assert.equal(write.length, 1);
+});
+
+test('two members wanting one number: neither gets it', () => {
+  const { write, refused } = ts.planPeoplesoftWrites([
+    { member: N({ 'Last Name': 'Harris', 'First Name': 'Jason A', 'Member Status': 'Active' }), number: '00113839' },
+    { member: N({ 'Last Name': 'Harris', 'First Name': 'Jason M', 'Member Status': 'Active' }), number: '00113839' }
+  ]);
+  assert.equal(write.length, 0, 'silently picking one is how the father ends up wearing it');
+  assert.equal(refused.length, 2);
+  assert(/One number, one member/.test(refused[0].reason));
+});
+
+test('the ordinary case still goes through', () => {
+  const { write, refused } = ts.planPeoplesoftWrites([
+    { member: N({ 'Last Name': 'Abell', 'First Name': 'Michael B', 'Member Status': 'Active' }), number: '00035373' },
+    { member: N({ 'Last Name': 'Adams', 'First Name': 'Joanna', 'Member Status': 'Active' }), number: '00130150' }
+  ]);
+  assert.equal(write.length, 2);
+  assert.equal(refused.length, 0);
+});

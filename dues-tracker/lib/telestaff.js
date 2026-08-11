@@ -140,4 +140,55 @@ function peoplesoftNumber(duesRow, crossCheckResult) {
   return EMPLID_RE.test(duesRow.emplid) ? duesRow.emplid : '';
 }
 
-module.exports = { collapse, crossCheck, peoplesoftNumber, cleanName, splitName, padEmplid };
+/**
+ * Decide which NEP members may be given a payroll number, and refuse the rest.
+ *
+ * Two rules, both learned the hard way. Thirteen numbers ended up on two
+ * members each — every pair a father and his son — because the matcher put a
+ * payroll row on the retired father and nothing stopped the write. Clearing
+ * them without this guard just means writing them back on the next run.
+ *
+ *   1. Only a serving member may hold one. A retired, deceased, dropped or
+ *      alumni member does not have a payroll number, so a value on their
+ *      record came from the wrong generation. A *blank* status is not the
+ *      same thing — 94 members with no status are on the payroll report,
+ *      which is how they got a number, so they are allowed.
+ *   2. One number, one member. If two candidates want the same number the
+ *      write is refused for both and a human decides; silently picking one
+ *      is how a father ends up wearing his son's number.
+ *
+ * `candidates` are { member, number } where member is a raw NEP record.
+ * Returns { write, refused } — refused carries the reason, to be reported.
+ */
+const NOT_SERVING = new Set(['active retired', 'retired', 'deceased', 'drop', 'dropped', 'alumni', 'life']);
+
+function planPeoplesoftWrites(candidates) {
+  const write = [], refused = [];
+  const wanted = new Map();
+  for (const c of candidates) {
+    const status = L(c.member['Member Status']).toLowerCase();
+    if (NOT_SERVING.has(status)) {
+      refused.push({ ...c, reason: 'Member Status is "' + L(c.member['Member Status'])
+        + '" — a payroll number belongs to a serving employee.' });
+      continue;
+    }
+    if (!EMPLID_RE.test(L(c.number))) {
+      refused.push({ ...c, reason: 'not an employee number: "' + L(c.number) + '"' });
+      continue;
+    }
+    if (!wanted.has(c.number)) wanted.set(c.number, []);
+    wanted.get(c.number).push(c);
+  }
+  for (const [num, list] of wanted) {
+    if (list.length === 1) { write.push(list[0]); continue; }
+    for (const c of list) {
+      refused.push({ ...c, reason: num + ' is claimed by ' + list.length
+        + ' members (' + list.map(x => L(x.member['Last Name']) + ', ' + L(x.member['First Name'])).join(' / ')
+        + '). One number, one member — a human decides.' });
+    }
+  }
+  return { write, refused };
+}
+
+module.exports = { collapse, crossCheck, peoplesoftNumber, planPeoplesoftWrites,
+  cleanName, splitName, padEmplid };
