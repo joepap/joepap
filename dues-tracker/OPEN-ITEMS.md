@@ -3,8 +3,8 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 11 Aug 2026, 18:11 — 3,471 members**
-(`data/uploads/roster-27`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 12 Aug 2026, 18:36 — 3,444 members**
+(`data/uploads/roster-37`, gitignored). Dues report: **13 June 2026**, 1,781
 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
@@ -26,6 +26,32 @@ without working out which man the record describes.
 
 Joe parked the whole set on 11 Aug. The clean-up is safe to do — zero duplicate
 payroll numbers remain across all 3,489 members — but nobody is waiting on it.
+
+## Waiting on Joe
+
+- **Dave Brown.** Two of them: one retired, one active. NEP has one `Brown, David A`
+  (Active, appointed 2006, payroll 00030709, `davidabrownjr@gmail.com`); the IAFF
+  has **#0441560 David A. Brown Jr. (MRM, retired)** and **#0469335 David R. Brown
+  (MEM, active)**. The email points at the Jr., the status points at the R. Joe is
+  sorting out which is which — do not write an IAFF number to him until he says.
+- **Taylor, James P** — the IAFF has a James A. and a James M. Taylor, no P. He may
+  simply not be on their roll.
+- **Robinson, Wayne** — Wayne L. (Mount Rainier, matches his city) vs Wayne P.
+  (Waldorf). NEP holds no middle initial, so the city is the only evidence.
+- **Elliott, Jazmin / Harris, Jazmin Ks** — the IAFF gives both #1339641 and the
+  Elliott record's email is `harrisjazmin32@gmail.com`. Reads as one woman who
+  changed her name; a name change is Joe's call, not a merge to assume.
+
+## The Jeffery swap — do this before any IAFF-number sheet
+
+The IAFF has **#1215027 = Alfred B. Jeffery IV** (MEM) and **#0341279 = Alfred B.
+Jeffery III** (MRM). NEP has #1215027 on the **father**, and little Al has none.
+Joe confirmed: Al retired as an Assistant Chief, little Al is a working Lieutenant.
+
+1. `Jeffery III, Alfred` — IAFF number `1215027` -> `0341279`
+2. `Jeffery, Iv, Alfred B` — IAFF number -> `1215027`
+
+Order matters; the number cannot sit on two members at once.
 
 ## Still to upload
 
@@ -153,6 +179,30 @@ held nothing but membership of the Retiree Insurance Group; deleting them blind
 would have dropped him off that list with no trace. `lib/audit.js` now counts
 group membership as content, which is why the "holds nothing" pile fell from 56
 to 15.
+
+## Ready and waiting to be forwarded
+
+- **`Local36-remove-from-IAFF-roster.xlsx`** — 47 members the IAFF bills us for
+  whom our own records say are not billable: 21 deceased, 20 dropped, 4 alumni,
+  2 retired. Finished; goes to whoever maintains the IAFF roll.
+- **`Local36-add-to-IAFF-roster.xlsx`** — 184 members the IAFF has never heard of,
+  147 of them paying dues every payroll. Parked on Joe's word until the rest is
+  squared away.
+
+## Settled today — single-role EMS
+
+No single-role member is on the roll, checked department-wide. Telestaff has 19
+people with an EMS title carrying no fire rank:
+
+- **9 `PARAMEDIC` and 1 `EMS Advanced Practice Provider`** — genuinely single-role,
+  the other union's members. **None is in NEP and none is paying.** Correct.
+- **9 `Battalion EMS Supervisor`** — all in NEP, all Active, all paying, and all
+  holding dual-role ranks (Sergeant/Lieutenant/Firefighter Paramedic). The title
+  is an assignment, not a job. They are ours.
+
+So the `PARAMEDIC` rank mapping Joe wanted to look at is moot — those nine should
+not be in NEP at all. And `Battalion EMS Supervisor` must stay unmapped, because
+the nine hold three different real ranks.
 
 ## Bigger jobs not started
 
