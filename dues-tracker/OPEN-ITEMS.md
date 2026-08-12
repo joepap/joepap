@@ -3,10 +3,43 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 12 Aug 2026, 18:36 — 3,444 members**
-(`data/uploads/roster-37`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 12 Aug 2026, 20:47 — 3,434 members**
+(`data/uploads/roster-39`, gitignored). Dues report: **13 June 2026**, 1,781
 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
+
+## The paying-member gap — 1,583 in NEP against 1,781 on the payroll
+
+Joe, 12 Aug: *"nep only has 1584 members marked as paying dues members. can we
+get that closer"*. Worked out that evening against `roster-39`.
+
+`Paying Active Member` has only ever held **Yes or nothing** — there is not one
+`No` in the whole roster. So the gap is not 198 wrong answers, it is unanswered
+ones. Of the 2,117 Active members:
+
+| | |
+|---|---|
+| Yes, and on the June payroll | 1,555 |
+| Yes, and the payroll agrees once the scan damage is read through | 17 |
+| **blank, and on the payroll — should be Yes** | **184** |
+| blank, not on the payroll — should be `No` | 340 |
+| held back, a relative shares the payroll line | 21 |
+
+The 17 are why the raw match looked worse than it is. Every one of them *is* on
+the payroll; the scanner mangled the name past the matcher — "SevendorE Brandon"
+is Devendorf, "Qeschger,Sarah" is Oeschger, "aww tematH'" is unreadable. Nobody
+marked them Yes in error.
+
+**184 sheets sent to Joe 12 Aug** — 108 keyed on email, 60 on payroll number, 10
+on phone, 6 by hand (Shaw Erica · Young Josiah · Seldon Jr. Kenneth R · Bartee
+Mario · Drake Roshawnda · Crump Taniya A — no email, phone or payroll number
+between them). Running them takes NEP to **1,767**; the rest is the 21 contested
+lines and four payroll lines too damaged to read.
+
+The 340 `No` is the other half of Joe's standard and has not been built yet.
+**23 of them are still on telestaff** — working, but not on the June payroll.
+That is the Botwin shape and needs a current dues report before anyone is marked
+`No`.
 
 ## 10 non-Active members still hold a payroll number — parked
 
@@ -59,6 +92,12 @@ by hand the same evening.
 - **Elliott, Jazmin / Harris, Jazmin Ks** — the IAFF gives both #1339641 and the
   Elliott record's email is `harrisjazmin32@gmail.com`. Reads as one woman who
   changed her name; a name change is Joe's call, not a merge to assume.
+- **Coates, Q'Juan** — marked `Drop`, but payroll line 00092196 has dues coming
+  out of his check. Either the status is wrong or the deduction never stopped.
+- **Thomas, Corta M** — Active, blank. The payroll prints `Thomas,Cortni`
+  (00093402). Same person or not is a judgement call; scored 88, under the bar.
+- **Wimbish, Levitus O** — one of the 13 with no Member Status in an Active
+  Members group, and he is on the payroll (00006363). Should be Active + Yes.
 
 ## The Jeffery swap — do this before any IAFF-number sheet
 
