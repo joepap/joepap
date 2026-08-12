@@ -137,6 +137,13 @@ worse, quietly writes to the wrong member.
   phone number, check it twice: the number going into a blank, *and* the
   number being written back onto whoever held it wrongly. Missing the second
   check is what bounced the first phone sheet.
+- **Do not key on `Phone Number`.** Unique is not the same as matchable. On
+  12 Aug the same job ran as three sheets against the same roster: email
+  matched 108 of 108, `PeopleSoft Number` 60 of 60, phone **0 of 10**. Two
+  earlier phone-keyed sheets had also quietly done nothing (Catlett's Drop,
+  Hines's rank). NEP stores the number as `+12027684668` and we key on exactly
+  that string, so the value is not the problem — the field simply is not a
+  usable key. Route those members to the by-hand list instead.
 - **Misassigned numbers come in chains.** Bekure's mobile sat on Schlegel;
   Schlegel's sat on Flores; Flores's own was free. Unwind from the far end —
   Flores, then Schlegel, then Bekure — or every step collides.

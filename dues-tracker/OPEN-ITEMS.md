@@ -3,8 +3,8 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 12 Aug 2026, 20:47 — 3,434 members**
-(`data/uploads/roster-39`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 12 Aug 2026, 21:47 — 3,434 members**
+(`data/uploads/roster-40`, gitignored). Dues report: **13 June 2026**, 1,781
 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
@@ -30,11 +30,19 @@ the payroll; the scanner mangled the name past the matcher — "SevendorE Brando
 is Devendorf, "Qeschger,Sarah" is Oeschger, "aww tematH'" is unreadable. Nobody
 marked them Yes in error.
 
-**184 sheets sent to Joe 12 Aug** — 108 keyed on email, 60 on payroll number, 10
-on phone, 6 by hand (Shaw Erica · Young Josiah · Seldon Jr. Kenneth R · Bartee
-Mario · Drake Roshawnda · Crump Taniya A — no email, phone or payroll number
-between them). Running them takes NEP to **1,767**; the rest is the 21 contested
-lines and four payroll lines too damaged to read.
+**Joe ran them the same evening. 168 of 184 landed** — email 108 of 108, payroll
+number 60 of 60, **phone 0 of 10**. NEP now shows **1,751** paying members. The
+full field diff of `roster-39` → `roster-40` shows nothing else touched: 168
+`Paying Active Member` writes, seven members who changed their own address, and
+Thornhill's duplicate payroll number cleared by hand.
+
+**16 left, all by hand** (sheet sent 12 Aug): the 10 the phone key missed —
+White Carlton A · Hall Chandell O · Richards Christopher J · Jones Domonique A ·
+Gray Ian E · Jones Jasmine A · Briscoe Joshua X · Roberts Krystal · Jones
+Michael L · Davis Tony S — plus the 6 with nothing to key on: Shaw Erica ·
+Young Josiah · Seldon Jr. Kenneth R · Bartee Mario · Drake Roshawnda · Crump
+Taniya A. That reaches **1,767**; the rest is the 21 contested lines and four
+payroll lines too damaged to read.
 
 The 340 `No` is the other half of Joe's standard and has not been built yet.
 **23 of them are still on telestaff** — working, but not on the June payroll.
