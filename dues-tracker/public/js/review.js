@@ -17,7 +17,11 @@
   });
 
   function load() {
-    var filter = onlyRow ? 'all' : 'flagged';
+    // ?filter=zero pulls up just the members on the register with nothing
+    // coming out of their check — a dues question, not a scanning one, and
+    // worth looking at as its own short list.
+    var wanted = Dues.qs('filter') === 'zero' ? 'zero' : null;
+    var filter = onlyRow ? 'all' : (wanted || 'flagged');
     api('/api/imports/' + impId + '/rows?filter=' + filter).then(function (r) {
       if (r.status !== 200) return;
       (r.body.pages || []).forEach(function (p) { pagesById[p.page] = p; });
@@ -25,6 +29,8 @@
       if (onlyRow) {
         rows = rows.filter(function (x) { return x.id === onlyRow; });
         $('revTitle').textContent = 'One row (from the full list)';
+      } else if (wanted) {
+        $('revTitle').textContent = 'On the register, deducted $0.00';
       }
       total = rows.length; doneCount = 0;
       $('reviewList').innerHTML = '';
@@ -72,6 +78,12 @@
       '<div class="muted small">Page ' + row.page + ', line ' + row.line_no +
       ' · computer read: <span class="mono">' + esc(row.ocr_text) + '</span></div>' +
       '<div class="crop mt" title="the actual scanned line"></div>' +
+      // Not an OCR problem, so it gets its own banner: the scan is right and
+      // the member genuinely has nothing coming out of their check.
+      (row.zero_deduction
+        ? '<div class="why" style="background:#fde8e8;border-color:#f5aaaa;color:#8a1c1c">' +
+          '💲 <strong>$0.00 deducted</strong> — on the register but not paying. ' +
+          'Do not mark this member as paying dues in NEP.</div>' : '') +
       (row.review_reason ? '<div class="why">⚠ ' + esc(row.review_reason) + '</div>' : '') +
       '<div class="review-fields">' +
       '<div><label>Emplid (0 + 7 digits)</label><input type="text" class="f-emplid mono" inputmode="numeric" value="' + esc(row.emplid) + '"></div>' +

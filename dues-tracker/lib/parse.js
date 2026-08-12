@@ -40,6 +40,51 @@ function asEmplid(tok) {
 function letterCount(t) { return (t.match(/[A-Za-z]/g) || []).length; }
 function digitCount(t) { return (t.match(/\d/g) || []).length; }
 
+/*
+ * The money columns. Each row prints three: the dues goal, what was actually
+ * taken out of the check, and what is left. Almost every member reads
+ * 49.19 / 49.09 / 0.10 — but a few read 0.00 / 0.00 / 0.00, and those people
+ * are on the register with nothing coming out. They are NOT dues payers, and
+ * reading the row without reading the money is what let 13 of them be counted
+ * as paying in August 2026.
+ *
+ * The OCR mangles the digits badly ("439.09" for "49.09", "49,19", "c.10"),
+ * so the exact amount cannot be trusted. The zero/non-zero distinction can:
+ * a scanner turns 49.09 into 439.09, never into 0.00. So `taken` is reported
+ * for information and `zero` is the value anything downstream should act on.
+ */
+const MONEY_RE = /^[^0-9]{0,2}(\d[\d,]*)[.,](\d\d)$/;
+
+function asMoney(tok) {
+  const m = MONEY_RE.exec(String(tok));
+  if (!m) return null;
+  return Number(m[1].replace(/,/g, '') + '.' + m[2]);
+}
+
+/**
+ * Find the row's money columns. Only the first two — the goal and what was
+ * taken — decide anything, so the third is read when legible and ignored
+ * when not: the remainder column is where the OCR fails most often ("¢.10"
+ * for "0.10"), and a lost third column must not cost us the whole row.
+ *
+ * Returns { goal, taken, left, zero } with left null when unreadable, or
+ * null when the pair itself is not legible. Never guesses a number.
+ */
+function readMoney(toks) {
+  for (let i = 0; i + 1 < toks.length; i++) {
+    const goal = asMoney(toks[i]), taken = asMoney(toks[i + 1]);
+    if (goal === null || taken === null) continue;
+    const left = i + 2 < toks.length ? asMoney(toks[i + 2]) : null;
+    if (goal === 0 && taken === 0) return { goal, taken, left, zero: true };
+    // A real dues line: goal and taken are both tens of dollars. Anything
+    // else is a stray run of numbers elsewhere on the line, so keep looking.
+    if (goal >= 10 && goal < 1000 && taken >= 10 && taken < 1000) {
+      return { goal, taken, left, zero: false };
+    }
+  }
+  return null;
+}
+
 const HEADER_RE = /EMPL\s?ID|EMPLID|\bNAME\b|\bGRADE\b|\bSTEP\b|\bPAGE\b|REPORT|REGISTER|DEDUCT|DEPARTMENT|RUN\s?DATE|TOTAL|UNION\s?DUES|AGENCY|EMPLOYEE|ASSOC|\bBANK\b|VENDOR|FAIRFAX|ALEXANDRIA|RETIREMENT|COLUMBIA|PAY\s?(PERIOD|END|RUN)/i;
 // A "LAST,FIRST"-shaped fragment — the signature of a member row even when
 // the emplid was mangled beyond recognition.
@@ -147,6 +192,9 @@ function parseRow(rowWords) {
     return finish(rowWords, {
       emplid: '', name: joined, ...nm,
       grade: '', step: '',
+      // The name may be lost but the money column often still reads, and a
+      // $0.00 line matters however badly the rest of the row scanned.
+      money: readMoney(toks),
       reasons: ['no emplid readable on this line', ...nm.reasons],
       forceReview: true
     });
@@ -242,8 +290,10 @@ function buildRow(rowWords, toks, anchorIdx, emplid, emplidFixes, extraReasons) 
   if (!grade && !gradeBlankMarker) reasons.push('no grade read');
   if (!step) reasons.push('no step read');
 
+  const money = readMoney(toks);
+  if (money && money.zero) reasons.push('deduction is $0.00 — on the register but not paying');
   return finish(rowWords, { emplid, name: nameRaw, ...nm, grade, step, reasons, emplidFixes,
-    forceReview: !emplid });
+    money, forceReview: !emplid });
 }
 
 function finish(rowWords, p) {
@@ -272,6 +322,10 @@ function finish(rowWords, p) {
     emplid: p.emplid, name: p.name,
     last_name: p.last, first_name: p.first, middle_name: p.middle,
     grade: p.grade, step: p.step,
+    // -1 means the column was not legible, which is not the same as zero.
+    amount_goal: p.money ? p.money.goal : -1,
+    amount_taken: p.money ? p.money.taken : -1,
+    zero_deduction: p.money && p.money.zero ? 1 : 0,
     confidence: conf,
     review_reasons: p.reasons,
     ocr_text: rowWords.map(w => w.text).join(' '),
@@ -313,4 +367,5 @@ function parseTextLines(lines) {
   return out;
 }
 
-module.exports = { parseWords, parseTextLines, parseRow, clusterRows, asEmplid, splitName, EMPLID_RE };
+module.exports = { parseWords, parseTextLines, parseRow, clusterRows, asEmplid, splitName,
+  readMoney, EMPLID_RE };

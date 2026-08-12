@@ -195,6 +195,17 @@ function migrate(db) {
   const chg = new Set(db.prepare('PRAGMA table_info(changes)').all().map(c => c.name));
   if (!chg.has('reason')) db.exec("ALTER TABLE changes ADD COLUMN reason TEXT NOT NULL DEFAULT ''");
 
+  // The money columns off the report. Being ON the deduction register is not
+  // the same as paying: a handful of rows print 0.00 across all three columns,
+  // and until Aug 2026 nothing here read them, so those members were counted
+  // as payers. -1 means the column was not legible; 0 means it really said
+  // zero. Additive, so existing imports keep their rows and simply carry -1
+  // until the backfill runs.
+  const rc = new Set(db.prepare('PRAGMA table_info(rows)').all().map(c => c.name));
+  if (!rc.has('amount_goal')) db.exec('ALTER TABLE rows ADD COLUMN amount_goal REAL NOT NULL DEFAULT -1');
+  if (!rc.has('amount_taken')) db.exec('ALTER TABLE rows ADD COLUMN amount_taken REAL NOT NULL DEFAULT -1');
+  if (!rc.has('zero_deduction')) db.exec('ALTER TABLE rows ADD COLUMN zero_deduction INTEGER NOT NULL DEFAULT 0');
+
   const defaults = {
     // Same convention as the check-in app: staff password for viewing,
     // organizer/admin PIN for imports, edits and settings.

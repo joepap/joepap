@@ -220,3 +220,56 @@ test('real DCHR layout: leading scan debris is stripped, real name parts are not
   const particle = parse.parseRow(words('FB-1 xxx-xx-1 00099508 0 Van Hagen,John E DU0405 49.19 49.09 0.10 LAA 01 6'));
   assert.equal(particle.last_name, 'Van Hagen');
 });
+
+// ---- the money columns -----------------------------------------------------
+// Real lines off the 13 June 2026 report. The OCR mangles the digits badly,
+// so the amount itself is only ever indicative — but zero vs non-zero has to
+// be right, because it decides whether somebody counts as a dues payer.
+
+const money = s => parse.readMoney(s.split(/\s+/).filter(Boolean));
+
+test('a normal deduction line reads as paying', () => {
+  const m = money('FB-11640006 xxx-xx-4267 00127961 0 Barry,Christopher DU0405 49.19 49.09 0.10 LAA 01 4');
+  assert.equal(m.zero, false);
+  assert.equal(m.taken, 49.09);
+});
+
+test('a $0.00 line reads as not paying', () => {
+  const m = money('FB-11310007 xxx-xx-2192 00089498 0 —————— DU0405 0.00 0.00 0.00 LAA LBR 1B 7');
+  assert.equal(m.zero, true);
+  assert.equal(m.taken, 0);
+});
+
+test('OCR damage to the digits still reads as paying', () => {
+  // "439.09" for 49.09, "c.10" for 0.10, commas for points — all seen on the
+  // real report. None of them may be mistaken for a zero deduction.
+  for (const line of [
+    'FB-11520001 Xxx-%xx-5032 00103925 0 Brown,Brittany N DU0405 49.19 438.09 0.10 LAA 01 [4',
+    'FB-11530012 XXX-XX-3990 00114148 0 Aschenbrenner,Zachary DU0405 435.19 43,09 0.10 LAA 1B 5',
+    'FB-11560003 XXX-XX-7269 00115713 [4] Dunn,Carlos DU0405 49.19 49.09 ¢.10 LAA 01 5',
+    'FB-11420002 AXKX-XX-3947 00014886 [o} Avents,Krystle R DU0405 49,19 49,09 0.10 LAA D13 01 9'
+  ]) {
+    assert.equal(money(line).zero, false, line);
+  }
+});
+
+test('a line with no legible money column returns null, never zero', () => {
+  assert.equal(money('FB-11640006 xxx-xx-4267 00127961 0 Barry,Christopher DU0405 LAA 01 4'), null);
+  assert.equal(money('utter nonsense'), null);
+});
+
+test('the masked SSN and dept number are not mistaken for money', () => {
+  // Only a run of three money-shaped tokens counts, and the trio has to look
+  // like dues — otherwise "11.64" style debris further left would win.
+  const m = money('FB-11.64 00.06 xxx-xx-4267 00127961 0 Barry,Christopher DU0405 49.19 49.09 0.10 LAA');
+  assert.equal(m.taken, 49.09);
+});
+
+test('a row carries its amounts through to the parsed record', () => {
+  const words = 'FB-11310007 xxx-xx-2192 00089498 0 Bartee,Mario DU0405 0.00 0.00 0.00 LAA LBR 1B 7'
+    .split(' ').map((t, i) => ({ text: t, conf: 95, x0: i * 40, y0: 0, x1: i * 40 + 35, y1: 12 }));
+  const r = parse.parseRow(words);
+  assert.equal(r.zero_deduction, 1);
+  assert.equal(r.amount_taken, 0);
+  assert.match(r.review_reasons.join('; '), /\$0\.00/);
+});

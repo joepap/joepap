@@ -116,7 +116,9 @@
       var latest = d.latest;
       var ro = d.rosters || {};
       $('statGrid').innerHTML = (latest
-        ? stat(latest.total_rows, 'Dues payers (latest report)') +
+        ? stat(latest.payers, 'Dues payers (latest report)') +
+          (latest.zero_deduction
+            ? stat(latest.zero_deduction, 'On the report, deducted $0.00', 'red') : '') +
           stat(latest.stopped, 'Stopped last time', latest.stopped ? 'red' : '') +
           stat(latest.new_payers, 'New payers', latest.new_payers ? 'green' : '') +
           stat(latest.changed, 'Grade/step changes') +

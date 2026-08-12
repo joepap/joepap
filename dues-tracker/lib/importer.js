@@ -49,10 +49,12 @@ function pump(db) {
 
 const insertRow = (db) => db.prepare(`INSERT INTO rows
   (import_id, page, line_no, emplid, name, last_name, first_name, middle_name,
-   grade, step, confidence, needs_review, review_reason, ocr_text,
+   grade, step, amount_goal, amount_taken, zero_deduction,
+   confidence, needs_review, review_reason, ocr_text,
    bx0, by0, bx1, by1, norm_last, norm_first)
   VALUES (@import_id, @page, @line_no, @emplid, @name, @last_name, @first_name, @middle_name,
-   @grade, @step, @confidence, @needs_review, @review_reason, @ocr_text,
+   @grade, @step, @amount_goal, @amount_taken, @zero_deduction,
+   @confidence, @needs_review, @review_reason, @ocr_text,
    @bx0, @by0, @bx1, @by1, @norm_last, @norm_first)`);
 
 async function processImport(db, importId) {
@@ -92,12 +94,18 @@ async function processImport(db, importId) {
 
       db.transaction(() => {
         rows.forEach((r, i) => {
-          const needsReview = r.confidence < threshold || !r.emplid || !r.first_name ? 1 : 0;
+          // A $0.00 line goes to review too. Not because the scan is doubtful
+          // — it is a member on the register with nothing coming out, and
+          // somebody has to look at that before it reaches a count.
+          const needsReview = r.confidence < threshold || !r.emplid || !r.first_name ||
+            r.zero_deduction ? 1 : 0;
           ins.run({
             import_id: importId, page: p + 1, line_no: i + 1,
             emplid: r.emplid, name: r.name,
             last_name: r.last_name, first_name: r.first_name, middle_name: r.middle_name,
             grade: r.grade, step: r.step,
+            amount_goal: r.amount_goal, amount_taken: r.amount_taken,
+            zero_deduction: r.zero_deduction,
             confidence: r.confidence, needs_review: needsReview,
             review_reason: (r.review_reasons || []).join('; '),
             ocr_text: r.ocr_text,

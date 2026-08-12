@@ -144,6 +144,18 @@ worse, quietly writes to the wrong member.
   Hines's rank). NEP stores the number as `+12027684668` and we key on exactly
   that string, so the value is not the problem — the field simply is not a
   usable key. Route those members to the by-hand list instead.
+- **`Last Name` and `First Name` each work as a key on their own.** Joe: *"nep
+  cant key on both first and last name, just one field."* One of them is often
+  enough: of 3,434 members there is exactly one `Crump`, one `Seldon Jr.`, one
+  `Erica`, one `Josiah`. Check the value is unique **case- and space-folded**
+  across the whole roster before using it — NEP's normalisation is unknown, and
+  a key that matches nothing CREATES a duplicate rather than failing.
+  Result on 12 Aug: `Last Name` 2 of 2, `First Name` 8 of 11.
+- **A record we created ourselves may not answer to a name key.** The 3
+  first-name misses were exactly the 3 records added by an earlier upload —
+  `All Members` group only, an `L36NEW` note, no appointment date. The 8 that
+  matched were all pre-existing NEP records. The split was clean, so treat
+  our own created records as by-hand until this is understood.
 - **Misassigned numbers come in chains.** Bekure's mobile sat on Schlegel;
   Schlegel's sat on Flores; Flores's own was free. Unwind from the far end —
   Flores, then Schlegel, then Bekure — or every step collides.

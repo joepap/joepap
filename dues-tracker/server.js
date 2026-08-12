@@ -146,7 +146,14 @@ app.get('/api/state', requireStaff, (req, res) => {
     SELECT i.*, p.report_date prev_date,
       (SELECT COUNT(*) FROM changes c WHERE c.import_id = i.id AND c.kind = 'stopped') stopped,
       (SELECT COUNT(*) FROM changes c WHERE c.import_id = i.id AND c.kind = 'new') new_payers,
-      (SELECT COUNT(*) FROM changes c WHERE c.import_id = i.id AND c.kind = 'changed') changed
+      (SELECT COUNT(*) FROM changes c WHERE c.import_id = i.id AND c.kind = 'changed') changed,
+      -- total_rows counts lines on the register; payers counts the ones with
+      -- money actually deducted. They are not the same number, and it is the
+      -- second that the IAFF is billed against.
+      (SELECT COUNT(*) FROM rows r WHERE r.import_id = i.id AND r.excluded = 0
+         AND r.zero_deduction = 0) payers,
+      (SELECT COUNT(*) FROM rows r WHERE r.import_id = i.id AND r.excluded = 0
+         AND r.zero_deduction = 1) zero_deduction
     FROM imports i LEFT JOIN imports p ON p.id = i.compared_to
     ORDER BY COALESCE(NULLIF(i.report_date,''), substr(i.uploaded_at,1,10)) DESC, i.id DESC`).all();
   const latest = imports.find(i => i.status === 'ready') || null;
@@ -330,6 +337,9 @@ app.get('/api/imports/:id/rows', requireStaff, (req, res) => {
   let where = 'import_id = ?';
   const args = [impId];
   if (filter === 'flagged') where += ' AND excluded = 0 AND needs_review = 1 AND reviewed = 0';
+  // On the register with nothing coming out — a list worth pulling up on its
+  // own, since it is a dues question rather than a scanning one.
+  else if (filter === 'zero') where += ' AND excluded = 0 AND zero_deduction = 1';
   else if (filter === 'excluded') where += ' AND excluded = 1';
   else if (filter === 'edited') where += ' AND edited = 1';
   else where += ' AND excluded = 0';

@@ -22,14 +22,26 @@ function buildNepWorkbook(db, importId) {
     XLSX.utils.book_append_sheet(wb, sheet, name.slice(0, 31));
   };
 
-  // Sheet 1 — mark these people paid for the year in NEP.
+  // Sheet 1 — mark these people paid for the year in NEP. Being on the
+  // register is not the same as paying: rows whose deduction reads $0.00 are
+  // held out of this sheet entirely and listed on their own below.
   addSheet(`Mark Paid - ${year} Dues`, db.prepare(`
     SELECT last_name "Last Name", first_name "First Name", middle_name "Middle Name",
            emplid "Emplid", grade "Grade", step "Step",
            'Yes' "${year} Dues",
            CASE WHEN needs_review = 1 AND reviewed = 0 THEN 'CHECK — low OCR confidence' ELSE '' END "Flag"
-    FROM rows WHERE import_id = ? AND excluded = 0
+    FROM rows WHERE import_id = ? AND excluded = 0 AND zero_deduction = 0
     ORDER BY last_name, first_name`).all(importId));
+
+  // Sheet 1b — on the register, nothing coming out of the check. Never mark
+  // these people paid; they are the ones to chase.
+  addSheet('Zero Deduction - CHASE', db.prepare(`
+    SELECT last_name "Last Name", first_name "First Name", emplid "Emplid",
+           grade "Grade", step "Step", page "Page on report",
+           '$0.00' "Deducted", name "Line as printed"
+    FROM rows WHERE import_id = ? AND excluded = 0 AND zero_deduction = 1
+    ORDER BY last_name, first_name`).all(importId),
+    'no zero-deduction lines on this report');
 
   const changeRows = kind => db.prepare(`
     SELECT c.name "Name", c.emplid "Emplid", c.detail "Detail",
@@ -62,7 +74,11 @@ function buildNepWorkbook(db, importId) {
     stat('Report date', label(imp)),
     stat('Imported at', imp.uploaded_at),
     stat('Dues year marked', year),
-    stat('Dues payers on this report', one('SELECT COUNT(*) c FROM rows WHERE import_id = ? AND excluded = 0').c),
+    stat('Lines on this report', one('SELECT COUNT(*) c FROM rows WHERE import_id = ? AND excluded = 0').c),
+    stat('Dues payers (money actually deducted)',
+      one('SELECT COUNT(*) c FROM rows WHERE import_id = ? AND excluded = 0 AND zero_deduction = 0').c),
+    stat('On the register but deducted $0.00',
+      one('SELECT COUNT(*) c FROM rows WHERE import_id = ? AND excluded = 0 AND zero_deduction = 1').c),
     stat('Compared against', prev ? `${label(prev)} (${prev.filename})` : '— first import —'),
     stat('Stopped payers', one("SELECT COUNT(*) c FROM changes WHERE import_id = ? AND kind = 'stopped'").c),
     stat('New payers', one("SELECT COUNT(*) c FROM changes WHERE import_id = ? AND kind = 'new'").c),

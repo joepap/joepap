@@ -35,6 +35,23 @@ function displayName(r) {
   return r.name || [r.last_name, r.first_name].filter(Boolean).join(', ');
 }
 
+const money = r => (r.amount_taken >= 0 ? `$${r.amount_taken.toFixed(2)}` : 'an unreadable amount');
+
+/**
+ * A member can stop paying without leaving the report: the line stays, the
+ * deduction drops to $0.00. Presence alone would call that "no change", so
+ * the money is compared too — and a switch either way outranks a grade or
+ * step change, because it decides whether the person counts as a payer.
+ * Returns 'stopped', 'new' or null. A column we could not read is not a
+ * change; -1 means illegible, not zero.
+ */
+function duesSwitch(prev, cur) {
+  if (prev.amount_taken < 0 || cur.amount_taken < 0) return null;
+  if (!prev.zero_deduction && cur.zero_deduction) return 'stopped';
+  if (prev.zero_deduction && !cur.zero_deduction) return 'new';
+  return null;
+}
+
 function diffDetail(prev, cur) {
   const bits = [];
   if (prev.grade !== cur.grade) bits.push(`grade ${prev.grade || '—'} → ${cur.grade || '—'}`);
@@ -112,10 +129,28 @@ function runCompare(db, importId) {
       else curLoose.push(r);
     }
 
-    // Same emplid on both reports — look for grade/step/name changes.
+    // Same emplid on both reports — look for a dues switch first, then for
+    // grade/step/name changes.
+    const tsIdxEarly = telestaffIndex(db);
     for (const [emplid, p] of prevBy) {
       const c = curBy.get(emplid);
       if (!c) continue;
+      const sw = duesSwitch(p, c);
+      if (sw === 'stopped') {
+        const why = explainStop(tsIdxEarly, c);
+        findings.push({ kind: 'stopped', emplid, name: displayName(c),
+          detail: `still on the report, but the deduction went from ${money(p)} to $0.00` +
+                  (why ? ` — ${why.detail}. ${why.action}` : ''),
+          reason: why ? why.code : null,
+          prev_row_id: p.id, cur_row_id: c.id, matched_by: 'emplid' });
+        continue;
+      }
+      if (sw === 'new') {
+        findings.push({ kind: 'new', emplid, name: displayName(c),
+          detail: `was on the report at $0.00, now paying ${money(c)}`,
+          prev_row_id: p.id, cur_row_id: c.id, matched_by: 'emplid' });
+        continue;
+      }
       const bits = diffDetail(p, c);
       if (bits.length) {
         findings.push({ kind: 'changed', emplid, name: displayName(c),
@@ -144,6 +179,18 @@ function runCompare(db, importId) {
       if (usedI.has(pr.i) || usedJ.has(pr.j)) continue;
       usedI.add(pr.i); usedJ.add(pr.j);
       const p = stopPool[pr.i], c = newPool[pr.j];
+      const sw = duesSwitch(p, c);
+      if (sw) {
+        const why = sw === 'stopped' ? explainStop(tsIdxEarly, c) : null;
+        findings.push({ kind: sw, emplid: c.emplid || p.emplid, name: displayName(c),
+          detail: sw === 'stopped'
+            ? `still on the report, but the deduction went from ${money(p)} to $0.00` +
+              (why ? ` — ${why.detail}. ${why.action}` : '')
+            : `was on the report at $0.00, now paying ${money(c)}`,
+          reason: why ? why.code : null,
+          prev_row_id: p.id, cur_row_id: c.id, matched_by: 'name' });
+        continue;
+      }
       const bits = diffDetail(p, c);
       if (p.emplid !== c.emplid) {
         bits.unshift(`emplid read differs (likely OCR): was "${p.emplid || '?'}", now "${c.emplid || '?'}"`);
@@ -157,10 +204,21 @@ function runCompare(db, importId) {
     // can answer it. The case that keeps catching us out is a promotion:
     // a member made battalion chief still shows on the report he was paid
     // under, then vanishes from the next one, and nothing said why.
-    const tsIdx = telestaffIndex(db);
     stopPool.forEach((p, i) => {
       if (usedI.has(i)) return;
-      const why = explainStop(tsIdx, p);
+      // Someone who was already at $0.00 has not stopped paying — they were
+      // never paying. Say that, rather than sending the treasurer after dues
+      // that were never coming out.
+      if (p.zero_deduction) {
+        findings.push({ kind: 'stopped', emplid: p.emplid, name: displayName(p),
+          detail: `off the report now, but was already at $0.00 on the ` +
+                  `${prev.report_date || prev.uploaded_at.slice(0, 10)} report — ` +
+                  'no dues were being deducted then either',
+          reason: 'was-not-paying',
+          prev_row_id: p.id, cur_row_id: null, matched_by: 'emplid' });
+        return;
+      }
+      const why = explainStop(tsIdxEarly, p);
       findings.push({ kind: 'stopped', emplid: p.emplid, name: displayName(p),
         detail: `on the ${prev.report_date || prev.uploaded_at.slice(0, 10)} report` +
                 ` (grade ${p.grade || '—'} step ${p.step || '—'}), missing now` +
@@ -170,8 +228,10 @@ function runCompare(db, importId) {
     });
     newPool.forEach((c, j) => {
       if (usedJ.has(j)) return;
-      findings.push({ kind: 'new', emplid: c.emplid, name: displayName(c),
-        detail: `first seen on this report (grade ${c.grade || '—'} step ${c.step || '—'})`,
+      findings.push({ kind: c.zero_deduction ? 'changed' : 'new', emplid: c.emplid, name: displayName(c),
+        detail: c.zero_deduction
+          ? 'first seen on this report, but at $0.00 — on the register, not paying'
+          : `first seen on this report (grade ${c.grade || '—'} step ${c.step || '—'})`,
         prev_row_id: null, cur_row_id: c.id, matched_by: 'emplid' });
     });
   }
@@ -206,9 +266,14 @@ function runCompare(db, importId) {
       promotedOut: why('promoted-out'),
       leftDepartment: why('left-department'),
       stillWorking: why('still-working'),
+      wasNotPaying: why('was-not-paying'),
       unexplained: findings.filter(f => f.kind === 'stopped' && !f.reason).length
     },
-    total: curRows.length
+    // Lines on the report is not the same number as payers, and the second
+    // is the one the IAFF is billed against.
+    total: curRows.length,
+    payers: curRows.filter(r => !r.zero_deduction).length,
+    zeroDeduction: curRows.filter(r => r.zero_deduction).length
   };
   audit(db, 'compare', `#${importId} vs #${prev ? prev.id : '—'}: ` +
     `${summary.stopped} stopped, ${summary.new} new, ${summary.changed} changed` +

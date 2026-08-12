@@ -3,12 +3,12 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 12 Aug 2026, 21:47 — 3,434 members**
-(`data/uploads/roster-40`, gitignored). Dues report: **13 June 2026**, 1,781
-payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
+Roster state at last update: **NEP export of 12 Aug 2026, 22:36 — 3,434 members**
+(`data/uploads/roster-41`, gitignored). Dues report: **13 June 2026**, 1,781
+lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
-## The paying-member gap — 1,583 in NEP against 1,781 on the payroll
+## The paying-member gap — 1,583 in NEP against 1,768 actually paying
 
 Joe, 12 Aug: *"nep only has 1584 members marked as paying dues members. can we
 get that closer"*. Worked out that evening against `roster-39`.
@@ -30,24 +30,56 @@ the payroll; the scanner mangled the name past the matcher — "SevendorE Brando
 is Devendorf, "Qeschger,Sarah" is Oeschger, "aww tematH'" is unreadable. Nobody
 marked them Yes in error.
 
-**Joe ran them the same evening. 168 of 184 landed** — email 108 of 108, payroll
-number 60 of 60, **phone 0 of 10**. NEP now shows **1,751** paying members. The
-full field diff of `roster-39` → `roster-40` shows nothing else touched: 168
-`Paying Active Member` writes, seven members who changed their own address, and
-Thornhill's duplicate payroll number cleared by hand.
+**Done bar three.** Joe ran the sheets the same evening; NEP went **1,583 →
+1,763**. Email matched 108 of 108, `PeopleSoft Number` 60 of 60, `Phone Number`
+**0 of 10**, `Last Name` 2 of 2, `First Name` 8 of 11. Bartee was pulled off
+the list — see the $0.00 section below. The field diff across all four exports
+is clean: only `Paying Active Member` moved, plus a few members editing their
+own addresses and Thornhill's duplicate payroll number being cleared by hand.
 
-**16 left, all by hand** (sheet sent 12 Aug): the 10 the phone key missed —
-White Carlton A · Hall Chandell O · Richards Christopher J · Jones Domonique A ·
-Gray Ian E · Jones Jasmine A · Briscoe Joshua X · Roberts Krystal · Jones
-Michael L · Davis Tony S — plus the 6 with nothing to key on: Shaw Erica ·
-Young Josiah · Seldon Jr. Kenneth R · Bartee Mario · Drake Roshawnda · Crump
-Taniya A. That reaches **1,767**; the rest is the 21 contested lines and four
-payroll lines too damaged to read.
+**3 left, by hand: Drake Roshawnda · Shaw Erica · Young Josiah.** They are the
+only three the first-name key missed, and the reason looks structural — all
+three are records *we* created from the payroll report (`All Members` group
+only, an `L36NEW` note, no appointment date), while all 8 that matched were
+pre-existing NEP records. Worth asking what NEP's step 5 showed for them.
+
+That reaches **1,766** against **1,768** genuinely paying on the June report.
+The remainder is the 21 contested father/son lines and four payroll lines too
+damaged to read.
 
 The 340 `No` is the other half of Joe's standard and has not been built yet.
 **23 of them are still on telestaff** — working, but not on the June payroll.
 That is the Botwin shape and needs a current dues report before anyone is marked
 `No`.
+
+## $0.00 on the payroll — Joe's rule
+
+Joe, 12 Aug: *"I don't want to update the paying dues field if they are 0
+dollars. If they are active in telestaff and our nep, they can be active, but
+the 0$ and the not paying dues not saying yes, lets us know its something we
+have to fix."*
+
+Thirteen lines on the 13 June register print `0.00 0.00 0.00` where everyone
+else prints `49.19 49.09 0.10`. Being on the register is not the same as
+paying, and nothing in the app read the money column until now, so all 13 were
+counted as payers. **The report has 1,781 lines but 1,768 payers.**
+
+The app now reads the amount on every line, holds $0.00 rows out of the
+"Mark Paid" sheet, lists them on their own `Zero Deduction — CHASE` sheet, and
+treats a deduction falling to $0.00 as a stopped payer even when the member
+stays on the report. `scripts/backfill-amounts.js` re-read the June report from
+its stored OCR text — no re-scan needed.
+
+**Eight still carry a wrong `Yes` and need clearing by hand.** Elliott Jazmin
+and Irving Jessica L were set by my own 184 sheet; Barrow Joshua M, Chen Ben,
+Devendorf Brandon M, Dufresne Christopher M, Long Kenneth W and Tyler Shawn
+predate it. Bartee Mario is correctly blank and stays `Active` — he is on
+telestaff as a Firefighter EMT, Platoon 2, which is exactly the signal Joe
+wants surfaced rather than tidied away.
+
+Still unanswered: **what a $0.00 line means** — leave, workers' comp, a stopped
+deduction or a payroll error. That decides whether these members get chased or
+left alone.
 
 ## 10 non-Active members still hold a payroll number — parked
 

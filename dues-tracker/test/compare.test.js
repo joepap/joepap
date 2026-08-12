@@ -16,11 +16,15 @@ function addImport(db, reportDate, status) {
 }
 
 function addRow(db, importId, r) {
+  // `taken` defaults to a normal deduction; pass 0 for a member who is on the
+  // register with nothing coming out, or -1 for a column the scan lost.
+  const taken = r.taken === undefined ? 49.09 : r.taken;
   db.prepare(`INSERT INTO rows (import_id, emplid, name, last_name, first_name, grade, step,
-      confidence, norm_last, norm_first)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 100, ?, ?)`)
+      amount_goal, amount_taken, zero_deduction, confidence, norm_last, norm_first)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 100, ?, ?)`)
     .run(importId, r.emplid, (r.last || '') + ',' + (r.first || ''), r.last || '', r.first || '',
       r.grade || 'FF-01', r.step || '5',
+      taken === 0 ? 0 : (taken < 0 ? -1 : 49.19), taken, taken === 0 ? 1 : 0,
       match.normalizeName(r.last || ''), match.normalizeName(r.first || ''));
 }
 
@@ -225,4 +229,83 @@ test('two people with the same name settle nothing', () => {
   const s = compare.runCompare(db, b);
   assert.equal(s.stoppedBecause.promotedOut, 0, 'must not pick one of two Jason Harrises');
   assert.equal(s.stoppedBecause.leftDepartment, 1);
+});
+
+// The failure that started this: a member can stay on the register while the
+// deduction drops to $0.00. Presence alone reads that as "no change", and in
+// Aug 2026 it put 13 non-payers into the paying count.
+
+test('a deduction dropping to $0.00 is a stopped payer, not a no-change', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00089498', last: 'BARTEE', first: 'MARIO' });
+  compare.runCompare(db, a);
+
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00089498', last: 'BARTEE', first: 'MARIO', taken: 0 });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stopped, 1);
+  assert.equal(s.changed, 0);
+  assert.equal(s.payers, 0, 'a $0.00 line is not a payer');
+  assert.equal(s.zeroDeduction, 1);
+  assert.match(db.prepare("SELECT detail FROM changes WHERE kind='stopped'").get().detail,
+    /\$49\.09 to \$0\.00/);
+});
+
+test('a $0.00 line that starts paying is a new payer', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00089498', last: 'BARTEE', first: 'MARIO', taken: 0 });
+  compare.runCompare(db, a);
+
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00089498', last: 'BARTEE', first: 'MARIO' });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.new, 1);
+  assert.equal(s.stopped, 0);
+  assert.equal(s.payers, 1);
+});
+
+test('an unreadable amount is not treated as zero', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00089498', last: 'BARTEE', first: 'MARIO' });
+  compare.runCompare(db, a);
+
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00089498', last: 'BARTEE', first: 'MARIO', taken: -1 });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stopped, 0, 'a column the scan lost must not read as $0.00');
+  assert.equal(s.payers, 1);
+});
+
+test('someone who leaves the report having never paid is not chased for dues', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00089498', last: 'BARTEE', first: 'MARIO', taken: 0 });
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.stopped, 1);
+  assert.equal(s.stoppedBecause.wasNotPaying, 1);
+  assert.match(db.prepare("SELECT detail FROM changes WHERE kind='stopped'").get().detail,
+    /already at \$0\.00/);
+});
+
+test('appearing for the first time at $0.00 is not a new payer', () => {
+  const db = freshDb();
+  const a = addImport(db, '2026-06-13', 'ready');
+  addRow(db, a, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  compare.runCompare(db, a);
+
+  const b = addImport(db, '2026-06-27');
+  addRow(db, b, { emplid: '00099407', last: 'SMITH', first: 'JOHN' });
+  addRow(db, b, { emplid: '00089498', last: 'BARTEE', first: 'MARIO', taken: 0 });
+  const s = compare.runCompare(db, b);
+  assert.equal(s.new, 0);
+  assert.equal(s.payers, 1);
+  assert.equal(s.zeroDeduction, 1);
 });
