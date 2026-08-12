@@ -8,7 +8,7 @@ Roster state at last update: **NEP export of 12 Aug 2026, 18:36 — 3,444 member
 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
-## 12 non-Active members still hold a payroll number — parked
+## 10 non-Active members still hold a payroll number — parked
 
 Retired, dropped, alumni and life members do not have a payroll number, so
 each of these came from the wrong generation. Every one was independently
@@ -18,29 +18,31 @@ of the number they hold.
 Kline, Kevin P · Evans, Marc A · Roop, Michael A · Lacore, Michael D ·
 Schaefer, Paul M · Sullivan, Jason · Klinger, Wayne D **[Active Retired]** ·
 Walker, Michael Q · Tyner, Sr., Reginald H **[Alumni]** · Moore, Kenneth R ·
-Thornhill, Thomas B **[Drop]** · Mitchell, Kenneth **[Life]**
+Mitchell, Kenneth **[Life]**
 
-**Thornhill is a known problem pair** — Joe: "the thornhill might be confused
-with his son, those two have always been an issue." Do not clear his number
-without working out which man the record describes.
+**Thornhill is done** — his was the father/son pair Joe warned about, and it
+turned out to be exactly that: payroll 00130157 belongs to Thomas E, the son,
+who is working and paying. Thomas B is the father, appointed 1990, Drop.
+Settled 12 Aug. **Moore, Kenneth R is done too**, same shape — 00138941 belongs
+to Kenneth R. Moore III.
 
-Joe parked the whole set on 11 Aug. The clean-up is safe to do — zero duplicate
-payroll numbers remain across all 3,489 members — but nobody is waiting on it.
+Joe parked the rest on 11 Aug. Ten left, and nobody is waiting on them.
 
-## Do this now — one payroll number is on two members
+## Duplicate numbers — the standing rule
 
-`Thornhill, Thomas B` **[Drop]** and `Thornhill, Thomas E.` **[Active]** both hold
-payroll number **00130157**. The son was given it; the father's was never cleared.
+Joe, 12 Aug: *"i'm not worried if we have an iaff number of someone who is
+deceased or dropped and the iaff doesn't. we need to be notified if they are
+ever duplicates and then we will address individually."*
 
-1. `Thornhill, Thomas B` — clear **PeopleSoft Number**
-2. `Thornhill, Thomas E.` — still needs **Paying Active Member = Yes**
+`lib/audit.js` reports both kinds at high severity —
+`peoplesoft-on-more-than-one-member` and `iaff-number-on-more-than-one-member`,
+the latter matching on bare digits so `0555555` and `555555` cannot hide one.
+An IAFF number the IAFF no longer recognises is reported only when the member
+is **Active**, since the IAFF drops a number when somebody leaves.
 
-Duplicates are the one thing Joe wants flagged every time — his rule, 12 Aug:
-*"i'm not worried if we have an iaff number of someone who is deceased or dropped
-and the iaff doesn't. we need to be notified if they are ever duplicates and then
-we will address individually."* `lib/audit.js` reports both kinds at high
-severity: `peoplesoft-on-more-than-one-member` and
-`iaff-number-on-more-than-one-member`.
+Clean as of the 12 Aug 20:47 export: 2,731 IAFF numbers, 2,731 distinct. The
+one payroll duplicate (Thornhill 00130157, on both father and son) was fixed
+by hand the same evening.
 
 ## Waiting on Joe
 
