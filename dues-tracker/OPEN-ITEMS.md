@@ -29,11 +29,12 @@ payroll numbers remain across all 3,489 members — but nobody is waiting on it.
 
 ## Waiting on Joe
 
-- **Dave Brown.** Two of them: one retired, one active. NEP has one `Brown, David A`
-  (Active, appointed 2006, payroll 00030709, `davidabrownjr@gmail.com`); the IAFF
-  has **#0441560 David A. Brown Jr. (MRM, retired)** and **#0469335 David R. Brown
-  (MEM, active)**. The email points at the Jr., the status points at the R. Joe is
-  sorting out which is which — do not write an IAFF number to him until he says.
+- **Dave Brown — SETTLED 12 Aug.** `brown, David` (lowercase in NEP; Active
+  Retired, Captain, Engine 20) is **David R. Brown**, IAFF **#0469335**, and is
+  not a Jr. `Brown, David A` (Firefighter Paramedic, Fireboat, payroll 00030709)
+  is the Jr., IAFF **#0441560**. Neither carries an IAFF number in NEP yet; both
+  are free to write. His phone in NEP reads 301-34**2**-2526 and Joe says
+  301-34**3**-2526 — a change to an existing number, so left alone pending Joe.
 - **Taylor, James P** — the IAFF has a James A. and a James M. Taylor, no P. He may
   simply not be on their roll.
 - **Robinson, Wayne** — Wayne L. (Mount Rainier, matches his city) vs Wayne P.
@@ -188,6 +189,17 @@ to 15.
 - **`Local36-add-to-IAFF-roster.xlsx`** — 184 members the IAFF has never heard of,
   147 of them paying dues every payroll. Parked on Joe's word until the rest is
   squared away.
+- **`Local36-IAFF-status-corrections.xlsx`** — 81 members the IAFF has under the
+  wrong `Member Type`. 70 we call Active whom they carry as MRM (retired), 6 the
+  other way round, 5 honorary mismatches. 15 are backed by the payroll report or
+  the staffing roster and are shaded green; the other 66 rest on our record alone
+  and are shaded yellow, so the recipient can tell the two apart.
+
+  **The two David Browns are the shape of it.** The IAFF has #0469335 David R.
+  Brown as MEM when he is the retired captain from Engine 20, and #0441560 David
+  A. Brown Jr. as MRM when he is Active and paying on payroll 00030709. Their
+  statuses are swapped. Joe identified them by hand on 12 Aug — David R. is the
+  retired captain and is **not** a Jr.
 
 ## Settled today — single-role EMS
 
