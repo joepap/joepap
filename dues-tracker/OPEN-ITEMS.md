@@ -62,6 +62,29 @@ Order matters; the number cannot sit on two members at once.
 - **Platoon**: 42 with nothing to key on.
 - **Thomas L Williams** → Drop, by hand (no IAFF number to key on).
 
+## What is the difference between "Retired" and "Active Retired"?
+
+Joe cannot recall, and the data does not settle it either — but it points at
+`Retired` being a stray value rather than a real category.
+
+**798 members are `Active Retired`**: 492 have a retired-dues year filled in,
+219 are marked "Not Required", 227 are in the Retiree Insurance Group.
+
+**4 members are `Retired`**, and they look nothing like a category:
+
+| | |
+|---|---|
+| Mcconnell, Kevin P | Lieutenant, appointed 2001, in **Officers** and **Active Members** groups |
+| Bourassa, Ryan | Lieutenant, appointed 2000, in **Officers** and **Active Members** groups |
+| Gilson, Michael J | Firefighter, retired-dues "Not Required", Retired Members group |
+| Embrey, Willian | Battalion Fire Chief — and the name is a typo for **William** |
+
+Two of the four sit in *Active Members* and *Officers*. None is in the Retiree
+Insurance Group. None has a retired-dues year filled in.
+
+If `Retired` has no meaning of its own, these four should become `Active
+Retired` — or whatever each actually is. Waiting on Joe.
+
 ## Needs adding to NEP itself
 
 - **Add `Recruit` to the DC Fire Rank dropdown.** Telestaff has 2 recruits;
@@ -113,6 +136,12 @@ Settled already: `Captain - EMS Liaison Officer` → **EMS Captain**;
 - **Key'shaun Samuel** — NEP has only "Key'". No IAFF number, email or phone.
 - **Alexander Henry** — payroll says Alexander; NEP holds two profiles, "Alex"
   and "Alex D". Sort out which is real before renaming either.
+- **William Embrey** — `Embrey, Willian` is a typo (his own email is
+  `william.embrey1@verizon.net`), and `Embrey, William` is an empty shell
+  duplicate of him. **Delete the empty one, then correct the spelling** — that
+  order, or NEP briefly holds two records with the same name. Caught by Joe
+  while working the name-only list, which is why that record was left out of
+  the 31.
 
 ## Damaged records that keep surfacing
 
