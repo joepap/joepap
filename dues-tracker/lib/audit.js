@@ -153,10 +153,19 @@ function iaffNumbers(P, iaffRoster) {
         detail: 'IAFF Member Number reads "' + p.iaff + '".', fix: 'Correct it by hand.' });
       continue;
     }
-    if (known && !known.has(v)) {
+    // The IAFF removes a number when the member leaves, so a retired, dropped,
+    // alumni or deceased member holding one they no longer recognise is normal
+    // and not worth reporting — Joe's rule, 12 Aug. Measured: of 425 such
+    // numbers, 79% belong to members we call Active Retired, Alumni, Drop or
+    // Deceased, against 3% among the numbers the IAFF still keeps.
+    //
+    // An ACTIVE member is the case that rule does not cover. They are working
+    // and paying, and the IAFF has dropped them anyway — so either our status
+    // is wrong or they removed somebody they should not have.
+    if (known && !known.has(v) && p.status === 'Active') {
       out.push({ check: 'iaff-number-unknown-to-the-iaff', severity: 'medium', who: p.name,
-        detail: '#' + v + ' is not in the IAFF export.',
-        fix: 'Either the number is wrong or the member was dropped at the IAFF.' });
+        detail: '#' + v + ' is not in the IAFF export, but this member is Active.',
+        fix: 'Either the number is wrong, or the IAFF dropped a member who is still paying.' });
     }
     if (!seen.has(v)) seen.set(v, []);
     seen.get(v).push(p);

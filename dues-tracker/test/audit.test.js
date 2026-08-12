@@ -185,4 +185,48 @@ const has = (r, check, who) => r.findings.some(f => f.check === check && (!who |
   assert(/larrylewis44@gmail.com/.test(dup[0].fix), dup[0].fix);
 }
 
+// Joe's rule, 12 Aug: the IAFF drops a number when a member leaves, so a
+// retired or deceased member holding one the IAFF no longer recognises is
+// expected and must not be reported. An ACTIVE member in the same position is
+// the real finding — they are paying and the IAFF has removed them.
+{
+  const iaff = [{ Id: '1111111' }];
+  const r = auditRoster([
+    M({ 'Last Name': 'Retiree', 'First Name': 'Ray', 'Member Status': 'Active Retired',
+        'IAFF Member Number': '2222222' }),
+    M({ 'Last Name': 'Gone', 'First Name': 'Gary', 'Member Status': 'Deceased',
+        'IAFF Member Number': '3333333' }),
+    M({ 'Last Name': 'Working', 'First Name': 'Will', 'Member Status': 'Active',
+        'IAFF Member Number': '4444444' })
+  ], { iaffRoster: iaff });
+  const hits = r.findings.filter(f => f.check === 'iaff-number-unknown-to-the-iaff');
+  assert.strictEqual(hits.length, 1, 'only the Active member should be reported');
+  assert(/Working/.test(hits[0].who), hits[0].who);
+}
+
+// Duplicates are the thing Joe does want to be told about, either way round.
+{
+  const r = auditRoster([
+    M({ 'Last Name': 'Thornhill', 'First Name': 'Thomas B', 'Member Status': 'Drop',
+        'PeopleSoft Number': '00130157' }),
+    M({ 'Last Name': 'Thornhill', 'First Name': 'Thomas E', 'Member Status': 'Active',
+        'PeopleSoft Number': '00130157' })
+  ], {});
+  const dup = r.findings.filter(f => f.check === 'peoplesoft-on-more-than-one-member');
+  assert.strictEqual(dup.length, 1);
+  assert.strictEqual(dup[0].severity, 'high');
+  assert(/Thomas E/.test(dup[0].fix), 'should say to keep it on the Active one: ' + dup[0].fix);
+}
+{
+  const r = auditRoster([
+    M({ 'Last Name': 'One', 'First Name': 'Alice', 'Member Status': 'Active',
+        'IAFF Member Number': '0555555' }),
+    M({ 'Last Name': 'Two', 'First Name': 'Bob', 'Member Status': 'Active',
+        'IAFF Member Number': '555555' })
+  ], {});
+  const dup = r.findings.filter(f => f.check === 'iaff-number-on-more-than-one-member');
+  assert.strictEqual(dup.length, 1, 'a leading zero must not hide a duplicate');
+  assert.strictEqual(dup[0].severity, 'high');
+}
+
 console.log('audit tests passed');

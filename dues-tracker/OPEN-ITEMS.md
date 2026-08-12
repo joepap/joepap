@@ -27,6 +27,21 @@ without working out which man the record describes.
 Joe parked the whole set on 11 Aug. The clean-up is safe to do — zero duplicate
 payroll numbers remain across all 3,489 members — but nobody is waiting on it.
 
+## Do this now — one payroll number is on two members
+
+`Thornhill, Thomas B` **[Drop]** and `Thornhill, Thomas E.` **[Active]** both hold
+payroll number **00130157**. The son was given it; the father's was never cleared.
+
+1. `Thornhill, Thomas B` — clear **PeopleSoft Number**
+2. `Thornhill, Thomas E.` — still needs **Paying Active Member = Yes**
+
+Duplicates are the one thing Joe wants flagged every time — his rule, 12 Aug:
+*"i'm not worried if we have an iaff number of someone who is deceased or dropped
+and the iaff doesn't. we need to be notified if they are ever duplicates and then
+we will address individually."* `lib/audit.js` reports both kinds at high
+severity: `peoplesoft-on-more-than-one-member` and
+`iaff-number-on-more-than-one-member`.
+
 ## Waiting on Joe
 
 - **Dave Brown — SETTLED 12 Aug.** `brown, David` (lowercase in NEP; Active
