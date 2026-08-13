@@ -3,8 +3,8 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 12 Aug 2026, 22:36 — 3,434 members**
-(`data/uploads/roster-41`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 13 Aug 2026, 15:21 — 3,434 members**
+(`data/uploads/roster-42`, gitignored). Dues report: **13 June 2026**, 1,781
 lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
@@ -13,9 +13,10 @@ lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-
 Joe, 12 Aug: *"nep only has 1584 members marked as paying dues members. can we
 get that closer"*. Worked out that evening against `roster-39`.
 
-`Paying Active Member` has only ever held **Yes or nothing** — there is not one
-`No` in the whole roster. So the gap is not 198 wrong answers, it is unanswered
-ones. Of the 2,117 Active members:
+`Paying Active Member` had only ever held **Yes or nothing** — not one `No` in
+the whole roster. So the gap was not 198 wrong answers, it was unanswered ones.
+(The field *does* offer `No`; Joe used it on 13 Aug for the eight $0.00
+members.) Measured on 12 Aug, of 2,117 Active members:
 
 | | |
 |---|---|
@@ -36,6 +37,10 @@ marked them Yes in error.
 the list — see the $0.00 section below. The field diff across all four exports
 is clean: only `Paying Active Member` moved, plus a few members editing their
 own addresses and Thornhill's duplicate payroll number being cleared by hand.
+
+**Where it stands on the morning of 13 Aug:** of 2,117 Active members, 1,744 are
+`Yes`, 8 are `No`, 341 are unanswered pending a current dues report, 21 are held
+back as family collisions, and 3 are still to do by hand.
 
 **3 left, by hand: Drake Roshawnda · Shaw Erica · Young Josiah.** They are the
 only three the first-name key missed, and the reason looks structural — all
@@ -70,16 +75,29 @@ treats a deduction falling to $0.00 as a stopped payer even when the member
 stays on the report. `scripts/backfill-amounts.js` re-read the June report from
 its stored OCR text — no re-scan needed.
 
-**Eight still carry a wrong `Yes` and need clearing by hand.** Elliott Jazmin
-and Irving Jessica L were set by my own 184 sheet; Barrow Joshua M, Chen Ben,
-Devendorf Brandon M, Dufresne Christopher M, Long Kenneth W and Tyler Shawn
-predate it. Bartee Mario is correctly blank and stays `Active` — he is on
-telestaff as a Firefighter EMT, Platoon 2, which is exactly the signal Joe
-wants surfaced rather than tidied away.
+**The eight wrong `Yes` marks are done** — Joe set all eight to **`No`** on
+13 Aug, which also settles a standing unknown: the field *does* offer `No`, not
+just `Yes` and blank. Barrow · Chen · Devendorf · Dufresne · Elliott · Irving ·
+Long · Tyler. Bartee Mario stays blank and `Active` — he is on telestaff as a
+Firefighter EMT, Platoon 2, which is exactly the signal Joe wants surfaced
+rather than tidied away.
 
 Still unanswered: **what a $0.00 line means** — leave, workers' comp, a stopped
 deduction or a payroll error. That decides whether these members get chased or
 left alone.
+
+## Duplicate profiles — 12 same-name groups, measured 13 Aug
+
+**Six have an empty side and want deleting**: Long Brian, Taylor Charles, Taylor
+Herbert, Neal Jimmy and Farrow Shirley are each *two* completely empty records;
+Watson Richard is one good record plus a shell.
+
+**Six are split profiles to merge**: Noznesky Alan, Schiafone Christopher M,
+Smith Michael, Clark Timothy J, Reed Trevor, Gooding Wallace. In each case the
+two records hold different halves of the same person — one carries the phone,
+IAFF number, rank and appointment date, the other the email and date of birth.
+No Jr or Sr on any of them, so these read as split profiles rather than fathers
+and sons. Copy the missing fields onto the keeper, then delete the other.
 
 ## 10 non-Active members still hold a payroll number — parked
 
