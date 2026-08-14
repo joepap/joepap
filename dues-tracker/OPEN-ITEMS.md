@@ -3,8 +3,8 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 13 Aug 2026, 15:21 — 3,434 members**
-(`data/uploads/roster-42`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 14 Aug 2026, 16:55 — 3,430 members**
+(`data/uploads/roster-44`, gitignored). Dues report: **13 June 2026**, 1,781
 lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
@@ -85,6 +85,36 @@ rather than tidied away.
 Still unanswered: **what a $0.00 line means** — leave, workers' comp, a stopped
 deduction or a payroll error. That decides whether these members get chased or
 left alone.
+
+## The Watson father and son — SETTLED 14 Aug
+
+Telestaff decided it. Employee **3670** is *Richard Watson, Engine 17,
+FIREFIGHTER TECH, Platoon 2, (301) 399-6174* — and 00003670 is the **son's**
+payroll number in NEP. So the payroll line reading `Watson,Richard 00003670`
+belongs to Watson Jr., Richard L, not his father. One of the 21 contested
+father/son lines closed.
+
+The son now carries payroll 00003670, IAFF **#1080006** (MEM on their roll),
+Firefighter Technician, Platoon 2 and the (301) 399-6174 phone. The empty third
+Watson record is deleted.
+
+**Still open on the father** (`Watson, Richard`, Active Retired, IAFF #237199,
+Brandywine): his phone reads **+1 301-494-0561** with a note "wrong phone
+number" — the son's old number was +1 301-494-05**66**, one digit off. And his
+record still shows Engine 17 / Platoon 2, which only Joe can say is his own
+last posting or the son's details carried over.
+
+## Merges cost data twice — the rule that follows
+
+Gooding and Reed were merged the wrong way round on 14 Aug: the record holding
+the service history was deleted and the near-empty self-registration survived.
+Gooding lost his Battalion Fire Chief rank, Safety Office, Platoon 2,
+appointment date, IAFF #479616 and his 2025/2026 retired-dues **Paid** marks.
+Nothing was unrecoverable — every value was read back out of `roster-42`.
+
+**Before any future merge, send Joe one sheet showing every field of both
+records side by side with the keeper marked.** Naming the keeper in prose is
+not enough when both records look plausible on screen.
 
 ## Duplicate profiles — 12 same-name groups, measured 13 Aug
 
