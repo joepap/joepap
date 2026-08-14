@@ -206,28 +206,20 @@ Order matters; the number cannot sit on two members at once.
 - **Platoon**: 42 with nothing to key on.
 - **Thomas L Williams** → Drop, by hand (no IAFF number to key on).
 
-## What is the difference between "Retired" and "Active Retired"?
+## "Retired" vs "Active Retired" — SETTLED 14 Aug
 
-Joe cannot recall, and the data does not settle it either — but it points at
-`Retired` being a stray value rather than a real category.
+Joe's rule, verbatim: *"unless we already have them paying '2026 dues', lets
+just put them as 'retired'. if they are paying, then active retired."*
 
-**798 members are `Active Retired`**: 492 have a retired-dues year filled in,
-219 are marked "Not Required", 227 are in the Retiree Insurance Group.
+So: **Retired = retired, not paying retired dues. Active Retired = retired and
+paying.** Applied first to the ten food-chain retirees still marked Active
+(7 -> Retired, 3 -> Active Retired: Lord, Simba and Mcdonough had already paid
+2026). The four members who were already plain `Retired` now look intentional
+rather than stray; leave them.
 
-**4 members are `Retired`**, and they look nothing like a category:
-
-| | |
-|---|---|
-| Mcconnell, Kevin P | Lieutenant, appointed 2001, in **Officers** and **Active Members** groups |
-| Bourassa, Ryan | Lieutenant, appointed 2000, in **Officers** and **Active Members** groups |
-| Gilson, Michael J | Firefighter, retired-dues "Not Required", Retired Members group |
-| Embrey, Willian | Battalion Fire Chief — and the name is a typo for **William** |
-
-Two of the four sit in *Active Members* and *Officers*. None is in the Retiree
-Insurance Group. None has a retired-dues year filled in.
-
-If `Retired` has no meaning of its own, these four should become `Active
-Retired` — or whatever each actually is. Waiting on Joe.
+A consequence worth a later pass: some of the 845 `Active Retired` members
+carry no retired-dues year at all, and under this rule those belong in
+`Retired`. Not urgent, and not before the election-mailer pull is settled.
 
 ## Needs adding to NEP itself
 
