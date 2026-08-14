@@ -165,6 +165,23 @@ Clean as of the 12 Aug 20:47 export: 2,731 IAFF numbers, 2,731 distinct. The
 one payroll duplicate (Thornhill 00130157, on both father and son) was fixed
 by hand the same evening.
 
+## The Ridgeway question — parked in the conflict box, 14 Aug
+
+NEP holds ONE Michael: `Ridgway, Michael S` [Active, Lieutenant, E-4, appointed
+10/10/2000, IAFF #1045730, email shaneridgeway@gmail.com, Retiree Insurance
+Group]. The IAFF says #1045730 = Michael Ridgeway, **MRM (retired)**, Owings MD.
+Joe believes Michael has a son named **Shane** on the job.
+
+If the son is real, the one record may be a father/son blend: the father's
+number and service, the son's email. But NO Shane Ridgeway (any spelling)
+exists in NEP, on telestaff, on the June register, or on the IAFF roll — the
+only working Shanes are Melton, Javid and Walker. So either the son goes by
+another name in the records, or "Michael S" IS the son (Michael Shane?) and
+the retired father has no record at all.
+
+Held out of every list until Joe settles who is who. Do not set his status,
+do not fix the Ridgway/Ridgeway spelling, do not touch the email.
+
 ## Waiting on Joe
 
 - **Dave Brown — SETTLED 12 Aug.** `brown, David` (lowercase in NEP; Active
