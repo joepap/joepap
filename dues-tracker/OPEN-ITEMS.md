@@ -165,6 +165,24 @@ Clean as of the 12 Aug 20:47 export: 2,731 IAFF numbers, 2,731 distinct. The
 one payroll duplicate (Thornhill 00130157, on both father and son) was fixed
 by hand the same evening.
 
+## The 295 no-sign-of-life members — Joe's rule, 14 Aug
+
+Active in NEP but absent from the June register (any match strength), absent
+from telestaff, not marked paying. Joe: 25+ years since appointment -> Retired;
+younger, after a collision screen -> Drop; the 38 with no date at all -> Drop
+(they are not new hires — Joe confirmed).
+
+Disposition: **80 Retired · 192 Drop · 21 held** (the IAFF still carries their
+numbers as MEM-working — 20 of them — plus Akers Dahave, a two-letter
+misspelling of the working "Akers, Dahvae" on telestaff) · Ridgway parked in
+the conflict box · Harris Jazmin Ks parked with the Elliott question · Mason
+Roshawnda K pulled out entirely — she IS Drake (same appointment date
+09/29/2004 on the food chain; register line "Drake,Roshawnda K"; the created
+Drake shell is her duplicate; merge pending the side-by-side).
+
+Files cut 14 Aug against roster-45. When they land, Active drops from 2,102
+to roughly 1,830 and the roster stops mailing ballots to people who left.
+
 ## The Ridgeway question — parked in the conflict box, 14 Aug
 
 NEP holds ONE Michael: `Ridgway, Michael S` [Active, Lieutenant, E-4, appointed
