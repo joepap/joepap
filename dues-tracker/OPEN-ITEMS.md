@@ -3,8 +3,10 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 14 Aug 2026, 16:55 — 3,430 members**
-(`data/uploads/roster-44`, gitignored). Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 14 Aug 2026, 23:20 — 3,429 members**
+(`data/uploads/roster-48`, gitignored). Active 1,833 · Active Retired 856 ·
+Retired 91 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the count
+of June payers still working.** Dues report: **13 June 2026**, 1,781
 lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
@@ -184,8 +186,13 @@ Drake shell is her duplicate; merge pending the side-by-side).
 email/PS/IAFF-keyed row hit (206 of 206), every name-keyed row missed (75 of
 75) — a name-keyed sheet must carry the key name column ONLY, and the
 two-column retries then landed 61 of 61. Active 2,102 -> 1,844; Drop 311;
-Retired 90. The final 14 have no unique key and sit on
-`Local36-14-by-hand.xlsx` with Joe (1 Retired: Clark Lawrence; 13 Drop).
+Retired 90. The final 14 went by hand;
+three remain open: Clark Lawrence -> Retired, Potts Christopher -> Drop, and
+Thomas Anthony L -> **Retired** (revised: the IAFF carries him MRM-retired in
+Harrisburg, #1273776 free to write). Sullivan Charles D likewise revised to
+Retired on IAFF MRM evidence — Joe ran it 14 Aug. The register's odd number
+for Sullivan Jason (00127380) was the scanner's misread of his real 00127980;
+telestaff confirms NEP was right all along.
 
 ## The Ridgeway question — parked in the conflict box, 14 Aug
 
