@@ -180,8 +180,12 @@ Roshawnda K pulled out entirely — she IS Drake (same appointment date
 09/29/2004 on the food chain; register line "Drake,Roshawnda K"; the created
 Drake shell is her duplicate; merge pending the side-by-side).
 
-Files cut 14 Aug against roster-45. When they land, Active drops from 2,102
-to roughly 1,830 and the roster stops mailing ballots to people who left.
+**Landed 14 Aug across two runs.** The first run proved a hard rule: every
+email/PS/IAFF-keyed row hit (206 of 206), every name-keyed row missed (75 of
+75) — a name-keyed sheet must carry the key name column ONLY, and the
+two-column retries then landed 61 of 61. Active 2,102 -> 1,844; Drop 311;
+Retired 90. The final 14 have no unique key and sit on
+`Local36-14-by-hand.xlsx` with Joe (1 Retired: Clark Lawrence; 13 Drop).
 
 ## The Ridgeway question — parked in the conflict box, 14 Aug
 
