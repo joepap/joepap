@@ -363,6 +363,15 @@ to 15.
 
 ## Ready and waiting to be forwarded
 
+- **`Local36-FORWARD-9-working-no-dues.xlsx`** — nine members working on the
+  Aug telestaff roster with NO dues deduction on the 13 June register (not even
+  a $0.00 line) and no retiree dues on file: Hayes Bernie (EMS Captain) ·
+  Sellers Paul B (Lieutenant) · Hines Jr. Ronald E · Rowel Danard T · Smith
+  Dominique N · Mendes Demarco J · Kinney Rico C · Wilkins Devin · Bianco
+  Vincenzo. Verified by employee number against every register line. Goes to
+  whoever can start/verify deductions with DCHR. Built 14 Aug on Joe's ask.
+  In NEP the nine stay Active with paying blank — that combination IS the flag.
+
 - **`Local36-remove-from-IAFF-roster.xlsx`** — 47 members the IAFF bills us for
   whom our own records say are not billable: 21 deceased, 20 dropped, 4 alumni,
   2 retired. Finished; goes to whoever maintains the IAFF roll.
