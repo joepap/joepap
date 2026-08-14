@@ -144,6 +144,11 @@ worse, quietly writes to the wrong member.
   Hines's rank). NEP stores the number as `+12027684668` and we key on exactly
   that string, so the value is not the problem — the field simply is not a
   usable key. Route those members to the by-hand list instead.
+- **A name-keyed sheet carries the KEY NAME COLUMN ONLY.** Two columns total:
+  the name being keyed on and the field being written. Including the other
+  name column for readability breaks NEP's import mapping — Joe, 14 Aug: "it
+  has two last name fields which screws up the import." The 59-row retry with
+  key-only columns is the fix; email/PS/IAFF-keyed sheets may keep both names.
 - **`Last Name` and `First Name` each work as a key on their own.** Joe: *"nep
   cant key on both first and last name, just one field."* One of them is often
   enough: of 3,434 members there is exactly one `Crump`, one `Seldon Jr.`, one
