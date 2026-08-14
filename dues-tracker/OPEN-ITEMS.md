@@ -206,6 +206,21 @@ Order matters; the number cannot sit on two members at once.
 - **Platoon**: 42 with nothing to key on.
 - **Thomas L Williams** → Drop, by hand (no IAFF number to key on).
 
+## Retired chiefs — the full rule (Joe, 14 Aug)
+
+Serving chiefs: **Drop** (pay nothing) or **Honorary** (pay a small GAP-insurance
+amount, set by hand when they pay — never touch those fields). Once a chief
+retires: **Active Retired if they pay retiree dues; Retired, or simply left as
+Drop, if they never do.** Applied to Alston, Poust, Knaggs, Truesdel and Dean —
+all paying, all to Active Retired. Schneider (Deceased, 2026 Paid) is a true
+record: he paid, then died. Leave him.
+
+**Sellitto settled the same day**: Michael J [Active, payroll 00033832, on
+telestaff, Yes] is the working son; the no-status Michael with three years of
+retired dues is the father, now Active Retired. Another contested family line
+closed — with Watson and the three payroll-number moves (Walker, Tyner,
+Lacore), that is five of the original 21 settled.
+
 ## "Retired" vs "Active Retired" — SETTLED 14 Aug
 
 Joe's rule, verbatim: *"unless we already have them paying '2026 dues', lets
