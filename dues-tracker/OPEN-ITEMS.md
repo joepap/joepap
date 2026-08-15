@@ -41,8 +41,19 @@ Joe's rulings, now permanent:
    designation off a PA line. Paramedic/Technician designators ARE printed.
 7. **Probationary appointments (recruit/cadet classes) are skipped** until Joe
    says otherwise. SO-2026-198 carried ~49 across Cadet 28 and Recruit 414.
-8. EMS supervisor assignments map to companies `EMS 1`..`EMS 7`; EMS 1 exists
-   in NEP already, others may need adding to the dropdown (Joe, 15 Aug).
+8. EMS supervisor assignments map to companies `EMS 1`..`EMS 7`. Stored
+   values are grandfathered relics — the dropdown lacks the whole series, so
+   `Local36-NEP-companies-to-add.xlsx` (13 values + 2 housekeeping notes) went
+   to NEP on 15 Aug. Graham's EMS 3 and Raymer's EMS 1 rows wait on it.
+9. **Code glossary, Joe's definitions**: TA training academy · H&S/HS homeland
+   security · SAFO safety officer (chief or aide) · PSO professional standards
+   office · FMD fleet maintenance division · FPD fire prevention division ·
+   OFC office of the fire chief · XO executive officer (high-chief aide) ·
+   ELO emergency liaison officer · HMU hazmat unit · FOC fire operations
+   center · OMD office of medical director · FB fireboat · **SWD squad wagon
+   driver and TD truck driver — technician POSITION codes, not companies;
+   never map them to an assignment** (TD can also mean Training Division —
+   read it from context).
 
 SO-2026-198 itself: 2 promotions (Graham -> Lieutenant Paramedic, Pinckney ->
 Sergeant Paramedic — the order misspells her "Pickney"), 2 technician
