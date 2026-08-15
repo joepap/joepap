@@ -7,7 +7,8 @@ Roster state at last update: **NEP export of 15 Aug 2026, 00:19 — 3,429 member
 (`data/uploads/roster-49`, gitignored). Active 1,833 · Active Retired 313 ·
 Retired 634 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the June
 payers still working. Active Retired = the 310 who paid 2026 retiree dues**,
-plus 3 by-hand stragglers (Morris Larry, Brown Richard D, Cave William).
+plus 2 by-hand stragglers (Morris Larry, Brown Richard D — Cave done by Joe
+15 Aug after the William/William D question was settled).
 
 **The Active Retired sweep ran 15 Aug** — Joe's rule, whole-database: 2026
 Paid = Active Retired, everything else retired-side. 542 of 546 by upload;
@@ -42,9 +43,10 @@ Joe's rulings, now permanent:
 7. **Probationary appointments (recruit/cadet classes) are skipped** until Joe
    says otherwise. SO-2026-198 carried ~49 across Cadet 28 and Recruit 414.
 8. EMS supervisor assignments map to companies `EMS 1`..`EMS 7`. Stored
-   values are grandfathered relics — the dropdown lacks the whole series, so
-   `Local36-NEP-companies-to-add.xlsx` (13 values + 2 housekeeping notes) went
-   to NEP on 15 Aug. Graham's EMS 3 and Raymer's EMS 1 rows wait on it.
+   values are grandfathered relics — the dropdown lacks the whole series.
+   `Local36-NEP-companies-to-add.xlsx` was superseded the same day by the
+   combined `Local36-NEP-fields-to-add.xlsx` (see the Promotional Information
+   tab section). Graham's EMS 3 and Raymer's EMS 1 rows wait on it.
 9. **Code glossary, Joe's definitions**: TA training academy · H&S/HS homeland
    security · SAFO safety officer (chief or aide) · PSO professional standards
    office · FMD fleet maintenance division · FPD fire prevention division ·
@@ -62,6 +64,46 @@ Sergeant Paramedic — the order misspells her "Pickney"), 2 technician
 appointments, 21 reassignments, 3 retirements (Streat Sr. — also rank-fixed to
 EMS Captain — Turner Andre R, Williams Alfred C, all 22 Aug, all -> Active
 Retired + 2026 Paid). Seminerio is "Nicolas" in NEP, not Nicholas.
+
+## The Promotional Information tab — waiting on the NEP help desk (15 Aug)
+
+Joe created a "Promotional Information" tab in NEP and wants it to mirror the
+food chain for every member. The request workbook
+**`Local36-NEP-fields-to-add.xlsx`** went to the help desk 15 Aug — format
+approved by Joe ("That works!"). It supersedes the earlier companies-only
+sheet. Two sheets:
+
+- **Promotion fields** — 12 rows, 24 fields, in Joe's order: Field Training
+  Officer (start date | end date), Vice Technician 1 / 2 / 3 (start | end
+  each — a member can hold it multiple times), Technician (start | end, no
+  test), then Sergeant through Fire Chief (promotion date | exam next to it).
+- **Company assignments** — 13 dropdown values: EMS 1–7, Homeland Security,
+  Fire Operations Center, Emergency Liaison Officer, Fleet Maintenance
+  Division, Recruitment, Information Technology.
+
+**When the help desk confirms:** if they renamed anything, regenerate the data
+file headers to match BEFORE uploading. Then run **PROMO data files 1–5** —
+494 food-chain officers (keys: 417 email / 53 PeopleSoft / 20 IAFF / 1 last
+name / 3 first name), each officer's exam placed in the field for their
+current rank (147 Sgt / 190 Lt / 76 Capt / 36 BFC / 12 DFC / 3 Asst / 1 Fire
+Chief) — and the two held PA198 rows (Graham -> EMS 3, Raymer -> EMS 1).
+Known future entries to add once the fields exist: Deems Technician start
+07/26/2026 · McKee Vice Technician start 08/23/2026.
+
+## Upload batches built 15 Aug, delivered, not yet confirmed run
+
+Verify each against Joe's next export:
+
+- **PA198 files 1–7** — everything from SO-2026-198 that keys cleanly:
+  3 retirements (Active Retired + 2026 Paid), the rank changes, 21
+  assignments. Two EMS-company rows held for the dropdown (above).
+- **PSFILL files 1–4** — 61 PeopleSoft Number backfills from telestaff
+  (1,510 of 1,833 Active have numbers today). **Fill Blanks Only** on
+  PeopleSoft Number — Trust File with a blank WIPES the field. 14 family-trap
+  rows skipped; every value collision-checked against the whole roster.
+- **Bad-address contact to-do** — 11 Active Retired members in the
+  known-wrong-address group: 5 reachable by email, 6 phone-only. Corrected
+  copy sent (first copy's note miscounted 4/7).
 
 ## The paying-member gap — 1,583 in NEP against 1,768 actually paying
 
