@@ -3,12 +3,15 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 15 Aug 2026, 00:19 — 3,429 members**
-(`data/uploads/roster-49`, gitignored). Active 1,833 · Active Retired 313 ·
-Retired 634 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the June
-payers still working. Active Retired = the 310 who paid 2026 retiree dues**,
-plus 2 by-hand stragglers (Morris Larry, Brown Richard D — Cave done by Joe
-15 Aug after the William/William D question was settled).
+Roster state at last update: **NEP export of 15 Aug 2026, 12:55 — 3,427 members**
+(`data/uploads/roster-50`, gitignored). Active 1,833 · Active Retired 310 ·
+Retired 635 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the June
+payers still working. Active Retired = exactly the 310 who paid 2026 retiree
+dues — the sweep is now complete**: Morris Larry and Brown Richard D went to
+Retired, the Cave shell was merged into Cave William D (Active Retired, 2026
+Paid, DOB added), and the unpaid Clark Timothy J duplicate was deleted (the
+paid IAFF-378798 record survives — that merge is CLOSED). **Active members
+with a PeopleSoft number: 1,580 of 1,833.**
 
 **The Active Retired sweep ran 15 Aug** — Joe's rule, whole-database: 2026
 Paid = Active Retired, everything else retired-side. 542 of 546 by upload;
@@ -97,10 +100,14 @@ Verify each against Joe's next export:
 - **PA198 files 1–7** — everything from SO-2026-198 that keys cleanly:
   3 retirements (Active Retired + 2026 Paid), the rank changes, 21
   assignments. Two EMS-company rows held for the dropdown (above).
-- **PSFILL files 1–4** — 61 PeopleSoft Number backfills from telestaff
-  (1,510 of 1,833 Active have numbers today). **Fill Blanks Only** on
-  PeopleSoft Number — Trust File with a blank WIPES the field. 14 family-trap
-  rows skipped; every value collision-checked against the whole roster.
+- **PSFILL files 1–4 — LANDED, 61 of 61**, verified against roster-50
+  (15 Aug 12:55). One deliberate consequence to keep in view: three
+  known same-man split pairs each got the SAME number on both halves, so
+  the duplicate-number audit will flag them until each pair is merged —
+  **barbosa, becaye / Barbosa, Becaye O** (00115712) · **Streat, Jonathan /
+  Streat, Sr., Jonathan E** (00126621 — note Sr. also retires 22 Aug on
+  SO-2026-198) · **McCoy, James / Mccoy, Jr., James M** (00132282, two
+  different gmails — confirm one man before merging).
 - **Bad-address contact to-do** — 11 Active Retired members in the
   known-wrong-address group: 5 reachable by email, 6 phone-only. Corrected
   copy sent (first copy's note miscounted 4/7).
@@ -111,10 +118,11 @@ Verify each against Joe's next export:
 upload (14 collisions + 6 no-key + 1 double-match). Verify in the next
 export. Four sheets:
 
-- **Type in (9)** — number certain and free: the 6 L36NEW shells (register
-  and telestaff give the same number independently), plus three who had their
-  OWN register line all along: Price Jr., Woodrow B = 00118038 · Williams,
-  Shawnte B = 00032110 · Johnson, Joseph B = 00055446.
+- **Type in (9) — DONE 15 Aug, all 9 verified in roster-50**, phones pasted
+  too. Along the way: NEP's empty "Johnson, Joseph" record turned out to be
+  **Joseph T., the probationer at Engine 22** (his telestaff phone is on it,
+  emplid 00139634) — left alone per the probationer rule, but he is already
+  paying on the register; build the record out when he comes off probation.
 - **Move (7)** — a retired/alumni/wrong record holds a working member's
   number (clear old first, then type on new; mark Yes where noted): Kline
   P→W 00003040 · Evans A→Marc 00103439 · Lacore D→Jr 00119779 · Walker
@@ -252,8 +260,9 @@ not enough when both records look plausible on screen.
 Herbert, Neal Jimmy and Farrow Shirley are each *two* completely empty records;
 Watson Richard is one good record plus a shell.
 
-**Six are split profiles to merge**: Noznesky Alan, Schiafone Christopher M,
-Smith Michael, Clark Timothy J, Reed Trevor, Gooding Wallace. In each case the
+**Split profiles to merge** (Clark Timothy J CLOSED 15 Aug — unpaid duplicate
+deleted, paid 378798 record survives): Noznesky Alan, Schiafone Christopher M,
+Smith Michael, Reed Trevor, Gooding Wallace. In each case the
 two records hold different halves of the same person — one carries the phone,
 IAFF number, rank and appointment date, the other the email and date of birth.
 No Jr or Sr on any of them, so these read as split profiles rather than fathers
