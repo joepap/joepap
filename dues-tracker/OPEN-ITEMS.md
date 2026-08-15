@@ -3,10 +3,21 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 14 Aug 2026, 23:20 — 3,429 members**
-(`data/uploads/roster-48`, gitignored). Active 1,833 · Active Retired 856 ·
-Retired 91 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the count
-of June payers still working.** Dues report: **13 June 2026**, 1,781
+Roster state at last update: **NEP export of 15 Aug 2026, 00:19 — 3,429 members**
+(`data/uploads/roster-49`, gitignored). Active 1,833 · Active Retired 313 ·
+Retired 634 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the June
+payers still working. Active Retired = the 310 who paid 2026 retiree dues**,
+plus 3 by-hand stragglers (Morris Larry, Brown Richard D, Cave William).
+
+**The Active Retired sweep ran 15 Aug** — Joe's rule, whole-database: 2026
+Paid = Active Retired, everything else retired-side. 542 of 546 by upload;
+Clark Timothy J flipped on the correct one of his two records (the unpaid
+530123 one; his paid 378798 record correctly stays — the pair is still a
+pending merge). Left deliberately untouched: 13 Alumni, 10 Life, 4 Honorary
+and Schneider [Deceased] who all paid 2026 under their own designations, and
+**14 Retired members who PAID 2026 and belong in Active Retired** (file not
+yet built) plus 3 Active-with-retired-dues oddballs (Faulkner Jr John M,
+Jackson Michael, Waby William D) awaiting Joe. Dues report: **13 June 2026**, 1,781
 lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
