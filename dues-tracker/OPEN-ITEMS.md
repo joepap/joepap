@@ -50,10 +50,12 @@ Joe's rulings, now permanent:
    office · FMD fleet maintenance division · FPD fire prevention division ·
    OFC office of the fire chief · XO executive officer (high-chief aide) ·
    ELO emergency liaison officer · HMU hazmat unit · FOC fire operations
-   center · OMD office of medical director · FB fireboat · **SWD squad wagon
-   driver and TD truck driver — technician POSITION codes, not companies;
-   never map them to an assignment** (TD can also mean Training Division —
-   read it from context).
+   center · OMD office of medical director · FB fireboat. **SWD and TD are
+   context-dependent (Joe, 15 Aug): in telestaff's unit braces they are
+   ASSIGNMENTS — SWD = Safety Division, TD = Training Division — but in a
+   certifications column the same letters are driver quals (squad wagon
+   driver / truck driver). Read the column, not the code. NQTD = not qualified
+   to drive; TDFD = taken down from driving (Joe, 15 Aug).**
 
 SO-2026-198 itself: 2 promotions (Graham -> Lieutenant Paramedic, Pinckney ->
 Sergeant Paramedic — the order misspells her "Pickney"), 2 technician
