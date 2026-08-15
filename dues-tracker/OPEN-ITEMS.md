@@ -105,6 +105,39 @@ Verify each against Joe's next export:
   known-wrong-address group: 5 reachable by email, 6 phone-only. Corrected
   copy sent (first copy's note miscounted 4/7).
 
+## The 21 payroll-number leftovers — worked out 15 Aug, with Joe
+
+`Local36-payroll-number-cleanup.xlsx` settles everything PSFILL couldn't
+upload (14 collisions + 6 no-key + 1 double-match). Verify in the next
+export. Four sheets:
+
+- **Type in (9)** — number certain and free: the 6 L36NEW shells (register
+  and telestaff give the same number independently), plus three who had their
+  OWN register line all along: Price Jr., Woodrow B = 00118038 · Williams,
+  Shawnte B = 00032110 · Johnson, Joseph B = 00055446.
+- **Move (7)** — a retired/alumni/wrong record holds a working member's
+  number (clear old first, then type on new; mark Yes where noted): Kline
+  P→W 00003040 · Evans A→Marc 00103439 · Lacore D→Jr 00119779 · Walker
+  Q→E 00004108 · Tyner Sr→Jr 00035323 · Smith Christopher S→A 00111651 ·
+  Robinson Wayne P→Leon 00107985. **That unparks 5 of the parked-10 below.**
+  Status of the losers is Joe's call — Smith Christopher S (Retiree
+  Insurance Group, appointed 2000, not working) and Robinson Wayne P
+  (appointed 1982, not working) both read as Retired.
+- **Merge (2)** — same man twice, side-by-side with keeper marked:
+  Denmark Jr., Alan L (keeper has PS + appt; copy rank Sergeant, Platoon 2,
+  DOB, email, phone, IAFF 1189012 from the other) · Washington Jr., Wayne D
+  (keeper "Washington, Wayne" has everything — delete the thin record FIRST,
+  then rename, the Embrey order).
+- **Closed (4)** — number already right: Taylor James M · Hughes James P ·
+  Faulkner Jr · Williams Shawn D. Surfaced along the way: **Taylor James P**
+  is Active but in the South Carolina group with 2022 retiree dues — reads
+  Retired; **Hughes, James T** is a thin possible-duplicate of James P (both
+  Lt, both Engine 15, different appt dates) — conflict box, don't delete
+  blind; **the Faulkner father** (retired 2011, retiree dues 22–25) is
+  Active+Yes on the son's paycheck while the 35-year-old working SON carries
+  "2026 Retired Dues Paid" — reads as the father's 2026 payment recorded on
+  the son's record; if Joe agrees, move it, father → Active Retired.
+
 ## The paying-member gap — 1,583 in NEP against 1,768 actually paying
 
 Joe, 12 Aug: *"nep only has 1584 members marked as paying dues members. can we
@@ -226,17 +259,19 @@ IAFF number, rank and appointment date, the other the email and date of birth.
 No Jr or Sr on any of them, so these read as split profiles rather than fathers
 and sons. Copy the missing fields onto the keeper, then delete the other.
 
-## 10 non-Active members still hold a payroll number — parked
+## Non-Active members still holding a payroll number — 4 left parked
 
 Retired, dropped, alumni and life members do not have a payroll number, so
 each of these came from the wrong generation. Every one was independently
 flagged by the cohort test: hire dates 20 to 39 years away from the neighbours
 of the number they hold.
 
-Kline, Kevin P · Evans, Marc A · Roop, Michael A · Lacore, Michael D ·
-Schaefer, Paul M · Sullivan, Jason · Klinger, Wayne D **[Active Retired]** ·
-Walker, Michael Q · Tyner, Sr., Reginald H **[Alumni]** · Moore, Kenneth R ·
-Mitchell, Kenneth **[Life]**
+**Five moved to the payroll-number cleanup workbook 15 Aug** (Kline Kevin P,
+Evans Marc A, Lacore Michael D, Walker Michael Q, Tyner Sr.) — each number
+belongs to a working member and the workbook says whom. Sullivan Jason was
+settled earlier (scanner misread; NEP was right). Still parked, nobody
+waiting: Roop, Michael A · Schaefer, Paul M · Klinger, Wayne D **[Active
+Retired]** · Mitchell, Kenneth **[Life]**
 
 **Thornhill is done** — his was the father/son pair Joe warned about, and it
 turned out to be exactly that: payroll 00130157 belongs to Thomas E, the son,
@@ -315,9 +350,12 @@ do not fix the Ridgway/Ridgeway spelling, do not touch the email.
   are free to write. His phone in NEP reads 301-34**2**-2526 and Joe says
   301-34**3**-2526 — a change to an existing number, so left alone pending Joe.
 - **Taylor, James P** — the IAFF has a James A. and a James M. Taylor, no P. He may
-  simply not be on their roll.
-- **Robinson, Wayne** — Wayne L. (Mount Rainier, matches his city) vs Wayne P.
-  (Waldorf). NEP holds no middle initial, so the city is the only evidence.
+  simply not be on their roll. New evidence 15 Aug: he is in NEP's South
+  Carolina group with 2022 retiree dues while marked Active — reads Retired.
+- **Robinson, Wayne** — settled 15 Aug: the plain "Robinson, Wayne" IS Wayne
+  Leon (register "Robinson,Wayne Leon", telestaff phone on his record, email
+  wlrobinson4419). The open question is now Wayne **P** — appointed 1982, not
+  working, holds Leon's payroll number (move on the cleanup sheet).
 - **Elliott, Jazmin / Harris, Jazmin Ks** — the IAFF gives both #1339641 and the
   Elliott record's email is `harrisjazmin32@gmail.com`. Reads as one woman who
   changed her name; a name change is Joe's call, not a merge to assume.
