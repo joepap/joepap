@@ -21,6 +21,35 @@ Jackson Michael, Waby William D) awaiting Joe. Dues report: **13 June 2026**, 1,
 lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
 1,684 people.
 
+## Personnel Actions — the standing procedure (first run: SO-2026-198, 15 Aug)
+
+Joe's rulings, now permanent:
+
+1. **The printed rank on a PA is the member's NEW rank.**
+2. **A member retiring after March gets that year's retired dues marked `Paid`**
+   (both L36 and plain columns) alongside `Active Retired` and the retirement
+   date. Pre-March retirees: rule to be discussed when one appears.
+3. **Write the changes when the order is signed** — no waiting for the
+   effective date. The next dues register self-corrects the paying field.
+4. **A chief retiring goes to `Drop`** unless their retired dues are marked
+   Paid, then `Active Retired`. (None on this order.)
+5. **Trust the PA over NEP** — a transfer or promotion that exposes a stale
+   NEP rank or assignment gets fixed to what the order says.
+6. **Exception learned on the first run:** the PA prints bare "Firefighter"
+   for members NEP carries as "Firefighter EMT" — including two retirees, so
+   it is the order's house shorthand, NOT a demotion. Never strip an EMT
+   designation off a PA line. Paramedic/Technician designators ARE printed.
+7. **Probationary appointments (recruit/cadet classes) are skipped** until Joe
+   says otherwise. SO-2026-198 carried ~49 across Cadet 28 and Recruit 414.
+8. EMS supervisor assignments map to companies `EMS 1`..`EMS 7`; EMS 1 exists
+   in NEP already, others may need adding to the dropdown (Joe, 15 Aug).
+
+SO-2026-198 itself: 2 promotions (Graham -> Lieutenant Paramedic, Pinckney ->
+Sergeant Paramedic — the order misspells her "Pickney"), 2 technician
+appointments, 21 reassignments, 3 retirements (Streat Sr. — also rank-fixed to
+EMS Captain — Turner Andre R, Williams Alfred C, all 22 Aug, all -> Active
+Retired + 2026 Paid). Seminerio is "Nicolas" in NEP, not Nicholas.
+
 ## The paying-member gap — 1,583 in NEP against 1,768 actually paying
 
 Joe, 12 Aug: *"nep only has 1584 members marked as paying dues members. can we
