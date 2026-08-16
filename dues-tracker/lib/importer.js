@@ -83,10 +83,11 @@ async function processImport(db, importId) {
       const readPage = async (rotated) => {
         const r = ocr.renderPage(mu, doc, p, zoom, rotated);
         let rows = [];
-        let mode = rotated ? 'ocr-rotated' : 'text';
+        let mode = 'text';
         if (r.textLines.length) rows = parse.parseTextLines(r.textLines);
         if (rows.filter(x => x.emplid).length < 3) {
-          if (!rotated) mode = 'ocr';
+          mode = 'ocr';   // a rotated read is still 'ocr' — the righted page
+                          // image on disk is the record that it was flipped
           const words = await ocr.ocrPage(r.png, log);
           rows = parse.parseWords(words);
         }
