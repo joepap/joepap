@@ -618,13 +618,27 @@ the nine hold three different real ranks.
   unit; plenty are firefighters.
 - **13 zero-deduction rows** on the June report: on the payroll deduction list
   but $0.00 taken. Treated separately from paying status throughout.
-- **A current dues report — ARRIVED 16 Aug, not yet imported.** Joe has it
-  in hand; save-point taken first (db backup `dues-2026-08-16.db`, working
-  state archived to `data/backups/workstate-2026-08-16/`, 75/75 tests, all
-  pushed). Import it through the app as the next import, then: the
-  stopped/new-payer comparison against 13 June, the 341 unanswered Active
-  paying fields, the 23 telestaff-but-not-on-June-payroll (Botwin shape),
-  the 9 working-no-dues forward sheet, and the $0.00 list all get their
-  answers from it.
+- **The 25 July register — IMPORTED AND FULLY VERIFIED 16 Aug (import #8).**
+  1,826 lines · 1,815 paying · 11 at $0.00 — reconciles EXACTLY with DCHR's
+  own printed totals page ($89,475.80 gross / $89,294.30 net / $181.50
+  agency fee, to the penny). Every flagged line eye-checked against the
+  scan; four catch-up amounts are real (Barry 96.76 · Elliott Jazmin 97.57 ·
+  George Sr 99.19 · Walker Tarrick 99.19). The scan was duplex with every
+  back page upside down and tilted ~1° — the pipeline now rights and
+  deskews automatically (committed with tests). One line the OCR skipped
+  (Middleton Jr., Raymond 00101396) was caught BY the totals cross-check and
+  restored by hand. **Results workbook `Local36-JULY-register-results.xlsx`
+  sent to Joe 16 Aug**: 11 Mark-Yes (incl. Bartee/Irving/Elliott recovered,
+  Drake, Shaw, Young, Wimbish) · 8 status questions (Retired/Drop/Life
+  members paying active dues: Chapman, Coates, Klinger, Mitchell, Roop,
+  Schaefer, Sullivan Jason — the parked-list mystery SOLVED: they pay) ·
+  the $0.00 eleven (5 newly stopped-but-working: DiPietro, Glover, Newton,
+  Price Jr., Rembert) · 7 who left the payroll (+ the Washabaugh
+  135643/139643 digit question) · **45 new-member recruits to create** ·
+  register-solved puzzles (**Streat = TWO men**, 00126621 + 00022464 — the
+  PSFILL same-number assumption was wrong there; Robinson Karl H father+son
+  both pay; Thomas Cortni confirmed again; DeSilva 00115723 unknown) ·
+  35 Mark-No candidates + 19 working-no-dues for the forward sheet.
+  Waiting on Joe to work the sheets; verify in his next export.
 - **Drive-folder automation** for the monthly scan — needs the public link
   confirmed and the folder name.
