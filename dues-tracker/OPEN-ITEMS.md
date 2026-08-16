@@ -126,8 +126,10 @@ export. Four sheets:
   renamed Lacore jr/Robinson Wayne L, set Tyner Jr's rank to **Sergeant**
   (took the telestaff evidence), put Michael Q Walker's real phone
   (240) 421-5412 on his record, and moved **Smith Christopher S and
-  Robinson Wayne P to Retired**. ONE loose thread: **Robinson Wayne P is
-  Retired but still has Paying = Yes** — clear it (Smith S's was cleared).
+  Robinson Wayne P to Retired**. The one loose thread — Wayne P's stray
+  Paying=Yes — **Joe cleared 16 Aug** (his word; verify in next export,
+  which should then read Paying Yes = 1,757). The whole 21-leftover
+  cleanup is CLOSED.
 - **Merge (2) — DONE 16 Aug**, both keepers were the APPROVED accounts (the
   rule this pair minted): "Denmark JR, Alan L" and "Washington Jr, Wayne D"
   each carry everything. One small loss: the deleted Washington shell's
@@ -616,6 +618,13 @@ the nine hold three different real ranks.
   unit; plenty are firefighters.
 - **13 zero-deduction rows** on the June report: on the payroll deduction list
   but $0.00 taken. Treated separately from paying status throughout.
-- **A current dues report.** Everything above rests on 13 June.
+- **A current dues report — ARRIVED 16 Aug, not yet imported.** Joe has it
+  in hand; save-point taken first (db backup `dues-2026-08-16.db`, working
+  state archived to `data/backups/workstate-2026-08-16/`, 75/75 tests, all
+  pushed). Import it through the app as the next import, then: the
+  stopped/new-payer comparison against 13 June, the 341 unanswered Active
+  paying fields, the 23 telestaff-but-not-on-June-payroll (Botwin shape),
+  the 9 working-no-dues forward sheet, and the $0.00 list all get their
+  answers from it.
 - **Drive-folder automation** for the monthly scan — needs the public link
   confirmed and the folder name.
