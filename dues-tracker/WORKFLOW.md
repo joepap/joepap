@@ -102,6 +102,16 @@ profiles):
    even when the nonactive record looks richer. If BOTH records are
    approved (two logins — e.g. the McCoy pair), stop: that usually means
    two real people, not a split profile.
+7. **Telestaff proves employment; only the dues register proves
+   membership** (Joe, 16 Aug, verbatim: *"If they are working in telestaff,
+   and not on our dues paying list, they may not be a member — they may not
+   have filled out the paperwork to get dues deducted yet... we can't mark
+   them as members if we don't have proof they are paying."*). Consequences:
+   a working person with no dues line NEVER gets created in NEP and never
+   gets a paying mark — they go on the tracking-down list (9 of 10 times
+   it's a clerical error or unfinished paperwork, so a person reaches out).
+   New-member records are created ONLY from register proof, the way the
+   L36NEW batch was.
 
 ## D. Automation ladder (each step is optional, in order)
 
