@@ -3,15 +3,13 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 15 Aug 2026, 12:55 — 3,427 members**
-(`data/uploads/roster-50`, gitignored). Active 1,833 · Active Retired 310 ·
-Retired 635 · Drop 321 · no status 95. **Paying Yes = 1,755 — exactly the June
-payers still working. Active Retired = exactly the 310 who paid 2026 retiree
-dues — the sweep is now complete**: Morris Larry and Brown Richard D went to
-Retired, the Cave shell was merged into Cave William D (Active Retired, 2026
-Paid, DOB added), and the unpaid Clark Timothy J duplicate was deleted (the
-paid IAFF-378798 record survives — that merge is CLOSED). **Active members
-with a PeopleSoft number: 1,580 of 1,833.**
+Roster state at last update: **NEP export of 16 Aug 2026, 17:41 — 3,425 members**
+(`data/uploads/roster-51`, gitignored). Active 1,829 · Active Retired 310 ·
+Retired 637 · Drop 321 · no status 95. **Paying Yes = 1,758** (the June payers
+still working, now on the right records — the count moved +5 working members
+marked / −1 wrong Yes cleared / −1 duplicate deleted, reconciled exactly).
+**Active members with a PeopleSoft number: 1,585 of 1,829.** Active Retired =
+exactly the 310 who paid 2026 retiree dues — that sweep stays complete.
 
 **The Active Retired sweep ran 15 Aug** — Joe's rule, whole-database: 2026
 Paid = Active Retired, everything else retired-side. 542 of 546 by upload;
@@ -123,19 +121,19 @@ export. Four sheets:
   **Joseph T., the probationer at Engine 22** (his telestaff phone is on it,
   emplid 00139634) — left alone per the probationer rule, but he is already
   paying on the register; build the record out when he comes off probation.
-- **Move (7)** — a retired/alumni/wrong record holds a working member's
-  number (clear old first, then type on new; mark Yes where noted): Kline
-  P→W 00003040 · Evans A→Marc 00103439 · Lacore D→Jr 00119779 · Walker
-  Q→E 00004108 · Tyner Sr→Jr 00035323 · Smith Christopher S→A 00111651 ·
-  Robinson Wayne P→Leon 00107985. **That unparks 5 of the parked-10 below.**
-  Status of the losers is Joe's call — Smith Christopher S (Retiree
-  Insurance Group, appointed 2000, not working) and Robinson Wayne P
-  (appointed 1982, not working) both read as Retired.
-- **Merge (2)** — same man twice, side-by-side with keeper marked:
-  Denmark Jr., Alan L (keeper has PS + appt; copy rank Sergeant, Platoon 2,
-  DOB, email, phone, IAFF 1189012 from the other) · Washington Jr., Wayne D
-  (keeper "Washington, Wayne" has everything — delete the thin record FIRST,
-  then rename, the Embrey order).
+- **Move (7) — DONE 16 Aug, all verified in roster-51.** Joe walked all
+  seven: numbers moved, working members marked Yes, and along the way he
+  renamed Lacore jr/Robinson Wayne L, set Tyner Jr's rank to **Sergeant**
+  (took the telestaff evidence), put Michael Q Walker's real phone
+  (240) 421-5412 on his record, and moved **Smith Christopher S and
+  Robinson Wayne P to Retired**. ONE loose thread: **Robinson Wayne P is
+  Retired but still has Paying = Yes** — clear it (Smith S's was cleared).
+- **Merge (2) — DONE 16 Aug**, both keepers were the APPROVED accounts (the
+  rule this pair minted): "Denmark JR, Alan L" and "Washington Jr, Wayne D"
+  each carry everything. One small loss: the deleted Washington shell's
+  **VA6 and "2024 returned mail" groups did not carry over** — rejoin the
+  keeper to them if that history matters, and his Stephenson VA address
+  should be verified before the election mailer either way.
 - **Closed (4)** — number already right: Taylor James M · Hughes James P ·
   Faulkner Jr · Williams Shawn D. Surfaced along the way: **Taylor James P**
   is Active but in the South Carolina group with 2022 retiree dues — reads
