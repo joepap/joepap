@@ -111,7 +111,13 @@ profiles):
    gets a paying mark — they go on the tracking-down list (9 of 10 times
    it's a clerical error or unfinished paperwork, so a person reaches out).
    New-member records are created ONLY from register proof, the way the
-   L36NEW batch was.
+   L36NEW batch was. **Refinement (Joe, 16 Aug): a $0.00 register line is
+   still membership proof** — nobody prints on the register without the
+   deduction paperwork, and DCHR's own totals call zero lines "In-Active
+   Participants." $0.00 can mean suspension (no paycheck to deduct from),
+   leave, workers' comp, or a payroll error — a member whose money stopped,
+   never evidence they quit. Investigate person by person; the paying
+   Yes/No on a $0.00 member is Joe's call, not automatic.
 
 ## D. Automation ladder (each step is optional, in order)
 
