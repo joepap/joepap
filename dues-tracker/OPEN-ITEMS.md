@@ -59,6 +59,16 @@ Joe's rulings, now permanent:
    certifications column the same letters are driver quals (squad wagon
    driver / truck driver). Read the column, not the code. NQTD = not qualified
    to drive; TDFD = taken down from driving (Joe, 15 Aug).**
+10. **Separations reconcile against personnel actions** (Joe, 16 Aug). The
+   DCHR register counts separations and shows who dropped off; the PAs say
+   WHY. A drop-off covered by a PA follows the PA rules (retirement ->
+   Active Retired or Drop per rule 2/4). **A drop-off with NO personnel
+   action behind it gets brought to Joe explicitly** — never given a status
+   by guess — so the member can be separated properly in the records. The
+   seven July drop-offs (Covey, Latimer, Mangiameli, Mullins, Sanders,
+   Washington David V, + the Washabaugh digit question) are the first live
+   case: none is covered by SO-2026-198 (its three retirements are dated
+   22 Aug, after this register), so all seven sit with Joe now.
 
 SO-2026-198 itself: 2 promotions (Graham -> Lieutenant Paramedic, Pinckney ->
 Sergeant Paramedic — the order misspells her "Pickney"), 2 technician
