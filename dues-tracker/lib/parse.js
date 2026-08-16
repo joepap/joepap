@@ -100,20 +100,57 @@ function clusterRows(words) {
   if (!ws.length) return [];
   const heights = ws.map(w => w.y1 - w.y0).sort((a, b) => a - b);
   const medH = heights[Math.floor(heights.length / 2)] || 12;
-  ws.sort((a, b) => (a.y0 + a.y1) - (b.y0 + b.y1));
+  // A sheet fed slightly crooked tilts every printed line: on the July 2026
+  // scan the right-edge money columns sat a full row-height above the left
+  // edge of their own line, so they clustered into the neighbour row and the
+  // amounts vanished. Estimate the tilt and flatten it before clustering.
+  const slope = estimateSkew(ws, medH);
+  const midOf = (w) => (w.y0 + w.y1) / 2 - slope * ((w.x0 + w.x1) / 2);
+  ws.sort((a, b) => midOf(a) - midOf(b));
   const rows = [];
   let cur = null, curMid = 0;
   for (const w of ws) {
-    const mid = (w.y0 + w.y1) / 2;
+    const mid = midOf(w);
     if (cur && Math.abs(mid - curMid) <= medH * 0.6) {
       cur.push(w);
-      curMid = cur.reduce((s, x) => s + (x.y0 + x.y1) / 2, 0) / cur.length;
+      curMid = cur.reduce((s, x) => s + midOf(x), 0) / cur.length;
     } else {
       cur = [w]; curMid = mid; rows.push(cur);
     }
   }
   for (const r of rows) r.sort((a, b) => a.x0 - b.x0);
   return rows;
+}
+
+/**
+ * Median text-line slope (px of drop per px of width). Two passes: nearby
+ * word pairs first — pairs that are certainly on the same printed line even
+ * when the page is tilted — then a refinement over the full width once the
+ * first estimate has flattened things. Zero on a straight page, so the June
+ * scans parse exactly as before.
+ */
+function estimateSkew(ws, medH) {
+  let slope = 0;
+  for (const [minDx, maxDx] of [[250, 900], [250, Infinity]]) {
+    const pts = ws
+      .map(w => ({ x: (w.x0 + w.x1) / 2, y: (w.y0 + w.y1) / 2 - slope * ((w.x0 + w.x1) / 2) }))
+      .sort((a, b) => a.y - b.y);
+    const slopes = [];
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const dy = pts[j].y - pts[i].y;
+        if (dy > medH * 0.8) break;                    // next printed line
+        const dx = pts[j].x - pts[i].x;
+        if (Math.abs(dx) < minDx || Math.abs(dx) > maxDx) continue;
+        slopes.push(dy / dx);
+      }
+    }
+    if (slopes.length < 12) break;                     // too sparse to trust
+    slopes.sort((a, b) => a - b);
+    slope += slopes[Math.floor(slopes.length / 2)];
+    if (Math.abs(slope) > 0.06) return 0;              // >3° — not a tilt, junk
+  }
+  return slope;
 }
 
 const SUFFIX_RE = /^(JR|SR|II|III|IV|V)\.?$/i;
@@ -222,10 +259,23 @@ function buildRow(rowWords, toks, anchorIdx, emplid, emplidFixes, extraReasons) 
   // just before it — so letter-bearing grades ("1C") never get swallowed
   // into the name, and extra columns don't shift anything.
   const after = toks.slice(anchorIdx + 1);
+  // The July 2026 report dropped every column right of the money pair — no
+  // remainder, no LAA, no grade, no step. When a line ENDS at two dollar
+  // amounts, that's this layout: don't hunt for a step (a middle initial
+  // "B" digitizes to "8" and would be taken for one) and don't complain
+  // about columns the report no longer prints. June-style lines end with
+  // "grade step" after the money, so they take the old path unchanged.
+  let tailIdx = toks.length - 1;
+  while (tailIdx >= 0 && !/[A-Za-z0-9]/.test(toks[tailIdx])) tailIdx--;
+  const endsAtMoney = tailIdx >= 1 &&
+    /^[^0-9]{0,2}\d[\d,]*[.,]\d\d$/.test(toks[tailIdx]) &&
+    /^[^0-9]{0,2}\d[\d,]*[.,]\d\d$/.test(toks[tailIdx - 1]);
   let stepIdx = -1;
-  for (let i = after.length - 1; i >= Math.max(0, after.length - 4); i--) {
-    const d = digitize(after[i].replace(/[.,]/g, ''));
-    if (d && d.value.length >= 1 && d.value.length <= 2) { stepIdx = i; break; }
+  if (!endsAtMoney) {
+    for (let i = after.length - 1; i >= Math.max(0, after.length - 4); i--) {
+      const d = digitize(after[i].replace(/[.,]/g, ''));
+      if (d && d.value.length >= 1 && d.value.length <= 2) { stepIdx = i; break; }
+    }
   }
   let grade = '', step = '', nameEnd;
   let gradeBlankMarker = false;
@@ -287,8 +337,8 @@ function buildRow(rowWords, toks, anchorIdx, emplid, emplidFixes, extraReasons) 
   const reasons = [...(extraReasons || []), ...nm.reasons];
   if (emplidFixes > 0) reasons.push(`emplid needed ${emplidFixes} character fix${emplidFixes > 1 ? 'es' : ''}`);
   if (!nameRaw) reasons.push('no name read');
-  if (!grade && !gradeBlankMarker) reasons.push('no grade read');
-  if (!step) reasons.push('no step read');
+  if (!grade && !gradeBlankMarker && !endsAtMoney) reasons.push('no grade read');
+  if (!step && !endsAtMoney) reasons.push('no step read');
 
   const money = readMoney(toks);
   if (money && money.zero) reasons.push('deduction is $0.00 — on the register but not paying');

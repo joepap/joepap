@@ -76,21 +76,33 @@ async function processImport(db, importId) {
   try {
     for (let p = 0; p < pageCount; p++) {
       const t0 = Date.now();
-      const { png, width, height, textLines } = ocr.renderPage(mu, doc, p, zoom);
-      fs.writeFileSync(pagePath(importId, p + 1), png);
 
-      // Text layer first: if this page carries real text with enough
-      // emplid-anchored rows, believe it (confidence 100) and skip OCR.
-      let rows = [];
-      let mode = 'text';
-      if (textLines.length) {
-        rows = parse.parseTextLines(textLines);
+      // Read a page right-side-up or rotated 180°. Text layer first: if the
+      // page carries real text with enough emplid-anchored rows, believe it
+      // (confidence 100) and skip OCR.
+      const readPage = async (rotated) => {
+        const r = ocr.renderPage(mu, doc, p, zoom, rotated);
+        let rows = [];
+        let mode = rotated ? 'ocr-rotated' : 'text';
+        if (r.textLines.length) rows = parse.parseTextLines(r.textLines);
+        if (rows.filter(x => x.emplid).length < 3) {
+          if (!rotated) mode = 'ocr';
+          const words = await ocr.ocrPage(r.png, log);
+          rows = parse.parseWords(words);
+        }
+        return { png: r.png, width: r.width, height: r.height, rows, mode };
+      };
+      const anchored = (pg) => pg.rows.filter(x => x.emplid).length;
+
+      // A duplex scan feeds every back page through upside down. If a page
+      // reads as almost nothing, try it rotated and keep whichever read more.
+      let pageRead = await readPage(false);
+      if (anchored(pageRead) < 3) {
+        const flipped = await readPage(true);
+        if (anchored(flipped) > anchored(pageRead)) pageRead = flipped;
       }
-      if (rows.filter(r => r.emplid).length < 3) {
-        mode = 'ocr';
-        const words = await ocr.ocrPage(png, log);
-        rows = parse.parseWords(words);
-      }
+      const { png, width, height, rows, mode } = pageRead;
+      fs.writeFileSync(pagePath(importId, p + 1), png);
 
       db.transaction(() => {
         rows.forEach((r, i) => {

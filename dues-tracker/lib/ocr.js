@@ -55,16 +55,26 @@ async function openPdf(buffer) {
  * embedded text-layer lines (empty for a pure scan) with boxes already
  * scaled to image pixels.
  */
-function renderPage(mu, doc, idx, zoom) {
+function renderPage(mu, doc, idx, zoom, rotated) {
   const page = doc.loadPage(idx);
   try {
-    const pix = page.toPixmap(mu.Matrix.scale(zoom, zoom), mu.ColorSpace.DeviceRGB, false, true);
+    // A duplex scanner feeds the back of each sheet through upside down —
+    // the July 2026 report arrived that way, every even page rotated 180°.
+    // Rendering righted keeps the review-screen crops readable too.
+    const matrix = rotated
+      ? mu.Matrix.concat(mu.Matrix.scale(zoom, zoom), mu.Matrix.rotate(180))
+      : mu.Matrix.scale(zoom, zoom);
+    const pix = page.toPixmap(matrix, mu.ColorSpace.DeviceRGB, false, true);
     const png = Buffer.from(pix.asPNG());
     const width = pix.getWidth(), height = pix.getHeight();
     pix.destroy();
 
     const textLines = [];
+    // Text-layer boxes come out in unrotated coordinates, so a rotated
+    // render skips the text layer — rotation only ever happens for pure
+    // scans anyway.
     try {
+      if (rotated) throw new Error('skip');
       const st = page.toStructuredText('preserve-whitespace');
       const j = JSON.parse(st.asJSON(zoom));   // scale puts boxes in image px
       st.destroy();

@@ -273,3 +273,66 @@ test('a row carries its amounts through to the parsed record', () => {
   assert.equal(r.amount_taken, 0);
   assert.match(r.review_reasons.join('; '), /\$0\.00/);
 });
+
+/* ---------- the July 2026 report layout (line ends at the money pair) ---------- */
+
+const julyWords = (line) => line.split(' ')
+  .map((t, i) => ({ text: t, conf: 95, x0: i * 40, y0: 0, x1: i * 40 + 35, y1: 12 }));
+
+test('a July-layout line (no grade/step columns) parses without complaints', () => {
+  const r = parse.parseRow(julyWords('FB-11520007 xxx-xx-0777 00035373 0 Abell,Michael B DU0405 49.19 49.09'));
+  assert.equal(r.emplid, '00035373');
+  assert.equal(r.last_name, 'Abell');
+  assert.equal(r.first_name, 'Michael');
+  assert.equal(r.amount_goal, 49.19);
+  assert.equal(r.amount_taken, 49.09);
+  assert.equal(r.grade, '');
+  assert.equal(r.step, '');
+  assert.equal(r.review_reasons.join('; '), '');
+});
+
+test('a middle initial is not mistaken for a step on a July-layout line', () => {
+  // "B" digitizes to "8" — before the ends-at-money rule it read as step 8.
+  const r = parse.parseRow(julyWords('FB-11400005 xxx-xx-5416 00004380 0 Alexander,William C. DU0405 49.19 49.09'));
+  assert.equal(r.step, '');
+  assert.equal(r.name, 'Alexander,William C.');
+});
+
+test('a June-layout line still reads its grade and step after the money', () => {
+  const r = parse.parseRow(julyWords('FB-11520007 xxx-xx-0777 00035373 0 Abell,Michael B Du0405 49.19 49.09 0.10 LAA D13 04 5'));
+  assert.equal(r.step, '5');
+  assert.equal(r.amount_goal, 49.19);
+});
+
+test('a July-layout $0.00 line is still caught', () => {
+  const r = parse.parseRow(julyWords('FB-11310007 xxx-xx-2192 00089498 0 Bartee,Mario DU0405 0.00 0.00'));
+  assert.equal(r.zero_deduction, 1);
+  assert.match(r.review_reasons.join('; '), /\$0\.00/);
+});
+
+/* ---------- skew correction in row clustering ---------- */
+
+test('a tilted page still clusters each printed line as one row', () => {
+  // Two printed lines, 40px apart, on a page tilted so the right edge sits
+  // 36px higher than the left — the drift is nearly the row pitch, which is
+  // exactly what broke the July scan's money columns.
+  const mk = (lineY, tag) => Array.from({ length: 12 }, (_, i) => {
+    const x0 = 60 + i * 160;
+    const y = lineY - 0.02 * (x0 + 50);          // 2% tilt upward to the right
+    return { text: tag + i, conf: 95, x0, y0: y, x1: x0 + 100, y1: y + 24 };
+  });
+  const rows = parse.clusterRows([...mk(400, 'a'), ...mk(440, 'b')]);
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].length, 12);
+  assert.equal(rows[1].length, 12);
+  assert.ok(rows[0].every(w => w.text.startsWith('a')));
+  assert.ok(rows[1].every(w => w.text.startsWith('b')));
+});
+
+test('a straight page clusters exactly as before the skew fix', () => {
+  const mk = (lineY, tag) => Array.from({ length: 8 }, (_, i) => ({
+    text: tag + i, conf: 95, x0: 60 + i * 200, y0: lineY, x1: 160 + i * 200, y1: lineY + 24
+  }));
+  const rows = parse.clusterRows([...mk(100, 'a'), ...mk(140, 'b'), ...mk(180, 'c')]);
+  assert.equal(rows.map(r => r.length).join(','), '8,8,8');
+});

@@ -327,21 +327,58 @@ function verifyRowsAgainstRosters(db, importId) {
   if (!members.length) return { checked: 0, verified: 0, remaining: null, error: 'no rosters loaded' };
   const buckets = buildBuckets(members);
   // Identity must read clean (valid emplid + a name) AND the pay fields
-  // must look sane: DC grades are two chars, digit first, suffix A–D; step
-  // present. A row whose grade cell collapsed ("LAA", missing step) stays
-  // with the human even when the name matches — the name only vouches for
-  // WHO, not for grade and step.
+  // must look sane. Two layouts qualify: the old report's grade/step columns
+  // (DC grades are two chars, digit first, suffix A–D), or the July-2026
+  // layout that ends at the money pair — there the cleanly-read amounts ARE
+  // the pay-field sanity, since grade and step are no longer printed. A row
+  // whose trailing columns collapsed stays with the human even when the
+  // name matches — the name only vouches for WHO.
   const rows = db.prepare(`SELECT * FROM rows WHERE import_id = ? AND excluded = 0
     AND needs_review = 1 AND reviewed = 0 AND review_reason = ''
     AND emplid GLOB '0[0-9][0-9][0-9][0-9][0-9][0-9][0-9]' AND first_name != ''
-    AND step != '' AND grade GLOB '[0-9][0-9A-D]'`).all(importId);
-  const upd = db.prepare(`UPDATE rows SET needs_review = 0, reviewed = 1,
+    AND ( (step != '' AND grade GLOB '[0-9][0-9A-D]')
+       OR (step = '' AND grade = '' AND amount_goal >= 0 AND amount_taken >= 0) )`).all(importId);
+
+  // Joe's verification doctrine: the PeopleSoft number decides. A row whose
+  // employee number is already on record — telestaff, NEP, or a previous
+  // finalized report — must match THAT person's name; that double match is
+  // the strongest clearance there is. Name-only matching stays as the
+  // fallback for numbers we have never seen.
+  const byEmplid = new Map();
+  const addEmplid = (k, m) => {
+    if (!/^0\d{7}$/.test(k)) return;
+    if (!byEmplid.has(k)) byEmplid.set(k, []);
+    byEmplid.get(k).push(m);
+  };
+  for (const m of members) if (m.emplid) addEmplid(m.emplid, m);
+  // Only rows that cleared review teach the map — a half-parsed import must
+  // never become the standard another import is verified against.
+  for (const r of db.prepare(`SELECT emplid, norm_last, norm_first FROM rows
+      WHERE import_id != ? AND excluded = 0 AND emplid != ''
+      AND (needs_review = 0 OR reviewed = 1)`).all(importId)) {
+    addEmplid(r.emplid, r);
+  }
+
+  const updNum = db.prepare(`UPDATE rows SET needs_review = 0, reviewed = 1,
+    review_reason = 'auto-verified: employee number and name both match the records' WHERE id = ?`);
+  const updName = db.prepare(`UPDATE rows SET needs_review = 0, reviewed = 1,
     review_reason = 'auto-verified: name matches the member databases' WHERE id = ?`);
-  let verified = 0;
+  let verified = 0, byNumber = 0;
   const VERIFY_THRESHOLD = 92;   // stricter than the 88 linking bar — verification, not linking
   const tx = db.transaction(() => {
     for (const row of rows) {
       const q = { lastName: row.last_name, firstName: row.first_name };
+
+      const known = byEmplid.get(row.emplid);
+      if (known && known.length) {
+        const s = Math.max(...known.map(m => match.scoreCandidate(q, m)));
+        if (s >= VERIFY_THRESHOLD) { updNum.run(row.id); verified++; byNumber++; }
+        // The number is on record — this row's fate is decided by THAT
+        // person's name, never by a lookalike elsewhere in the roster. A
+        // mismatch here is exactly what must reach human eyes.
+        continue;
+      }
+
       const normLast = match.normalizeName(row.last_name);
       let best = 0;
       const seen = new Set();
@@ -354,11 +391,11 @@ function verifyRowsAgainstRosters(db, importId) {
           if (s > best) { best = s; if (best >= 100) break; }
         }
       }
-      if (best >= VERIFY_THRESHOLD) { upd.run(row.id); verified++; }
+      if (best >= VERIFY_THRESHOLD) { updName.run(row.id); verified++; }
     }
   });
   tx();
-  return { checked: rows.length, verified };
+  return { checked: rows.length, verified, byNumber };
 }
 
 /** The reconcile workbook: one sheet per action list + a summary. */
