@@ -59,6 +59,13 @@ Joe's rulings, now permanent:
    certifications column the same letters are driver quals (squad wagon
    driver / truck driver). Read the column, not the code. NQTD = not qualified
    to drive; TDFD = taken down from driving (Joe, 15 Aug).**
+9b. **Recruit vs probationer** (Joe, 16 Aug): a RECRUIT is in the Training
+   Division, not yet assigned to a company (telestaff's shift rosters don't
+   carry them). A PROBATIONER is a rookie ON THE STREET at a company —
+   telestaff tags them "(PROBATION) {E21}". Both can pay dues, and payment
+   makes them members. The 45 new payers in the 00143-block are recruits
+   (paying, in training); Joseph T. Johnson and Eli Washabaugh are
+   probationers (paying, at companies).
 10. **Separations reconcile against personnel actions** (Joe, 16 Aug). The
    DCHR register counts separations and shows who dropped off; the PAs say
    WHY. A drop-off covered by a PA follows the PA rules (retirement ->
