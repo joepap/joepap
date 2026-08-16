@@ -254,6 +254,12 @@ Nothing was unrecoverable — every value was read back out of `roster-42`.
 records side by side with the keeper marked.** Naming the keeper in prose is
 not enough when both records look plausible on screen.
 
+**And the keeper is always the APPROVED account** (Joe, 15 Aug — the export's
+`Status` column: approved / nonactive). The approved profile is the member's
+own login. Copy fields onto it and delete the nonactive one, even when the
+nonactive record looks richer — it flipped the Denmark merge direction. Both
+records approved (the McCoy 00132282 pair) = probably two real people; stop.
+
 ## Duplicate profiles — 12 same-name groups, measured 13 Aug
 
 **Six have an empty side and want deleting**: Long Brian, Taylor Charles, Taylor

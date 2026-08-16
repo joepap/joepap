@@ -95,6 +95,13 @@ profiles):
    check-in (export from the check-in app's admin) — same quarantine rules.
 5. After cleanup, re-download NEP, re-upload here, and watch the
    dashboard gaps shrink. That's the progress meter.
+6. **In any merge, keep the APPROVED account** (Joe's rule, 15 Aug — the
+   export's `Status` column: approved / nonactive). The approved profile is
+   the member's own login; deleting it cuts off their access. Copy the
+   missing fields ONTO the approved record and delete the nonactive one —
+   even when the nonactive record looks richer. If BOTH records are
+   approved (two logins — e.g. the McCoy pair), stop: that usually means
+   two real people, not a split profile.
 
 ## D. Automation ladder (each step is optional, in order)
 
