@@ -64,11 +64,16 @@ Joe's rulings, now permanent:
    WHY. A drop-off covered by a PA follows the PA rules (retirement ->
    Active Retired or Drop per rule 2/4). **A drop-off with NO personnel
    action behind it gets brought to Joe explicitly** — never given a status
-   by guess — so the member can be separated properly in the records. The
-   seven July drop-offs (Covey, Latimer, Mangiameli, Mullins, Sanders,
-   Washington David V, + the Washabaugh digit question) are the first live
-   case: none is covered by SO-2026-198 (its three retirements are dated
-   22 Aug, after this register), so all seven sit with Joe now.
+   by guess — so the member can be separated properly in the records.
+   First live case, settled to five: **Covey, Latimer Jr., Mangiameli,
+   Mullins, Washington Sr. David V** — unexplained departures with Joe
+   (none covered by SO-2026-198; its retirements date 22 Aug). Removed on
+   Joe's word: Botwin (promoted) and Sanders (already Retired). The
+   Washabaugh scare RESOLVED 16 Aug by re-reading the June scan: June
+   misread Eli's 00139643 as 00135643 — he never left, June row fixed,
+   compare re-run (9 stopped / 56 new). Bonus from the same scan band:
+   **Washabaugh, John A = 00083207** (Active, Yes, pays both months) —
+   his NEP record lacks the number; type it in by hand.
 
 SO-2026-198 itself: 2 promotions (Graham -> Lieutenant Paramedic, Pinckney ->
 Sergeant Paramedic — the order misspells her "Pickney"), 2 technician
