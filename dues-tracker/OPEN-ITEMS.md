@@ -3,13 +3,18 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 16 Aug 2026, 17:41 — 3,425 members**
-(`data/uploads/roster-51`, gitignored). Active 1,829 · Active Retired 310 ·
-Retired 637 · Drop 321 · no status 95. **Paying Yes = 1,758** (the June payers
-still working, now on the right records — the count moved +5 working members
-marked / −1 wrong Yes cleared / −1 duplicate deleted, reconciled exactly).
-**Active members with a PeopleSoft number: 1,585 of 1,829.** Active Retired =
-exactly the 310 who paid 2026 retiree dues — that sweep stays complete.
+Roster state at last update: **NEP export of 17 Aug 2026, 01:07 — 3,425 members**
+(`data/uploads/roster-52`, gitignored). Active 1,829 · Active Retired 311 ·
+Retired 637 · Drop 321 · no status 94. **Paying Yes = 1,769** — the July
+Mark-Yes batch landed 11/11 (Bartee, Butler, Dombach, Elliott No→Yes, Irving
+No→Yes, Levett, Roberts, Young + by hand Shaw +00071349, Drake, Wimbish
+Active+Yes+00006363), Wayne P went Yes→No, and **the Streat father/son fix is
+DONE**: Jr renamed "Streat JR" keeps 00126621; Sr carries his own 00022464 and
+Joe moved him to Active Retired early (2026 retiree dues NOT yet Paid — the
+PA198 file adds that tick when run). Both Washabaughs squared (Eli's record
+filled from telestaff; John A +00083207). **Active with a PeopleSoft number:
+1,587 of 1,829.** Still to run: the 25-member No files (v2), PA198 1–7, the
+three status moves (Thomas Anthony L / Potts / Clark Lawrence).
 
 **The Active Retired sweep ran 15 Aug** — Joe's rule, whole-database: 2026
 Paid = Active Retired, everything else retired-side. 542 of 546 by upload;
