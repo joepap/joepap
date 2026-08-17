@@ -3,14 +3,67 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 17 Aug 2026, 5:48pm — 3,427
-members** (`data/uploads/roster-58`, gitignored). Taken after the board meeting,
+Roster state at last update: **NEP export of 17 Aug 2026, 6:15pm — 3,427
+members** (`data/uploads/roster-59`, gitignored). Taken after the board meeting,
 which went well.
 
-**Active 1,829 · Active Retired 454 · Retired 504 · Drop 321 · Alumni 99 ·
+**Active 1,826 · Active Retired 454 · Retired 504 · Drop 324 · Alumni 99 ·
 Deceased 85 · Honorary 27 · Life 16 · no status 92.** Paying Yes 1,770 · No 10.
-Payroll numbers 1,782 of 1,829 Active · rank 1,803 of 1,829 · 2026 retiree dues
-Paid **366**.
+2026 retiree dues Paid **366**.
+
+### The eleven $0.00 members — ten answered, one open
+
+Joe settled these on 17 Aug and they are written into `lib/knownreasons.js`, so
+the treasurer's dues-stopped sheet prints the answer instead of asking again.
+
+*Off the roll, no further dues expected:* Devendorf, Dufresne, Newton, Tyler,
+Chen. The last three moved to Drop in the 6:15pm export.
+
+*Carried active on purpose — do not drop:* Long (in jail, suspended without
+pay), Rembert (on suspension), Price Jr. (in a program, deduction resumes on
+his return), Glover (payroll glitch — a missed week then a double), Barrow
+(military leave, waiting on the NEP dropdown).
+
+**Still open: DiPietro, Andrew D (00108259).** Active, marked paying, $0.00
+since June, no explanation recorded. The last of the eleven.
+
+Devendorf (00106864) and Newton (00130126) have **no PeopleSoft number in NEP**
+and never have — the register knows them, NEP does not. That is why the known
+reasons are keyed on the register number, not NEP's.
+
+### Working, no dues — the Active/paying=No batch (Joe, 17 Aug)
+
+Joe's rule for the "working, no dues" sheet: **Member Status Active, Paying
+Active Member No.** Not a correction — a marker, so the collection gap is
+visible in NEP and can be worked down over time rather than living on a
+spreadsheet nobody opens.
+
+Built from roster-59 by `scratchpad/nodues-upload.js`, verified by
+`scratchpad/nodues-verify.js` (29 rows, 29 distinct members, 0 problems):
+
+| file | rows | key |
+|---|---|---|
+| `Local36-NODUES-1-active-payingno-on-email` | 20 | Email |
+| `Local36-NODUES-2-…-on-peoplesoftnumber` | 1 | PeopleSoft Number |
+| `Local36-NODUES-3-…-on-iaffmembernumber` | 2 | IAFF Member Number |
+| `Local36-NODUES-4-…-on-lastname` | 2 | Last Name |
+| `Local36-NODUES-5-…-on-firstname` | 3 | First Name |
+| `Local36-NODUES-6-YOUR-CALL-Barbour-was-Life` | 1 | Email |
+
+Hayes, Kinney and Smith Dominique have no email, no payroll number and no IAFF
+number and share a surname — first name is the only unique handle they have.
+Worth filling their payroll numbers in afterwards.
+
+**Barbour, Erianna is held out in her own file.** She is carried as Life — one
+of only 16 — while working as a Platoon 4 firefighter EMT on a 2025-era payroll
+number. Almost certainly a keying error, but Life is an honour and not ours to
+overwrite in a batch, so Joe runs that file or skips it.
+
+**Nine of the 38 are not in NEP at all** and cannot be marked until a record
+exists: Boyd Keelin, Celestine Collin, Dillon Jamar J, Goldberg Joseph, Johnson
+Jeffrey A, Lee Jahred, Moore Justyn, Tapia Lima Jesus, Toure Alassane. Creating
+a record asserts membership, and whether these people joined is the open
+question on that sheet — so nothing was built for them. Waiting on Joe.
 
 ### The 50-year upload landed — 9 files of 11
 
