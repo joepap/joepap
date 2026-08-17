@@ -896,7 +896,12 @@ is the ground truth; if a number is not in it, it does not go on a screen.**
 3. **The retiree denominator was wrong.** 313 is the Active Retired *status*
    count. The number of records that PAID 2026 retiree dues is **358** (313
    Active Retired + 14 Retired + 13 Alumni + 10 Life + 4 Honorary + 3 Active
-   + 1 Deceased). So the retired gap is **872 − 358 = 514**, not 559 —
+   + 1 Deceased). **This breakdown is now printed on the deck itself** (Joe,
+   17 Aug: "clarify the 358 — what those other statuses are"), with the reason
+   they count: the International bills for a retiree whatever word we filed him
+   under. The 3 Active are the known oddballs — Faulkner Jr John M, Jackson
+   Michael, Waby William D — still awaiting Joe, and the deck says so rather
+   than hiding them. So the retired gap is **872 − 358 = 514**, not 559 —
    **$4,898/month, $58,781/year**, and the two-sided difference is
    **$17,633** ($473,483 on their roll vs $455,850 on ours), not $22,746.
    The old figures also silently used a $9.525 half-rate, so 559 × $9.53 did
@@ -950,6 +955,13 @@ twelve screens previously ended without telling the board what to decide.
 
 Verified in Chromium at 1440×900: all 12 sections are exactly one screen tall,
 no horizontal overflow, light and dark.
+
+**Offline copies for the meeting** (Joe asked to "pop it out of this window"):
+a print stylesheet gives one screen per page at 16:9, exported by
+`scratchpad/deckpdf.js` to **`Local36-Who-Pays-Dues.pdf`** (13 pages), plus
+**`Who-Pays-Dues-Local36.html`**, the self-contained page. Both were sent to
+Joe — present from the PDF, keep the artifact link as the backup, because the
+room's wifi is not worth trusting.
 
 ## The office wall board (new, 17 Aug)
 
