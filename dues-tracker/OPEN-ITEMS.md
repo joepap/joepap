@@ -3,18 +3,54 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 17 Aug 2026, 2:41pm — 3,427 members**
-(`data/uploads/roster-57`, gitignored). LAST export before the 18 Aug board
-meeting.
+Roster state at last update: **NEP export of 17 Aug 2026, 5:48pm — 3,427
+members** (`data/uploads/roster-58`, gitignored). Taken after the board meeting,
+which went well.
 
-**Active 1,829 · Active Retired 317 · Retired 634 · Drop 321 · Alumni 100 ·
-Deceased 85 · Honorary 27 · Life 20 · no status 94.** Paying Yes 1,770 · No 10 ·
-61 active members with the dues question unanswered. **Active with a payroll
-number 1,782 of 1,829 (97%)** · **Active with a rank 1,803 of 1,829** ·
-2026 retiree dues Paid: **361**. Duplicate payroll numbers: 2 (00115712
-barbosa/Barbosa, 00132282 McCoy/Mccoy Jr).
+**Active 1,829 · Active Retired 454 · Retired 504 · Drop 321 · Alumni 99 ·
+Deceased 85 · Honorary 27 · Life 16 · no status 92.** Paying Yes 1,770 · No 10.
+Payroll numbers 1,782 of 1,829 Active · rank 1,803 of 1,829 · 2026 retiree dues
+Paid **366**.
 
-### THE FIVE UNEXPLAINED DEPARTURES ARE SETTLED (Joe, 17 Aug afternoon)
+### The 50-year upload landed — 9 files of 11
+
+Verified row by row against roster-58: **1-FIFTY (all four files, 133 rows) and
+2-FIFTY (all three, 25 rows) landed complete**, and of the deceased set
+`3-DECEASED-note-on-email` (5) and `-on-lastname` (11) landed. **NOT applied:
+`3-DECEASED-note-on-iaff` (37 rows) and `3-DECEASED-note-on-firstname` (3)** —
+0 of 40 rows present, so those two were never run. 174 records now carry the
+`50 year member` note, which is exactly the 9 files that landed.
+
+**CONSEQUENCE TO SETTLE — the honour is now a billable status.** 158 fifty-year
+members carry Active Retired, but only 28 pay 2026 retiree dues. That flows
+straight into the International's lists:
+
+| list | was | now | of which 50-year |
+|---|---|---|---|
+| not on their roll | 215 | **228** | **14** |
+| numbers dropped | 67 | **87** | **20** |
+| type corrections | 13 | **8** | 0 |
+| billed as active | 9 | 9 | 0 |
+
+So **34 entries would go to the International asking them to carry members who
+pay no current dues.** Both sheets now have a **"50-year member?"** column
+marking every one, and the workbook's front page says so. **Joe decides whether
+they belong in that ask before it is sent.** This is the definitional blur
+flagged when the files were built: `Active Retired` now means both "retiree who
+pays retiree dues" and "50-year honoree", and the per-capita denominator can
+only mean one of them.
+
+Per capita at roster-58: 180 undercounted (unchanged) · **506 overcounted**
+(872 MRM - 366) = $4,822/mo, **$57,866/yr**; bills $473,483 vs $456,765,
+**apart by $16,718**.
+
+**Six changes were Joe's own, not the 50-year files:** Hurda Gregory (no status
+-> Active Retired), Henry Joseph L, Lane Joseph W and Sandy Stephen R (Retired
+-> Active Retired), each with 2026 dues Paid; **Farrow Shirley** (no status ->
+Active Retired, and an address moved from Menifee CA to Washington DC); and
+**Smith Edward C** (Active Retired -> Life).
+
+### THE FIVE UNEXPLAINED DEPARTURES ARE SETTLED### THE FIVE UNEXPLAINED DEPARTURES ARE SETTLED (Joe, 17 Aug afternoon)
 
 Rule 10 worked exactly as designed: a drop-off with no personnel action behind
 it went to Joe rather than getting a status by guess, and he settled all five.
