@@ -884,15 +884,20 @@ is the ground truth; if a number is not in it, it does not go on a screen.**
 
 ### Four real errors that were on the deck and are now fixed
 
-1. **`$89,475.80` is the GOAL column, not what was collected.** DCHR prints
-   both. Actually deducted on 25 July: **$89,294.30**. Annualised at 26
-   periods that is **$2,321,652**, not $2,326,371. The old deck said
-   "collected" and claimed the register "reconciled exactly" — it does not.
-2. **The gap is a dime a member.** Every one of the 1,815 paying lines reads
-   goal `49.19`, taken `49.09`. 1,815 × $0.10 = **$181.50 exactly**, every
-   payday, **$4,719 a year**. Both our totals match DCHR's printed totals
-   exactly, so the fact is solid — **the reason is unknown and is a question
-   for DCHR, not something to guess at.** This is now its own screen.
+1. ~~"$89,475.80 is the goal, not what was collected"~~ — **SUPERSEDED by
+   Joe's 17 Aug ruling above.** The dues the local collects ARE $89,475.80 a
+   pay period / $2,326,371 a year. What the audit did settle and keep: our
+   read of the register matches BOTH figures DCHR prints on its own last page,
+   which is the check that proves the read is right.
+2. **The dime is NOT a shortfall — RULED CLOSED by Joe, 17 Aug: "we are
+   getting the 49.19, the dime off is part of processing, do not discuss the
+   dime difference."** The register's two money columns differ by $0.10 a line
+   (goal `49.19`, taken `49.09`, $181.50 a period), but that gap is DCHR's own
+   processing artifact and never costs the local anything. **The local
+   collects $49.19 per member per pay period — $89,475.80 on 25 July,
+   $2,326,371 a year at 26 periods.** Use the goal column as the money.
+   The screen built around this was deleted; do not raise it again, and do not
+   put $89,294.30, $49.09, $181.50 or $4,719 on any deliverable.
 3. **The retiree denominator was wrong.** 313 is the Active Retired *status*
    count. The number of records that PAID 2026 retiree dues is **358** (313
    Active Retired + 14 Retired + 13 Alumni + 10 Life + 4 Honorary + 3 Active
@@ -940,7 +945,7 @@ produced the earlier 54/42 split; the honest split is 49/47.
 workbooks are rebuilt from `scratchpad/board-workbooks.js` — now **nine**
 lists across three files (combined / IAFF / treasurer).
 
-### Structure: 13 screens to 11, and each one fits a projector exactly
+### Structure: 13 screens to 10, and each one fits a projector exactly
 
 Cut the "What we built" screen entirely — it duplicated "How this was done"
 (same 3,607 lines, same 223 log entries, same premise). Cut the generic
@@ -962,12 +967,12 @@ like a stranger to his own local." The two passing mentions on "How this was
 done" stay — they read fine without the setup and they are the point of that
 screen. Do not re-add the stories screen.
 
-Verified in Chromium at 1440×900: all 11 sections are exactly one screen tall,
+Verified in Chromium at 1440×900: all 10 sections are exactly one screen tall,
 no horizontal overflow, light and dark.
 
 **Offline copies for the meeting** (Joe asked to "pop it out of this window"):
 a print stylesheet gives one screen per page at 16:9, exported by
-`scratchpad/deckpdf.js` to **`Local36-Who-Pays-Dues.pdf`** (12 pages), plus
+`scratchpad/deckpdf.js` to **`Local36-Who-Pays-Dues.pdf`** (11 pages), plus
 **`Who-Pays-Dues-Local36.html`**, the self-contained page. Both were sent to
 Joe — present from the PDF, keep the artifact link as the backup, because the
 room's wifi is not worth trusting.
