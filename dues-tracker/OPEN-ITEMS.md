@@ -940,7 +940,7 @@ produced the earlier 54/42 split; the honest split is 49/47.
 workbooks are rebuilt from `scratchpad/board-workbooks.js` — now **nine**
 lists across three files (combined / IAFF / treasurer).
 
-### Structure: 13 screens to 12, and each one fits a projector exactly
+### Structure: 13 screens to 11, and each one fits a projector exactly
 
 Cut the "What we built" screen entirely — it duplicated "How this was done"
 (same 3,607 lines, same 223 log entries, same premise). Cut the generic
@@ -953,12 +953,21 @@ by 514."). **Added a closing screen with the actual ask** — approve the four
 IAFF lists, treasurer takes four lists, get the new per-capita rate — because
 twelve screens previously ended without telling the board what to decide.
 
-Verified in Chromium at 1440×900: all 12 sections are exactly one screen tall,
+**The member-stories screen is CUT** (Joe, 17 Aug: "we can get rid of this
+slide") — the Watsons, the Streats, Klinger & Schaefer and Eli Washabaugh no
+longer have their own screen. The human point survives in one sentence at the
+end of "Where we were": fathers and sons sharing a name and a payroll number,
+"a retired father looking like the dues payer while his working son looked
+like a stranger to his own local." The two passing mentions on "How this was
+done" stay — they read fine without the setup and they are the point of that
+screen. Do not re-add the stories screen.
+
+Verified in Chromium at 1440×900: all 11 sections are exactly one screen tall,
 no horizontal overflow, light and dark.
 
 **Offline copies for the meeting** (Joe asked to "pop it out of this window"):
 a print stylesheet gives one screen per page at 16:9, exported by
-`scratchpad/deckpdf.js` to **`Local36-Who-Pays-Dues.pdf`** (13 pages), plus
+`scratchpad/deckpdf.js` to **`Local36-Who-Pays-Dues.pdf`** (12 pages), plus
 **`Who-Pays-Dues-Local36.html`**, the self-contained page. Both were sent to
 Joe — present from the PDF, keep the artifact link as the backup, because the
 room's wifi is not worth trusting.
