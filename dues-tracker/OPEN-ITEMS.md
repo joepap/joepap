@@ -592,6 +592,44 @@ would have dropped him off that list with no trace. `lib/audit.js` now counts
 group membership as content, which is why the "holds nothing" pile fell from 56
 to 15.
 
+## The PeopleSoft gap — second pass, files sent 17 Aug
+
+242 Active members had no payroll number. The July register closes **191** of
+them (`1-4 PSFILL2-*.xlsx`, 189 by upload + 2 by hand: Richards Christopher J
+00099359, Turner Michaela 00116848). **Fill Blanks Only** on PeopleSoft
+Number. That takes Active coverage from 1,587 to ~1,778 of 1,829.
+
+Why the register and not telestaff: only 3 of the 242 appear on telestaff at
+all — the earlier round already harvested everyone it could name — and the
+register IS the payroll, so it is the strongest possible source for a payroll
+number. 176 of the 191 are confirmed on BOTH June and July; 15 are new payers
+who first appear in July.
+
+Every row was checked four ways before it went in the file: the July line
+still scores >=95 against the member, no number goes to two members, the
+register never prints the number twice, and no June line points the number at
+somebody else. Three rows tripped that last check and were cleared by eye —
+DiPietro, Walker Tarrick and Rembert, whose June names scanned as garbage
+("Pe a", "bl", "Ry A A A") because those were the damaged $0.00 rows.
+
+**Held back deliberately — 6 that need Joe:**
+
+- **Butler, Arthenious = Butler, Arenthious D — ONE man, two records.** The
+  register prints "Butler,Arthenious D" at 00014199; NEP holds both spellings,
+  both Active, both Yes, and only Arenthious D carries the number and IAFF
+  1104687. A merge (both nonactive accounts, so keep the one with data).
+- **DeSilva — the mystery solved: two men.** `DeSilva, Sydney D` (Active,
+  appointed 2021, desilva.sydney@yahoo) is the working one paying at
+  **00115723**; `Desilva, Sydney S` (Retired, appointed 1990, IAFF 1001861)
+  is the elder. Give the number to Sydney D only.
+- **Taylor James P / Hughes James T / Faulkner John** — the number is already
+  on the other family member's record; all three are existing open questions.
+- **Robinson Jr, Karl H** — two numbers on the register (00086148 and
+  00026734), father and son both paying; needs the split first.
+
+45 Active members remain with no number and no evidence anywhere — nothing to
+key on until they turn up on a register.
+
 ## For the treasurer — sent 17 Aug
 
 `Local36-TREASURER-July-register-questions.xlsx`, three sheets off the
