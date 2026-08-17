@@ -27,23 +27,33 @@ for (const f of files) {
   const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
   const [hdr, ...rows] = aoa;
   const problems = [];
-  if (hdr.length !== 3 || hdr[1] !== 'Member Status' || hdr[2] !== 'Paying Active Member')
-    problems.push('header is ' + JSON.stringify(hdr));
+  // Columns are found by name, not by position: the marking files carry three
+  // columns and the create file carries ten, and both must verify the same way.
+  const col = name => hdr.indexOf(name);
   const keyField = hdr[0];
+  const iStatus = col('Member Status'), iPay = col('Paying Active Member');
+  // A create file makes records that do not exist yet, so a key that matches
+  // nothing is right there and wrong everywhere else.
+  const creates = col('Last Name') !== -1 && col('First Name') !== -1;
+  if (iStatus === -1 || iPay === -1) problems.push('header is missing a column we set: ' + JSON.stringify(hdr));
   for (const [i, r] of rows.entries()) {
     total++;
-    if (r.length !== 3 || r.some(c => L(c) === '')) problems.push(`row ${i + 2} has an empty cell: ${JSON.stringify(r)}`);
-    if (L(r[1]) !== 'Active') problems.push(`row ${i + 2} status is "${r[1]}"`);
-    if (L(r[2]) !== 'No') problems.push(`row ${i + 2} paying is "${r[2]}"`);
+    if (r.length !== hdr.length || r.some(c => L(c) === '')) problems.push(`row ${i + 2} has an empty cell: ${JSON.stringify(r)}`);
+    if (L(r[iStatus]) !== 'Active') problems.push(`row ${i + 2} status is "${r[iStatus]}"`);
+    if (L(r[iPay]) !== 'No') problems.push(`row ${i + 2} paying is "${r[iPay]}"`);
     const hits = N.filter(x => norm(keyField, x[keyField]) === norm(keyField, r[0]));
-    if (hits.length !== 1) problems.push(`row ${i + 2} key "${r[0]}" matches ${hits.length} roster records`);
-    else {
-      const who = L(hits[0]['Last Name']) + ', ' + L(hits[0]['First Name']);
+    const want = creates ? 0 : 1;
+    if (hits.length !== want)
+      problems.push(`row ${i + 2} key "${r[0]}" matches ${hits.length} roster records, wanted ${want}` +
+        (creates && hits.length ? ' — creating on top of an existing record makes a duplicate' : ''));
+    const who = hits.length === 1 ? L(hits[0]['Last Name']) + ', ' + L(hits[0]['First Name'])
+      : creates ? L(r[col('Last Name')]) + ', ' + L(r[col('First Name')]) : null;
+    if (who) {
       if (seenPeople.has(who)) problems.push(`${who} appears in more than one file`);
       seenPeople.add(who);
     }
   }
-  console.log(`${problems.length ? 'FAIL' : 'ok  '}  ${f}  (${rows.length} rows, key = ${keyField})`);
+  console.log(`${problems.length ? 'FAIL' : 'ok  '}  ${f}  (${rows.length} rows, key = ${keyField}${creates ? ', creates new records' : ''})`);
   problems.forEach(p => { bad++; console.log('        ' + p); });
 }
 console.log(`\n${files.length} files, ${total} rows, ${seenPeople.size} distinct members, ${bad} problems`);

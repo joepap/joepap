@@ -3,13 +3,13 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 17 Aug 2026, 6:15pm — 3,427
-members** (`data/uploads/roster-59`, gitignored). Taken after the board meeting,
+Roster state at last update: **NEP export of 17 Aug 2026, 6:41pm — 3,436
+members** (`data/uploads/roster-60`, gitignored). Taken after the board meeting,
 which went well.
 
-**Active 1,826 · Active Retired 454 · Retired 504 · Drop 324 · Alumni 99 ·
-Deceased 85 · Honorary 27 · Life 16 · no status 92.** Paying Yes 1,770 · No 10.
-2026 retiree dues Paid **366**.
+**Active 1,840 · Active Retired 454 · Retired 504 · Drop 324 · Alumni 99 ·
+Deceased 85 · Honorary 27 · Life 15 · no status 88.** Paying Yes 1,770 ·
+**No 42** · blank 1,624. 2026 retiree dues Paid **366**.
 
 ### The eleven $0.00 members — ten answered, one open
 
@@ -38,17 +38,32 @@ Active Member No.** Not a correction — a marker, so the collection gap is
 visible in NEP and can be worked down over time rather than living on a
 spreadsheet nobody opens.
 
-Built from roster-59 by `scratchpad/nodues-upload.js`, verified by
-`scratchpad/nodues-verify.js` (29 rows, 29 distinct members, 0 problems):
+Built from roster-59 by `scripts/nodues-upload.js`, verified by
+`scripts/nodues-verify.js`. **Checked against roster-60 — 32 of 38 rows landed:**
 
-| file | rows | key |
-|---|---|---|
-| `Local36-NODUES-1-active-payingno-on-email` | 20 | Email |
-| `Local36-NODUES-2-…-on-peoplesoftnumber` | 1 | PeopleSoft Number |
-| `Local36-NODUES-3-…-on-iaffmembernumber` | 2 | IAFF Member Number |
-| `Local36-NODUES-4-…-on-lastname` | 2 | Last Name |
-| `Local36-NODUES-5-…-on-firstname` | 3 | First Name |
-| `Local36-NODUES-6-YOUR-CALL-Barbour-was-Life` | 1 | Email |
+| file | rows | key | state |
+|---|---|---|---|
+| `Local36-NODUES-1-active-payingno-on-email` | 20 | Email | **landed** |
+| `Local36-NODUES-2-…-on-peoplesoftnumber` | 1 | PeopleSoft Number | **landed** |
+| `Local36-NODUES-3-…-on-iaffmembernumber` | 2 | IAFF Member Number | **landed** |
+| `Local36-NODUES-4-…-on-lastname` | 2 | Last Name | **NOT RUN** |
+| `Local36-NODUES-5-…-on-firstname` | 3 | First Name | **NOT RUN** |
+| `Local36-NODUES-6-YOUR-CALL-Barbour-was-Life` | 1 | Email | half — see below |
+| `Local36-NODUES-7-CREATE-9-new-members` | 9 | PeopleSoft Number | **landed** |
+
+**Still to run: files 4 and 5** — Hines Jr Ronald E, Rowel Danard T, Hayes
+Bernie, Kinney Rico C, Smith Dominique N. All five are untouched, still no
+status and no paying value. Both files re-verify clean against roster-60, so
+they can go as they are.
+
+**Barbour was done by hand, not by file 6.** Her status moved Life → Active and
+a payroll number 00132174 appeared — file 6 has only three columns and cannot
+set a payroll number, so that was typed in NEP. **Paying Active Member is still
+blank on her record.** Re-running file 6 finishes it: Member Status Active is
+then a no-op and the No lands.
+
+Do **not** re-run file 7 — the nine now exist, and `nodues-verify.js` refuses
+it against roster-60 for exactly that reason.
 
 Hayes, Kinney and Smith Dominique have no email, no payroll number and no IAFF
 number and share a surname — first name is the only unique handle they have.
@@ -59,8 +74,12 @@ of only 16 — while working as a Platoon 4 firefighter EMT on a 2025-era payrol
 number. Almost certainly a keying error, but Life is an honour and not ours to
 overwrite in a batch, so Joe runs that file or skips it.
 
-**Nine of the 38 had no NEP record at all** — Joe asked for them on 17 Aug, so
-`Local36-NODUES-7-CREATE-9-new-members.xlsx` builds them: Boyd Keelin, Celestine
+**Nine of the 38 had no NEP record at all — created 17 Aug, confirmed in
+roster-60.** All nine came back with the right rank, platoon, phone, Member
+Status Active, Work Status Active Member, Paying Active Member No and their
+L36NEW tag, and NEP assigned Role Member / Status nonactive / Groups "All
+Members, Active, Platoon - n" exactly as the earlier batch did.
+`Local36-NODUES-7-CREATE-9-new-members.xlsx` built them: Boyd Keelin, Celestine
 Collin, Dillon Jamar J, Goldberg Joseph, Johnson Jeffrey A, Lee Jahred, Moore
 Justyn, Tapia Lima Jesus, Toure Alassane. Tags **L36NEW059-067**, continuing the
 002-058 batch already in NEP.
