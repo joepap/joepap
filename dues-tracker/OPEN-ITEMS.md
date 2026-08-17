@@ -1390,41 +1390,71 @@ removed rather than left waiting for marks we do not have. Do not re-add them.
 
 Joe's list from the "Treasurer - paying no record" sheet: 49 payroll numbers
 deducting on the 25 July register with no NEP record. Built by
-`scripts/paying-create.js`, checked by `scripts/paying-verify.js` (0 problems).
+`scripts/paying-create.js`, checked by `scripts/paying-verify.js`.
 
-**47 are genuinely new.** Tags **L36NEW068-114**. 44 of them are one block,
-payroll 00143793-00143865 — a class hired since the last roster, on payroll and
-paying before NEP ever heard of them. Three are older numbers that simply never
-got a record: Walker Infiniti 00103756, plus the two below.
+### THE RULE THIS TAUGHT US — the wizard asks for the key, it does not work it out
 
-| file | rows | key |
+Step 3 of the NEP import wizard is **Primary key**, and whoever is running the
+upload chooses it. Choose a column whose value is not yet on any record and NEP
+**creates a record** rather than updating one — a stub carrying only the columns
+in that file.
+
+That is exactly what happened on 17 Aug. Two stubs were made:
+
+- a **nameless record on payroll 00143865** (Griffin, Ethan) — from the
+  platoon-and-phone file being run before the file that creates him;
+- **", Corta M"** — first name only, payroll 00093402 — from the Thomas link
+  file being keyed on the payroll number, which no record held.
+
+**So every filename now names its key**: `...-KEY-ON-PeopleSoft-Number.xlsx`.
+That is the convention the earlier PSFILL batches used (`3-PSFILL2-key-on-
+lastname`), and it is why those landed and these did not. A file whose key
+cannot pick out exactly one record is **not built at all** — the script prints
+what to do by hand instead.
+
+### Where it stands after roster-61
+
+| file | rows | key to choose at step 3 |
 |---|---|---|
-| `Local36-PAYING-1-CREATE-47-new-members` | 47 | PeopleSoft Number |
-| `Local36-PAYING-2-platoon-and-phone-1` | 1 | PeopleSoft Number |
+| `Local36-PAYING-1-REPAIR-1-nameless-record` | 1 | PeopleSoft Number |
+| `Local36-PAYING-2-CREATE-46-new-members` | 46 | PeopleSoft Number |
 | `Local36-PAYING-3-LINK-Bell-payroll-number` | 1 | IAFF Member Number |
-| `Local36-PAYING-4-LINK-Thomas-payroll-number` | 1 | First Name |
 
-**Two of the 49 were already on the roster under a different spelling**, and
-get their payroll number added rather than a second profile:
+File 1 repairs the Griffin stub in place — it already holds his payroll number,
+platoon and phone, and only needs a name and status. It is keyed on a number
+that **does** exist, so it can only update. Run it before file 2, which is why
+Griffin is no longer among the creates (46, not 47).
+
+**Thomas has to be done by hand.** There are two "Corta M" records now, so no
+key can pick one. Delete the stub — first name only, no company, payroll
+00093402 — then type 00093402 onto **Thomas, Corta M** (Class 377, appointed
+09/18/2016), which is the record holding the history. Her platoon, phone and
+Paying Yes are on the stub and will go with it; the real record keeps her
+appointment date, class and date of birth.
+
+**47 were genuinely new, tags L36NEW068-114.** 44 are one block, payroll
+00143793-00143865 — a class on the payroll and paying before NEP heard of them.
+Three are older numbers that never got a record: Walker Infiniti 00103756, plus
+the two below.
+
+**Two of the 49 were already on the roster under a different spelling**, and get
+their payroll number added rather than a second profile:
 
 - **Belle, TySean D 00079233** is NEP's **Bell, Tysean D** — NEP and the IAFF
-  roll both spell him Bell and agree on IAFF 1318785; only the DC payroll
-  writes Belle. His record had no payroll number. *Which spelling is legally
-  right is still open — payroll usually wins, but that is Joe's call.*
+  roll both spell him Bell and agree on IAFF 1318785; only the DC payroll writes
+  Belle. *Which spelling is legally right is still open — payroll usually wins,
+  but that is Joe's call.*
 - **Thomas, Cortni 00093402** is NEP's **Thomas, Corta M** — Class 377,
-  appointed 09/18/2016, no payroll number, and her classmates hold 00093410,
-  00093445 and 00093454, so 00093402 sits inside that block. The IAFF roll also
-  has her as Corta M. (1359071), which NEP does not hold. Her link also sets
-  Paying Yes, Platoon 1 and her phone.
+  appointed 09/18/2016, and her classmates hold 00093410, 00093445 and 00093454,
+  so 00093402 sits inside that block. The IAFF roll also has her as Corta M.
+  (1359071), which NEP does not hold.
 
 **Andrew Boyd Jr. (00143848) and Andrew Boyle Jr. (00120022) are two people** —
-confirmed by Joe, and by the register carrying both as separate lines. Only
-Boyd is created.
+confirmed by Joe, and by the register carrying both as separate paying lines.
 
 Rank is set for nobody: the one createe on the staffing roster is **Griffin,
 Ethan — a recruit**, and NEP still has no Recruit value on the DC Fire Rank
-dropdown. He gets platoon Day Work and a phone in file 2; his rank waits on the
-same NEP request as the 13 company values.
+dropdown. His rank waits on the same request as the 13 company values.
 
 Only 1 of the 47 is on the IAFF roll, so the per-capita undercount grows by 46
 once these land.

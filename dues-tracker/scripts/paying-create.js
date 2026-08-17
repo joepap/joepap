@@ -55,11 +55,20 @@ const ALREADY = {
 };
 
 /* ---- refuse to create anyone who is already there ---- */
-const creates = [], links = [], blocked = [];
+// A record holding the payroll number but carrying no surname is a stub: NEP
+// makes one when an upload is keyed on a payroll number that does not exist yet.
+// It is repaired in place, never created a second time.
+const stubPS = new Set(N.filter(r => !L(r['Last Name'])).map(r => ps8(r['PeopleSoft Number'])).filter(Boolean));
+const creates = [], repairs = [], links = [], blocked = [];
 for (const x of list) {
   if (ALREADY[x.ps]) { links.push(x); continue; }
   const reg = db.prepare('SELECT last_name, first_name FROM rows WHERE import_id=8 AND emplid=? AND excluded=0').get(x.ps);
   if (!reg) { blocked.push([x, 'not on the 25 July register — cannot confirm they pay']); continue; }
+  if (stubPS.has(x.ps)) {
+    const i0 = x.printed.indexOf(',');
+    repairs.push({ ...x, last: L(x.printed.slice(0, i0)), first: L(x.printed.slice(i0 + 1)) });
+    continue;
+  }
   if (nepPS.has(x.ps)) { blocked.push([x, 'payroll number is already on the roster']); continue; }
   const near = N.map(r => ({ r, s: match.scoreCandidate({ lastName: reg.last_name, firstName: reg.first_name },
     { norm_last: match.normalizeName(L(r['Last Name'])), norm_first: match.normalizeName(L(r['First Name'])) }) }))
@@ -96,39 +105,73 @@ const write = (name, header, rows, widths) => {
   files.push([name, rows.length, header[0]]);
 };
 
-/* ---- 1. the creates ---- */
-write(`Local36-PAYING-1-CREATE-${creates.length}-new-members.xlsx`,
-  ['PeopleSoft Number', 'First Name', 'Last Name', 'Member Status', 'Work Status', 'Paying Active Member', 'Notes'],
-  creates.map(c => { tag++; return [c.ps, c.first, c.last, 'Active', 'Active Member', 'Yes',
-    `L36NEW${String(tag).padStart(3, '0')} | added from the 25 July 2026 DC payroll dues register, emplid ${c.ps} — ` +
-    `confirmed paying, no record in NEP`]; }),
-  [18, 18, 20, 14, 14, 20, 100]);
+// The wizard asks which column is the primary key at step 3 — it does not work
+// it out. Naming the key in the filename is what stopped the earlier PSFILL
+// batches misfiring, and its absence is what let a payroll-number key be chosen
+// for a number that did not exist yet, so NEP made a nameless stub instead of
+// updating anybody. Every filename says its key from here on.
+const KEYNAME = { 'PeopleSoft Number': 'PeopleSoft-Number', 'IAFF Member Number': 'IAFF-Member-Number',
+                  'Email': 'Email', 'Last Name': 'Last-Name', 'First Name': 'First-Name' };
+const named = (n, what, key) => `Local36-PAYING-${n}-${what}-KEY-ON-${KEYNAME[key]}.xlsx`;
+const NEWCOLS = ['PeopleSoft Number', 'First Name', 'Last Name', 'Member Status', 'Work Status', 'Paying Active Member', 'Notes'];
+const NEWWIDE = [18, 18, 20, 14, 14, 20, 100];
+const newRow = c => { tag++; return [c.ps, c.first, c.last, 'Active', 'Active Member', 'Yes',
+  `L36NEW${String(tag).padStart(3, '0')} | added from the 25 July 2026 DC payroll dues register, emplid ${c.ps} — ` +
+  `confirmed paying, no record in NEP`]; };
 
-/* ---- 2. anything the staffing roster can add to a new record ---- */
-// Run after file 1, or there is no record to add it to. Rank is left out: the
-// only one of them on the staffing roster is a recruit, and NEP still has no
-// Recruit value on the DC Fire Rank dropdown.
+/* ---- 1. repair any stub first: it already holds the payroll number ---- */
+// Keyed on a number that now exists, so this updates and cannot create. Run it
+// before the creates, or the same person is made twice.
+let n = 0;
+if (repairs.length) {
+  write(named(++n, `REPAIR-${repairs.length}-nameless-record${repairs.length === 1 ? '' : 's'}`, 'PeopleSoft Number'),
+    NEWCOLS, repairs.map(newRow), NEWWIDE);
+  for (const r of repairs) console.log(`  repair: NEP holds a nameless record on ${r.ps} — filling it in as ${r.printed}`);
+}
+
+/* ---- 2. the creates ---- */
+write(named(++n, `CREATE-${creates.length}-new-members`, 'PeopleSoft Number'),
+  NEWCOLS, creates.map(newRow), NEWWIDE);
+
+/* ---- 3. anything the staffing roster can add, once the record exists ---- */
+// Rank is left out: the only one of them on the staffing roster is a recruit,
+// and NEP still has no Recruit value on the DC Fire Rank dropdown.
 const phone = s => { const d = num(s); return d.length >= 10 ? '+1' + d.slice(-10) : ''; };
 const platoons = new Set(N.map(r => L(r['Platoon'])).filter(Boolean));
-const extra = creates.map(c => ({ c, p: tsBy.get(c.ps) })).filter(x => x.p && platoons.has(L(x.p.platoon)) && phone(x.p.phone));
-if (extra.length) write(`Local36-PAYING-2-platoon-and-phone-${extra.length}.xlsx`,
+const extra = creates.map(c => ({ c, p: tsBy.get(c.ps) }))
+  .filter(x => x.p && platoons.has(L(x.p.platoon)) && phone(x.p.phone));
+if (extra.length) write(named(++n, `platoon-and-phone-${extra.length}`, 'PeopleSoft Number'),
   ['PeopleSoft Number', 'Platoon', 'Phone Number'],
   extra.map(x => [x.c.ps, L(x.p.platoon), phone(x.p.phone)]), [18, 14, 16]);
 
-/* ---- 3. the two already on the roster: give them their payroll number ---- */
+/* ---- 4. the ones already on the roster under another spelling ---- */
+// These set a payroll number on a record that has none, so the key MUST be the
+// other column. Anything extra is left off: the fewer key-shaped columns in the
+// file, the less there is to pick wrongly at step 3.
+const byHand = [];
 for (const x of links) {
   const a = ALREADY[x.ps];
-  const rec = N.find(r => L(r[a.key]).replace(a.key === 'First Name' ? /(?!)/ : /\D/g, '') === a.value || L(r[a.key]) === a.value);
-  const header = ['PeopleSoft Number'], row = [x.ps];
-  if (L(rec['Paying Active Member']) !== 'Yes') { header.push('Paying Active Member'); row.push('Yes'); }
-  const p = tsBy.get(x.ps);
-  if (p && !L(rec['Platoon']) && platoons.has(L(p.platoon))) { header.push('Platoon'); row.push(L(p.platoon)); }
-  if (p && !L(rec['Phone Number']) && phone(p.phone)) { header.push('Phone Number'); row.push(phone(p.phone)); }
-  write(`Local36-PAYING-${files.length + 1}-LINK-${a.who.split(',')[0]}-payroll-number.xlsx`,
-    [a.key, ...header], [[a.value, ...row]], [22, 18, 20, 14, 16]);
-  console.log(`  link: register "${x.printed}" ${x.ps} -> NEP "${a.who}" via ${a.key} ${a.value}` +
-    (header.length > 1 ? ' (also setting ' + header.slice(1).join(', ') + ')' : ''));
+  // The key has to pick out one record. A stub sharing the value makes it
+  // ambiguous, and no upload can resolve that — it is a deletion first.
+  const hits = N.filter(r => L(r[a.key]).replace(/^0+/, '') === L(a.value).replace(/^0+/, ''));
+  if (hits.length !== 1) {
+    byHand.push([x, a, hits, `${a.key} "${a.value}" matches ${hits.length} records, so no upload can pick one`]);
+    continue;
+  }
+  write(named(++n, `LINK-${a.who.split(',')[0]}-payroll-number`, a.key),
+    [a.key, 'PeopleSoft Number'], [[a.value, x.ps]], [22, 18]);
+  console.log(`  link: register "${x.printed}" ${x.ps} -> NEP "${a.who}" — key on ${a.key} ${a.value}, NOT on the payroll number`);
+}
+if (byHand.length) {
+  console.log('\nNO FILE BUILT — these have to be done by hand in NEP:');
+  for (const [x, a, hits, why] of byHand) {
+    console.log(`  ${a.who} — ${why}`);
+    hits.forEach(h => console.log(`      "${L(h['Last Name'])}, ${L(h['First Name'])}" ` +
+      `payroll "${L(h['PeopleSoft Number']) || '(blank)'}" ` +
+      `${L(h['Current Company']) || 'no company'} ${L(h['Appointment Date']) || ''}`.trimEnd()));
+    console.log(`      delete the stub, then type ${x.ps} onto the record that has the history.`);
+  }
 }
 
-console.log('\nFILES (one at a time, in order — never as a workbook):');
-for (const [name, rows, key] of files) console.log(`  ${name}  —  ${rows} row${rows === 1 ? '' : 's'}, keyed on ${key}`);
+console.log('\nFILES (one at a time, in this order — never as a workbook):');
+for (const [name, rows, key] of files) console.log(`  ${name}\n      ${rows} row${rows === 1 ? '' : 's'} · at step 3 choose primary key: ${key}`);
