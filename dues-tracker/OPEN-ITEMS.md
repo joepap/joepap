@@ -18,16 +18,21 @@ Paul M** each had the son's payroll number REMOVED from the father's record
 (Klinger also got retired dues 2022/23/25/26 marked Paid, which fits his
 Active Retired status).
 
-**Three small tails from that session:**
-- **Chapman James J is Active with his number but paying is still blank** —
-  he is on the register at 49.19; he needs Yes.
-- **Richards Christopher J (00099359) and Turner Michaela (00116848) did not
-  take** — both numbers are still free and both are on the July register.
-  Worth a retry.
-- **Klinger's and Schaefer's sons now have no record anywhere.** Their
-  numbers (00130148, 00132969) are free and both men pay every check, so they
-  join the create-from-register-proof pile — they were previously invisible
-  because their numbers sat on their fathers' records.
+**All three tails closed in roster-54 (17 Aug 02:47, 3,427 members):** Chapman
+got his Yes, Richards took 00099359, Turner Michaela took 00116848 — and the
+**two hidden sons now exist as members**: `Klinger, Wayne` (00130148, Engine
+10, Platoon 1) and `Schaefer, Paul J` (00132969, Engine 11, Platoon 3, IAFF
+**1554826** — their roll's active Paul Schaefer of Dunkirk, alongside Matthew
+and Michaela). Both created by keying on the freed PeopleSoft Number so NEP
+made new records instead of updating the fathers. Current: **Active 1,836 ·
+with a payroll number 1,784 · Paying Yes 1,773 · 48 July payers still with no
+NEP record.**
+
+**Watch out when diffing exports:** a plain name-keyed comparison mis-pairs
+the duplicate-name records (the ALL-CAPS cohort, the three Michael Smiths) and
+invents phantom address/field changes. Use the two-pass diff that cancels
+identical rows as a multiset first — `scratchpad/diff5x.js` — which reported
+this export correctly as 3 edits + 2 additions.
 
 Previous state (roster-52, 01:07): Active 1,829 · Active Retired 311 ·
 Retired 637 · Drop 321 · no status 94. **Paying Yes = 1,769** — the July
