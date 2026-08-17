@@ -811,12 +811,41 @@ rate and will need re-running.
 - **Active side, solid**: 1,815 verified payers vs their 1,635 MEM = **180
   undercounted** = $3,429/month, **$41,148/year**. Plus 180 firefighters who
   may not be on the international's rolls for benefits at all.
-- **Retired side, a QUESTION not a claim**: their roll has 872 MRM; only 313
-  of our retirees pay retiree dues. If half-rate per capita is charged on all
-  of them, the 559 difference is $5,324/month, **$63,894/year**. Confirm with
-  the international before asserting it.
+- **Retired side — SETTLED as fact (Joe, 17 Aug): "this is not a question, it
+  is a fact."** Per capita IS charged at half rate on every retiree on their
+  roll. Their roll has 872 MRM; only 313 of our retirees pay retiree dues, so
+  the local pays on 559 it cannot match to a dues payment: $5,324/month,
+  **$63,894/year**. The deck states it plainly; the old "confirm with the
+  international" hedge is removed.
 - **Net**: a bill computed on their roll is $473,431/yr; on our verified
   records $450,685/yr — **$22,746 apart**, the two gaps pulling opposite ways.
+
+## Waiting on NEP — now its own section of the board deck (17 Aug)
+
+Joe: "add info on things we are waiting on for nep — promotional history and
+some of the other fields." Placed immediately after "What is left · and who
+owns it" so NEP reads as the third owner of outstanding work, alongside the
+International and the treasurer. What the section says, all of it checked
+against the built files (`scratchpad/promo2.json`, 494 rows):
+
+- **The Promotional Information tab** — 12 rows / 24 fields, requested of the
+  help desk 15 Aug as `Local36-NEP-fields-to-add.xlsx`: FTO (start | end),
+  Vice Technician 1/2/3 (start | end each), Technician (start | end, no exam),
+  Sergeant through Fire Chief (promotion date with the exam date beside it).
+- **Current Company** is missing 13 real assignments: EMS 1–7, Homeland
+  Security, Fire Operations Center, Emergency Liaison Officer, Fleet
+  Maintenance Division, Recruitment, Information Technology.
+- **DC Fire Rank has no "Recruit"** — the rank of the class on the treasurer's
+  list, so those members cannot be entered correctly until it is added.
+- **494 officers built and waiting**: 1,018 promotion dates and 465 exam dates
+  (147 Sgt / 190 Lt / 76 Capt / 36 BFC / 12 DFC / 3 Asst / 1 Fire Chief), each
+  exam placed against the rank the officer holds today. Held behind the
+  dropdown: Graham -> EMS 3, Raymer -> EMS 1. Known future dates: Deems
+  Technician 07/26/2026, McKee Vice Technician 08/23/2026.
+
+The counts above come from the data file, not from memory: 494 officers carry
+1,018 promotion dates, and 465 of them have an exam date — 29 officers have a
+promotion on record with no exam, which is why 465 and 494 differ.
 
 ## The program we are building next (Joe, 17 Aug — on the board deck)
 
@@ -842,10 +871,24 @@ Association, District of Columbia, IAFF Local 36* — with the emblem's red
 throughout: "in good standing", "dues checkoff", "the International", "the
 local", "brothers and sisters", "per capita", "separation".
 
-**STILL NEEDED: the actual logo files.** The Local 36 emblem was sent twice as
-an inline image and never landed on disk, so it could not be embedded (the
-artifact CSP forbids linking to an outside image — it must be a data URI in
-the file). Joe also wants IAFF and NEP marks on the roadmap section, where
-there are currently three text plates ready to receive them. Ask for the files
-as attachments (the way the NEP exports arrive, landing in
-`/root/.claude/uploads/`) or committed into the repo.
+**The emblem — FOUND AND EMBEDDED, 17 Aug.** Inline chat images never land on
+disk, so two attempts failed. It was in Joe's own Google Drive all along:
+*My Drive › Local 36 Logo › `L36_430 (1).png`* (430×463 RGBA, file id
+`1uNhJySsnnKIrtojb_4lMhB5rA_QXPcND`) — pulled through the Drive connector,
+decoded, and now stored three ways so it can never go missing again:
+
+- `dues-tracker/assets/local36-emblem.png` — **committed to the repo** (the
+  `.gitignore` excludes `public/logo.png`, so that copy alone was not durable)
+- `dues-tracker/public/logo.png` — what the app serves; `server.js` now falls
+  back to `assets/` so a fresh checkout still shows it on every page header
+- the board deck — inlined as a base64 data URI in one CSS variable, drawn at
+  two sizes (cover and footer). The whole page is 0.25 MB, well inside the
+  16 MB artifact limit.
+
+The lettering is black on transparent, so the emblem always sits on a white
+circular plate — otherwise it disappears on a dark-mode screen. Verified in
+Chromium at 1440×900 in both light and dark, no horizontal overflow.
+
+**The three text plates on the roadmap section are GONE** (Joe, 17 Aug: "you
+can delete this") — the IAFF/NEP/Local 36 placeholders and their CSS were
+removed rather than left waiting for marks we do not have. Do not re-add them.

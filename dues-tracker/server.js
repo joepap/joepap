@@ -107,9 +107,11 @@ app.get('/reconcile.html', page('reconcile.html'));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css'), { cacheControl: false, etag: true }));
 app.use('/js', express.static(path.join(__dirname, 'public', 'js'), { cacheControl: false, etag: true }));
 app.get('/logo.png', (req, res) => {
-  // Same union logo the check-in app uses; either location works.
+  // Same union logo the check-in app uses; either location works. The copy in
+  // assets/ is the one committed to the repo, so a fresh checkout still has it.
   for (const p of [path.join(__dirname, 'public', 'logo.png'),
-                   path.join(__dirname, '..', 'public', 'logo.png')]) {
+                   path.join(__dirname, '..', 'public', 'logo.png'),
+                   path.join(__dirname, 'assets', 'local36-emblem.png')]) {
     if (fs.existsSync(p)) return res.sendFile(p);
   }
   res.status(404).end();
