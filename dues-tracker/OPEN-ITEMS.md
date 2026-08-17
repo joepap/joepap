@@ -3,8 +3,33 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 17 Aug 2026, 01:07 — 3,425 members**
-(`data/uploads/roster-52`, gitignored). Active 1,829 · Active Retired 311 ·
+Roster state at last update: **NEP export of 17 Aug 2026, 02:32 — 3,425 members**
+(`data/uploads/roster-53`, gitignored). Active **1,834**. **Active members
+with a PeopleSoft number: 1,780 of 1,834** — the PSFILL2 batch landed 190 of
+191 (Schaefer Paul M's was deliberately removed instead, see below), leaving
+54 without. Roster-wide duplicate payroll numbers: **2**, both known merge
+pairs (barbosa/Barbosa 00115712, McCoy/Mccoy Jr 00132282).
+
+**Joe's 17 Aug status moves, all verified**: Sullivan Jason, Roop Michael A,
+Chapman James J (Retired -> Active), Coates Q'Juan (Drop -> Active), Mitchell
+Kenneth (Life -> Active + Yes), Akers renamed Dahave -> **Dahvae**. And he
+worked both families the right way round: **Klinger Wayne D** and **Schaefer
+Paul M** each had the son's payroll number REMOVED from the father's record
+(Klinger also got retired dues 2022/23/25/26 marked Paid, which fits his
+Active Retired status).
+
+**Three small tails from that session:**
+- **Chapman James J is Active with his number but paying is still blank** —
+  he is on the register at 49.19; he needs Yes.
+- **Richards Christopher J (00099359) and Turner Michaela (00116848) did not
+  take** — both numbers are still free and both are on the July register.
+  Worth a retry.
+- **Klinger's and Schaefer's sons now have no record anywhere.** Their
+  numbers (00130148, 00132969) are free and both men pay every check, so they
+  join the create-from-register-proof pile — they were previously invisible
+  because their numbers sat on their fathers' records.
+
+Previous state (roster-52, 01:07): Active 1,829 · Active Retired 311 ·
 Retired 637 · Drop 321 · no status 94. **Paying Yes = 1,769** — the July
 Mark-Yes batch landed 11/11 (Bartee, Butler, Dombach, Elliott No→Yes, Irving
 No→Yes, Levett, Roberts, Young + by hand Shaw +00071349, Drake, Wimbish
