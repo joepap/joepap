@@ -817,3 +817,35 @@ rate and will need re-running.
   the international before asserting it.
 - **Net**: a bill computed on their roll is $473,431/yr; on our verified
   records $450,685/yr — **$22,746 apart**, the two gaps pulling opposite ways.
+
+## The program we are building next (Joe, 17 Aug — on the board deck)
+
+Kept general in the presentation on purpose; this is the shape:
+
+1. **Everything lands in one Google Drive folder, automatically** — the food
+   chain list when published, Personnel Actions as signed, and the scanned
+   DCHR dues checkoff report.
+2. **The program watches that folder**, picks up each document as it appears,
+   and runs the checks we did by hand this month — including reconciling the
+   checkoff report to the totals DCHR prints on it.
+3. **It hands back finished work**: NEP upload sheets, the changes the
+   International's database needs, anything doubtful flagged for human eyes
+   (never guessed), and a plain synopsis of what was done and what waits.
+
+Two parallel tracks: keep working with **NEP** to streamline and automate what
+we send them, and check with **the International** on API progress so the two
+databases can eventually sync directly.
+
+**Branding**: the deck now carries the local's legal name — *Fire Fighters
+Association, District of Columbia, IAFF Local 36* — with the emblem's red
+(#C8102E) as the accent and a red banner on every section. Union vocabulary
+throughout: "in good standing", "dues checkoff", "the International", "the
+local", "brothers and sisters", "per capita", "separation".
+
+**STILL NEEDED: the actual logo files.** The Local 36 emblem was sent twice as
+an inline image and never landed on disk, so it could not be embedded (the
+artifact CSP forbids linking to an outside image — it must be a data URI in
+the file). Joe also wants IAFF and NEP marks on the roadmap section, where
+there are currently three text plates ready to receive them. Ask for the files
+as attachments (the way the NEP exports arrive, landing in
+`/root/.claude/uploads/`) or committed into the repo.
