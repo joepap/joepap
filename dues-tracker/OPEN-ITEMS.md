@@ -592,6 +592,27 @@ would have dropped him off that list with no trace. `lib/audit.js` now counts
 group membership as content, which is why the "holds nothing" pile fell from 56
 to 15.
 
+## For the treasurer — sent 17 Aug
+
+`Local36-TREASURER-July-register-questions.xlsx`, three sheets off the
+verified 25 July register:
+
+1. **The 11 zero-dollar members.** Only **Glover Tye M and Price Jr Woodrow**
+   are newly stopped (paying 49.19 in June); the other nine were already
+   $0.00 in June. Joe's call, 17 Aug: leave them on the sheet for the
+   treasurer rather than flipping their NEP paying field.
+2. **48 new payers with no NEP record** (not 45 — the wider name check found
+   three more), $2,361.12 a pay period. Mostly the 00143xxx class block,
+   none on telestaff = still in the Training Division. Waiting on the
+   recruit-dues answer before records get created.
+3. **39 working with no dues line** — the honest chase list. The raw count
+   is 113, but **46 chiefs** (outside the unit) and **27 single-role EMS**
+   (the other union — Paramedic / EMT / Advanced Practice Provider) and
+   1 recruit are correctly absent and excluded, with the sheet saying so.
+   Of the 39: 28 already have NEP records (points at lost paperwork),
+   11 have none. Includes **Akers Dahvae** — the real spelling, no record
+   at all — and Bianco/Hines-era names from the old FORWARD-9 sheet.
+
 ## Ready and waiting to be forwarded
 
 - **`Local36-FORWARD-9-working-no-dues.xlsx`** — nine members working on the
