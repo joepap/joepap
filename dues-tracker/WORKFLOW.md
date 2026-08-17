@@ -255,3 +255,11 @@ worse, quietly writes to the wrong member.
 - Every sign-in and every change is logged **with the person's name**.
 - Member data lives in `data/` — never in git, never public. The site is
   name+password gated with a brute-force lockout.
+
+
+**ONE FILE PER UPLOAD — never a workbook of tabs.** NEP takes a single sheet at
+a time, so a batch of related changes ships as numbered individual `.xlsx`
+files (`1-THING-on-iaff.xlsx`, `1-THING-on-email.xlsx`, ...), not one workbook
+with a tab per key. Joe, standing rule, restated 17 Aug. Review sheets that
+are NOT uploads may be workbooks, but name them so they cannot be mistaken for
+one — e.g. `0-THING-READ-THIS-FIRST.xlsx`.

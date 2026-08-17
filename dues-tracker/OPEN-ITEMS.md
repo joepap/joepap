@@ -1020,8 +1020,13 @@ on the upload tabs comes from a grade.
 The 50-year-plus members used to be held as a "company" in NEP; that went away
 and took the grouping with it. Joe supplied the list (218 names, first + last
 only, no numbers). `scratchpad/fifty.js` rebuilds it into
-**`Local36-50-YEAR-members.xlsx`** — status `Active Retired` plus a `Notes`
-value of **`50 year member`**.
+****eleven individual upload files** — status `Active Retired` plus a `Notes`
+value of **`50 year member`** plus the 2026 dues. **NEP takes one file per
+upload, never a workbook of tabs** (Joe's standing rule, restated 17 Aug), so
+they ship numbered: `1-FIFTY-status-note-on-{iaff,email,lastname,firstname}`,
+`2-FIFTY-note-on-{iaff,email,firstname}`,
+`3-DECEASED-note-on-{iaff,email,lastname,firstname}`, with
+`0-FIFTY-READ-THIS-FIRST.xlsx` as the review sheet (not an upload).
 
 **All 218 matched a member record, each to exactly one person.** 216 matched
 letter-for-letter; two did not and are NOT guesses — each resolved to a single
