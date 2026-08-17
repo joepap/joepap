@@ -1068,6 +1068,14 @@ per-capita standing. Everything is sized off one unit
 **When the numbers change, edit `dashboard-src.html` and run `build-dash.js`**
 (it inlines the emblem), then republish to the same artifact URL.
 
+**Sizing, after Joe said the figures were hard to read (17 Aug):** the headline
+numbers are **156px** on a 1080p screen and the secondary rows **58px** — up
+from 101 and 37. The space came from tighter padding, gaps and sub-lines, plus
+scaling `--u` (now `min(0.655vw, 1.165vh)`) into the slack at the bottom.
+**If you add a row, shrink something else rather than the digits** — the whole
+point of this board is being legible from the door. Re-check with
+`measure.js` (must stay under 1080) and `shotdash.js` (all four sizes).
+
 ## Waiting on NEP — now its own section of the board deck (17 Aug)
 
 Joe: "add info on things we are waiting on for nep — promotional history and
