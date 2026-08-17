@@ -1015,6 +1015,54 @@ Firefighter and EMT, and `2D` is only 33% anything — so the sheet shows the
 grade and the most common rank at it, labelled as a hint to confirm. Nothing
 on the upload tabs comes from a grade.
 
+## The 50-year members — the grouping that was lost (Joe, 17 Aug)
+
+The 50-year-plus members used to be held as a "company" in NEP; that went away
+and took the grouping with it. Joe supplied the list (218 names, first + last
+only, no numbers). `scratchpad/fifty.js` rebuilds it into
+**`Local36-50-YEAR-members.xlsx`** — status `Active Retired` plus a `Notes`
+value of **`50 year member`**.
+
+**All 218 matched a member record, each to exactly one person.** 216 matched
+letter-for-letter; two did not and are NOT guesses — each resolved to a single
+member and the reason is printed on the review tab:
+- **"Bruke, Paul T" -> Burke, Paul T** (one letter transposed; the roll holds
+  exactly one Paul T Burke, already Active Retired)
+- **"Delgrosso, Robert A" -> Del Grosso, Robert** (the list runs the name
+  together and adds a middle initial; one Del Grosso on the roll)
+
+**HELD BACK ON PURPOSE: 60 of the 218 are marked Deceased.** Setting them
+Active Retired would put dead members back on the billable roll and count them
+for per capita, so **the status change is not in their files** — tab 3 carries
+the note only and is Joe's to run or skip. This was flagged, not decided.
+
+The rest: **133 get status + note** (127 Retired, 5 Life, 1 Alumni) and
+**25 already read Active Retired** so they get the note alone.
+
+**Two traps this file avoids, both worth remembering:**
+1. **A Notes upload OVERWRITES the field.** Six of the 218 already had
+   something written there — "LIFE MEMBER 50+", "Paid $200 in 2024 / He is a
+   Legacy member" — so the file writes `50 year member — <what was there>`
+   rather than wiping it. Always check `Notes` before uploading `Notes`.
+2. **`fold()` strips digits.** The first build of this script reused the NAME
+   normaliser on the IAFF number, so every number collapsed to the empty string
+   and no number ever looked unique — which pushed 43 people onto a by-hand
+   list for no reason. Identifiers get their own normaliser (`num`). With it
+   fixed, 102 key on the IAFF number and only **4 need doing by hand** — all
+   four Deceased, sharing a last name, so they only matter if Joe runs tab 3.
+
+Every one of the 214 upload rows was re-checked against roster-57: each key
+resolves to exactly one member, and no Deceased record appears in a file that
+sets a status.
+
+**If Joe runs the status files, the roll shifts:** Active Retired 317 -> 450,
+Retired 634 -> 507, Life 20 -> 15, Alumni 100 -> 99. That changes the
+per-capita retiree denominator, so re-run `facts.js` and the deck afterwards —
+though note these are 50-year members who mostly do NOT pay current retiree
+dues, so "Active Retired" here means long-service standing rather than the
+dues-paying test the sweep rule used. **Worth confirming with Joe that the two
+meanings can share one status.**
+
 ## Per capita — the October rate (Joe, 17 Aug)
 
 **$19.05 is the CURRENT rate**, confirmed by Joe, and every figure in the deck
