@@ -873,6 +873,98 @@ solid; the reason is not known and is a question for DCHR and the treasurer.
 `lib/snapshot.js` now keeps goal and taken apart so this cannot be blurred
 again, and `test/snapshot.test.js` pins it.
 
+## THE NUMBERS ARE SETTLED — full audit of the board deck, 17 Aug
+
+Joe asked for a whole-presentation pass ("this should look so professional and
+legit... not duplicative... clear messages for people that don't have time to
+waste"). A five-lens review raised 110 findings; 45 survived adversarial
+verification. Everything below was then re-derived from the real files by
+`scratchpad/facts.js` + `scratchpad/verify.js`. **`scratchpad/FACTS-BRIEF.md`
+is the ground truth; if a number is not in it, it does not go on a screen.**
+
+### Four real errors that were on the deck and are now fixed
+
+1. **`$89,475.80` is the GOAL column, not what was collected.** DCHR prints
+   both. Actually deducted on 25 July: **$89,294.30**. Annualised at 26
+   periods that is **$2,321,652**, not $2,326,371. The old deck said
+   "collected" and claimed the register "reconciled exactly" — it does not.
+2. **The gap is a dime a member.** Every one of the 1,815 paying lines reads
+   goal `49.19`, taken `49.09`. 1,815 × $0.10 = **$181.50 exactly**, every
+   payday, **$4,719 a year**. Both our totals match DCHR's printed totals
+   exactly, so the fact is solid — **the reason is unknown and is a question
+   for DCHR, not something to guess at.** This is now its own screen.
+3. **The retiree denominator was wrong.** 313 is the Active Retired *status*
+   count. The number of records that PAID 2026 retiree dues is **358** (313
+   Active Retired + 14 Retired + 13 Alumni + 10 Life + 4 Honorary + 3 Active
+   + 1 Deceased). So the retired gap is **872 − 358 = 514**, not 559 —
+   **$4,898/month, $58,781/year**, and the two-sided difference is
+   **$17,633** ($473,483 on their roll vs $455,850 on ours), not $22,746.
+   The old figures also silently used a $9.525 half-rate, so 559 × $9.53 did
+   not even compute to the printed total. Anyone with a phone would have
+   caught it.
+4. **151 records were created, not 136** — and **150 of the 151 are Active
+   members marked as paying dues.** Better and true.
+
+### The register against our own roll — the settled split
+
+Of the **1,815** paying members on 25 July:
+- **1,719** tie to a member record **by payroll number** (exact, unambiguous)
+- **47** match a member by NAME but the register's number is not the one we
+  hold — usually one digit. **UNSETTLED.** These are now a workbook sheet
+  and a line on the deck owned by the EVP; each gets read back against the
+  scanned page, never guessed. (5 of the 47 are names shared by two or more
+  members — ambiguous, so a person identifies the right one first.)
+- **49** have no record with the local at all. **46** carry payroll numbers in
+  the 00143xxx block — the recruit class.
+
+A name that matches two members is NOT "no record". Calling it that was what
+produced the earlier 54/42 split; the honest split is 49/47.
+
+### Counts that changed, and why
+
+| | was | now | why |
+|---|---|---|---|
+| Billed as active, not ours | 10 | **9** | the list has nine names |
+| Paying, no record | 48 / 54 | **49** | ambiguous names are not "no record" |
+| Register number differs | — | **47** | new list, new owner (EVP) |
+| Dues stopped | 11 | **13** | 11 at $0.00 **plus** Glover and Price, still working with the dues line gone. Joe: "keep them on the same sheet — it's the same overall problem" |
+| Left the payroll | 7 | **5** | Glover/Price moved to dues-stopped; Botwin (promoted) and Sanders (already Retired) cleared by Joe |
+| Staffing roster | 1,684 | **1,684** | confirmed: 2,469 is shift ROWS, 1,684 is people. Do not print 2,469 |
+
+**Every sheet's row count now equals the number printed on the deck.** The
+workbooks are rebuilt from `scratchpad/board-workbooks.js` — now **nine**
+lists across three files (combined / IAFF / treasurer).
+
+### Structure: 13 screens to 12, and each one fits a projector exactly
+
+Cut the "What we built" screen entirely — it duplicated "How this was done"
+(same 3,607 lines, same 223 log entries, same premise). Cut the generic
+father-and-son paragraph that pre-told the Watson story two screens early.
+Cut the "to the penny" claim in all three places it appeared — it was the one
+line the rest of the deck disproved. Headlines now carry the message rather
+than label the topic ("What was blank in July is filled in today", "The
+register is a dime short on every member", "Undercounted by 180. Overcounted
+by 514."). **Added a closing screen with the actual ask** — approve the four
+IAFF lists, treasurer takes four lists, get the new per-capita rate — because
+twelve screens previously ended without telling the board what to decide.
+
+Verified in Chromium at 1440×900: all 12 sections are exactly one screen tall,
+no horizontal overflow, light and dark.
+
+## The office wall board (new, 17 Aug)
+
+`claude.ai/code/artifact/f81c07e6-6086-4f2c-990b-6368c38a7cd2` — Joe wants it
+"displayed somewhere prominent in the office". One screen, no scrolling:
+1,815 paying · 1,834 Active · 313 Active Retired in huge type, then the whole
+roll by status, what the records can prove, the money per pay period, and the
+per-capita standing. Everything is sized off one unit
+(`--u: min(0.615vw, 1.094vh)`) so it fits any display; verified at 1440×900,
+1920×1080 and 3840×2160, light and dark. Prints to one landscape page —
+`Local36-membership-board.pdf` was sent to Joe.
+
+**When the numbers change, edit `dashboard-src.html` and run `build-dash.js`**
+(it inlines the emblem), then republish to the same artifact URL.
+
 ## Waiting on NEP — now its own section of the board deck (17 Aug)
 
 Joe: "add info on things we are waiting on for nep — promotional history and
