@@ -108,8 +108,10 @@ if (problems.length) { console.error('REFUSING TO WRITE:'); problems.forEach(p =
 
 const wb = XLSX.utils.book_new();
 const ws = XLSX.utils.aoa_to_sheet(aoa);
-ws['!cols'] = [{ wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 14 },
-               { wch: 20 }, { wch: 22 }, { wch: 12 }, { wch: 16 }, { wch: 100 }];
+// Never declare a width past the last real column: NEP counts columns off this
+// block rather than the sheet dimension, so a spare width becomes a phantom
+// blank header on its mapping screen.
+ws['!cols'] = [18, 14, 16, 14, 14, 20, 22, 12, 16, 100].slice(0, aoa[0].length).map(w => ({ wch: w }));
 XLSX.utils.book_append_sheet(wb, ws, 'Upload');
 const name = 'Local36-NODUES-7-CREATE-' + missing.length + '-new-members.xlsx';
 XLSX.writeFile(wb, path.join(OUT, name));

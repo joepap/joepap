@@ -86,7 +86,11 @@ const write = (name, header, rows, widths) => {
     { console.error('REFUSING TO WRITE ' + name + ': row ' + (i + 1) + ' has an empty cell'); process.exit(1); }
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(sheet);
-  ws['!cols'] = widths.map(w => ({ wch: w }));
+  // Never declare a width for a column that has no data. NEP counts the columns
+  // from this block, not from the sheet's dimension, so a spare width becomes a
+  // phantom blank header on its mapping screen — and several of them collide as
+  // "duplicate column headers". Clamp here rather than at each call site.
+  ws['!cols'] = widths.slice(0, header.length).map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, ws, 'Upload');
   XLSX.writeFile(wb, path.join(OUT, name));
   files.push([name, rows.length, header[0]]);

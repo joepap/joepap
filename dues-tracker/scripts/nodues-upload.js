@@ -102,7 +102,9 @@ const write = (name, field, rows) => {
   for (const r of rows) aoa.push([r.key, 'Active', 'No']);
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{ wch: 34 }, { wch: 16 }, { wch: 20 }];
+  // Never declare a width past the last real column — NEP reads the column count
+  // off this block, and a spare one shows up there as a blank header.
+  ws['!cols'] = [34, 16, 20].slice(0, aoa[0].length).map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, ws, 'Upload');
   XLSX.writeFile(wb, S + '/' + name);
   console.log(`  ${name}  —  ${rows.length} rows, keyed on ${field}`);

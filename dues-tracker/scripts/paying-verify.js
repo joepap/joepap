@@ -32,12 +32,23 @@ let bad = 0, total = 0;
 const created = new Set();     // payroll numbers a CREATE file will have made
 const touched = new Set();     // payroll numbers already written to by some file
 for (const f of files) {
-  const aoa = XLSX.utils.sheet_to_json(XLSX.readFile(path.join(S, f)).Sheets['Upload'], { header: 1, blankrows: false });
+  const ws = XLSX.readFile(path.join(S, f), { cellStyles: true }).Sheets['Upload'];
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
   const [hdr, ...rows] = aoa;
   const keyField = hdr[0];
   const isCreate = /CREATE/.test(f);
   const iPS = hdr.indexOf('PeopleSoft Number');
   const problems = [];
+  // NEP reads the column count off the width block, not the sheet dimension, so
+  // a width declared past the last real column shows up on its mapping screen as
+  // a blank header — and two or more of them read as duplicate headers.
+  const declared = (ws['!cols'] || []).length;
+  if (declared > hdr.length) problems.push(`declares ${declared} column widths for ${hdr.length} columns — ` +
+    `NEP will show ${declared - hdr.length} phantom blank column(s)`);
+  const dim = XLSX.utils.decode_range(ws['!ref']);
+  if (dim.e.c + 1 !== hdr.length) problems.push(`sheet spans ${dim.e.c + 1} columns but the header has ${hdr.length}`);
+  if (hdr.some(h => L(h) === '')) problems.push('a header cell is empty');
+  if (new Set(hdr.map(L)).size !== hdr.length) problems.push('two columns share a header: ' + JSON.stringify(hdr));
   for (const [i, r] of rows.entries()) {
     total++;
     const at = 'row ' + (i + 2);

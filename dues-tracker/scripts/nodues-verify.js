@@ -23,10 +23,20 @@ const files = fs.readdirSync(S).filter(f => /^Local36-NODUES-/.test(f)).sort();
 let bad = 0, total = 0;
 const seenPeople = new Set();
 for (const f of files) {
-  const ws = XLSX.readFile(S + '/' + f).Sheets['Upload'];
+  const ws = XLSX.readFile(S + '/' + f, { cellStyles: true }).Sheets['Upload'];
   const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
   const [hdr, ...rows] = aoa;
   const problems = [];
+  // NEP reads the column count off the width block, not the sheet dimension, so
+  // a width declared past the last real column shows up on its mapping screen as
+  // a blank header — and two or more of them read as duplicate headers.
+  const declared = (ws['!cols'] || []).length;
+  if (declared > hdr.length) problems.push(`declares ${declared} column widths for ${hdr.length} columns — ` +
+    `NEP will show ${declared - hdr.length} phantom blank column(s)`);
+  const dim = XLSX.utils.decode_range(ws['!ref']);
+  if (dim.e.c + 1 !== hdr.length) problems.push(`sheet spans ${dim.e.c + 1} columns but the header has ${hdr.length}`);
+  if (hdr.some(h => L(h) === '')) problems.push('a header cell is empty');
+  if (new Set(hdr.map(L)).size !== hdr.length) problems.push('two columns share a header: ' + JSON.stringify(hdr));
   // Columns are found by name, not by position: the marking files carry three
   // columns and the create file carries ten, and both must verify the same way.
   const col = name => hdr.indexOf(name);
