@@ -820,6 +820,59 @@ rate and will need re-running.
 - **Net**: a bill computed on their roll is $473,431/yr; on our verified
   records $450,685/yr — **$22,746 apart**, the two gaps pulling opposite ways.
 
+## The 42 payroll numbers that disagreed — SETTLED by reading the scan (17 Aug)
+
+Found while building the office wall board: of the 1,815 paying lines on the
+25 July register, 1,719 matched a member by payroll number and 54 matched
+nobody at all — but **42 matched a member by NAME while the number disagreed**.
+Thirty-eight of those had been auto-verified by name only, so nobody had ever
+confirmed the digits. One of the two numbers was wrong in every case.
+
+Settled the way Joe's rule says — go back to the paper. Each line's number
+column was cut out of a fresh render of the page at the importer's own zoom
+and read by eye at 2x with the neighbouring lines visible for column
+alignment. `scratchpad/settled.json` holds every reading;
+**`Local36-42-payroll-numbers-settled.xlsx`** has it in three sheets.
+
+The answer is a good one for the local:
+
+- **36 — our record was RIGHT and the scan reading was wrong.** 35 of the 36
+  differ by exactly one digit (3/9, 5/9, 2/9, 8/9 confusions). Nothing to
+  change in NEP. What it does mean: the dues database is holding 36 wrong
+  employee numbers on the July import, which will invent false "stopped" and
+  "new" payers on the next comparison. **A correction script is ready but has
+  NOT been run** — it edits Joe's register data, so it waits on his word.
+- **4 — the paper gives a number our record does not have.** Type these in:
+  Coates Q'Juan P `00092196` · DeSilva Sydney David `00115723` · Robinson
+  Karl H `00026734` · White Daniel `00143802`. (DeSilva and Robinson were
+  already on the by-hand list; the scan confirms both.)
+- **2 — a different man with the same name.** Burton, Sean `00143796` (ours
+  carries 00027472; the paper's number is in the 00143xxx recruit block) and
+  Johnson, Joseph `00139634` (ours carries 00055446 and 00004546 — this is a
+  third Joseph Johnson). Both need Joe to say who they are.
+
+**Schema gap found doing this:** `pages` records mode but NOT whether the page
+was rendered rotated. This scan is duplex — even pages are 180 degrees — and
+because the importer chose per page and never wrote it down, anything that
+re-crops a stored row box has to guess. Parity happens to hold for import 8.
+Add a `rotated` column when the pages table is next touched.
+
+## The register prints TWO totals and they are not the same number (17 Aug)
+
+Also found building the wall board, and it changes a figure that was on the
+board deck. The 25 July register's columns are **Goal $89,475.80** and
+**Taken $89,294.30**. What the local actually collects is the Taken figure —
+$2,321,652 a year at 26 periods, not the $2,326,371 the goal implies.
+
+The $181.50 difference is not noise: **every one of the 1,815 paying lines
+reads a goal of 49.19 and a deduction of 49.09.** A dime a member a pay
+period, 1,815 x $0.10 = $181.50 exactly, **$4,719 a year**. The fact is
+solid; the reason is not known and is a question for DCHR and the treasurer.
+(June's scan is too dirty to compare — its goal column has OCR noise.)
+
+`lib/snapshot.js` now keeps goal and taken apart so this cannot be blurred
+again, and `test/snapshot.test.js` pins it.
+
 ## Waiting on NEP — now its own section of the board deck (17 Aug)
 
 Joe: "add info on things we are waiting on for nep — promotional history and
