@@ -872,22 +872,40 @@ throughout: "in good standing", "dues checkoff", "the International", "the
 local", "brothers and sisters", "per capita", "separation".
 
 **The emblem — FOUND AND EMBEDDED, 17 Aug.** Inline chat images never land on
-disk, so two attempts failed. It was in Joe's own Google Drive all along:
-*My Drive › Local 36 Logo › `L36_430 (1).png`* (430×463 RGBA, file id
-`1uNhJySsnnKIrtojb_4lMhB5rA_QXPcND`) — pulled through the Drive connector,
-decoded, and now stored three ways so it can never go missing again:
+disk, so two attempts failed; the Drive connector got it instead.
 
-- `dues-tracker/assets/local36-emblem.png` — **committed to the repo** (the
-  `.gitignore` excludes `public/logo.png`, so that copy alone was not durable)
+**Wrong file first — the folder named "Local 36 Logo" holds the OLD emblem.**
+`My Drive › Local 36 Logo › L36_430 (1).png` (430×463, dated 2017) is the
+plain red maltese cross with "District of Columbia" curved underneath. Joe
+caught it: "that's the wrong logo." **The CURRENT emblem is
+`l36.jpg`** — file id `1jznhdBFPd8qqch1CHswPCZunyO_pdfUl`, 4096×4096, last
+modified 1 June 2026, and it is NOT in the logo folder (parent
+`1yXPAkZe3aWqqJLoxKvyxiPRC9WNFCRFz`). It is the round seal: red outer ring,
+black ring reading WASHINGTON DC · FIRE FIGHTERS, maltese cross with the DC
+flag and the Capitol dome, LOCAL 36 beneath. **Use `l36.jpg`. Ignore the logo
+folder.** (`logoIAff36.png` in the same Drive is the International's gold
+badge, not ours.)
+
+The source JPEG is a circle on a black square, so it was cut out on the outer
+edge of the red ring — measured, not eyeballed: red spans x 117–3963,
+y 77–3924, centre (2040, 2000), radius 1923 — and masked with a 4×
+supersampled circle so the edge stays clean. The result carries its own red
+ring and needs no plate behind it. Stored three ways so it cannot go missing:
+
+- `dues-tracker/assets/local36-emblem.png` — 768px transparent cutout,
+  **committed to the repo** (the `.gitignore` excludes `public/logo.png` at
+  both levels, so that copy alone was not durable)
+- `dues-tracker/assets/local36-emblem-source-4096.jpg` — the untouched 4096px
+  original from Drive, so the cutout can be redone at any size
 - `dues-tracker/public/logo.png` — what the app serves; `server.js` now falls
   back to `assets/` so a fresh checkout still shows it on every page header
 - the board deck — inlined as a base64 data URI in one CSS variable, drawn at
   two sizes (cover and footer). The whole page is 0.25 MB, well inside the
   16 MB artifact limit.
 
-The lettering is black on transparent, so the emblem always sits on a white
-circular plate — otherwise it disappears on a dark-mode screen. Verified in
-Chromium at 1440×900 in both light and dark, no horizontal overflow.
+Verified in Chromium at 1440×900 in both light and dark, no horizontal
+overflow. Also on Joe's word (17 Aug): the deck says **"this morning"**, not
+"tonight" — he presents Tuesday 18 Aug in the morning.
 
 **The three text plates on the roadmap section are GONE** (Joe, 17 Aug: "you
 can delete this") — the IAFF/NEP/Local 36 placeholders and their CSS were
