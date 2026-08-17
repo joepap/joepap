@@ -977,6 +977,40 @@ a print stylesheet gives one screen per page at 16:9, exported by
 Joe — present from the PDF, keep the artifact link as the backup, because the
 room's wifi is not worth trusting.
 
+## Missing ranks on active members (Joe spotted it on the IAFF sheet, 17 Aug)
+
+**106 of our 1,834 active members carry no `DC Fire Rank`** — and every one of
+them pays dues, so they are unquestionably members. 92 of the 106 are on the
+"not on their roll" list going to the International, which is why Joe saw so
+many blanks there. (Whole roll: 280 of 3,427 records have no rank.)
+
+`scratchpad/rankfill.js` builds **`Local36-RANKS-missing.xlsx`**:
+
+- **80 are fillable from the department's own staffing roster**, matched on
+  PAYROLL NUMBER — never on name; 0 of the 106 matched by name alone.
+  63 Firefighter EMT · 14 Firefighter Paramedic · 2 Firefighter Technician ·
+  1 Sergeant Aide. Two upload tabs, keyed per Joe's hierarchy:
+  **38 on Email, 42 on PeopleSoft Number** (email preferred; those 42 have no
+  unique email). Each tab is key column + `DC Fire Rank` only.
+- **Telestaff wording is translated to NEP's dropdown**, not copied:
+  `FIREFIGHTER EMT` -> `Firefighter EMT`, `FIREFIGHTER TECH` ->
+  `Firefighter Technician`, and so on. Anything not in the map is NOT uploaded.
+- **26 need a person.** Two because the roster prints rank AND assignment
+  together — **Bell Sr. Renaldo "Captain - EMS Supervisor"** and **Faunce
+  Henry "Lieutenant - Staffing Officer"** — where the rank is Joe's call, so
+  the sheet offers the NEP values that could fit and stops. **Drake Roshawnda**
+  comes off the food chain: Lieutenant, promoted 11/24/2019 (confirm any
+  Paramedic/EMS variant). The other 23 are simply not on the staffing roster;
+  21 of them ARE on the July dues register, so they work somewhere the shift
+  rosters do not cover.
+
+**Pay grade is a HINT and must never be uploaded.** The June register prints a
+grade, and it correlates: grade `01` is 93% Firefighter EMT, `1C` 91%
+Firefighter Paramedic, `1B` 87% Firefighter Technician. But `01` also covers
+Firefighter and EMT, and `2D` is only 33% anything — so the sheet shows the
+grade and the most common rank at it, labelled as a hint to confirm. Nothing
+on the upload tabs comes from a grade.
+
 ## Per capita — the October rate (Joe, 17 Aug)
 
 **$19.05 is the CURRENT rate**, confirmed by Joe, and every figure in the deck
