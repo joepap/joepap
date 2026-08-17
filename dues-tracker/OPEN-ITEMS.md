@@ -3,60 +3,38 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 17 Aug 2026, 02:32 — 3,425 members**
-(`data/uploads/roster-53`, gitignored). Active **1,834**. **Active members
-with a PeopleSoft number: 1,780 of 1,834** — the PSFILL2 batch landed 190 of
-191 (Schaefer Paul M's was deliberately removed instead, see below), leaving
-54 without. Roster-wide duplicate payroll numbers: **2**, both known merge
-pairs (barbosa/Barbosa 00115712, McCoy/Mccoy Jr 00132282).
+Roster state at last update: **NEP export of 17 Aug 2026, 12:42pm — 3,427 members**
+(`data/uploads/roster-56`, gitignored). This is the LAST export before the
+18 Aug board meeting.
 
-**Joe's 17 Aug status moves, all verified**: Sullivan Jason, Roop Michael A,
-Chapman James J (Retired -> Active), Coates Q'Juan (Drop -> Active), Mitchell
-Kenneth (Life -> Active + Yes), Akers renamed Dahave -> **Dahvae**. And he
-worked both families the right way round: **Klinger Wayne D** and **Schaefer
-Paul M** each had the son's payroll number REMOVED from the father's record
-(Klinger also got retired dues 2022/23/25/26 marked Paid, which fits his
-Active Retired status).
+**Active 1,834 · Active Retired 313 · Retired 634 · Drop 320 · Alumni 100 ·
+Deceased 85 · Honorary 27 · Life 20 · no status 94.** Paying Yes 1,773 · No 7 ·
+61 active members with the dues question still unanswered. **Active with a
+payroll number: 1,782 of 1,834 (97%).** **Active with a rank: 1,808 of 1,834**
+— 106 -> 26 after this morning's fill. Duplicate payroll numbers: 2
+(00115712 barbosa/Barbosa, 00132282 McCoy/Mccoy Jr), both known merge pairs.
 
-**All three tails closed in roster-54 (17 Aug 02:47, 3,427 members):** Chapman
-got his Yes, Richards took 00099359, Turner Michaela took 00116848 — and the
-**two hidden sons now exist as members**: `Klinger, Wayne` (00130148, Engine
-10, Platoon 1) and `Schaefer, Paul J` (00132969, Engine 11, Platoon 3, IAFF
-**1554826** — their roll's active Paul Schaefer of Dunkirk, alongside Matthew
-and Michaela). Both created by keying on the freed PeopleSoft Number so NEP
-made new records instead of updating the fathers. Current: **Active 1,836 ·
-with a payroll number 1,784 · Paying Yes 1,773 · 48 July payers still with no
-NEP record.**
+**roster-55 -> roster-56 verified with the multiset diff: exactly 80 rows
+changed and the ONLY field that moved anywhere in the file was `DC Fire Rank`.**
+All 80 rank uploads landed on the right people (checked one by one against the
+upload tabs). No collateral damage.
 
-**Watch out when diffing exports:** a plain name-keyed comparison mis-pairs
-the duplicate-name records (the ALL-CAPS cohort, the three Michael Smiths) and
-invents phantom address/field changes. Use the two-pass diff that cancels
-identical rows as a multiset first — `scratchpad/diff5x.js` — which reported
-this export correctly as 3 edits + 2 additions.
+**Also confirmed landed, by looking rather than assuming:** the SO-2026-198
+retirements — **Turner Andre R, Williams Alfred C, Streat Sr.** are all Active
+Retired with 2026 retiree dues Paid — and **Washabaugh John A now carries
+00083207**.
 
-Previous state (roster-52, 01:07): Active 1,829 · Active Retired 311 ·
-Retired 637 · Drop 321 · no status 94. **Paying Yes = 1,769** — the July
-Mark-Yes batch landed 11/11 (Bartee, Butler, Dombach, Elliott No→Yes, Irving
-No→Yes, Levett, Roberts, Young + by hand Shaw +00071349, Drake, Wimbish
-Active+Yes+00006363), Wayne P went Yes→No, and **the Streat father/son fix is
-DONE**: Jr renamed "Streat JR" keeps 00126621; Sr carries his own 00022464 and
-Joe moved him to Active Retired early (2026 retiree dues NOT yet Paid — the
-PA198 file adds that tick when run). Both Washabaughs squared (Eli's record
-filled from telestaff; John A +00083207). **Active with a PeopleSoft number:
-1,587 of 1,829.** Still to run: the 25-member No files (v2), PA198 1–7, the
-three status moves (Thomas Anthony L / Potts / Clark Lawrence).
-
-**The Active Retired sweep ran 15 Aug** — Joe's rule, whole-database: 2026
-Paid = Active Retired, everything else retired-side. 542 of 546 by upload;
-Clark Timothy J flipped on the correct one of his two records (the unpaid
-530123 one; his paid 378798 record correctly stays — the pair is still a
-pending merge). Left deliberately untouched: 13 Alumni, 10 Life, 4 Honorary
-and Schneider [Deceased] who all paid 2026 under their own designations, and
-**14 Retired members who PAID 2026 and belong in Active Retired** (file not
-yet built) plus 3 Active-with-retired-dues oddballs (Faulkner Jr John M,
-Jackson Michael, Waby William D) awaiting Joe. Dues report: **13 June 2026**, 1,781
-lines / 1,768 payers. IAFF export: **July 2026**, 2,514 members. Telestaff: **5-9 Aug 2026**,
-1,684 people.
+**Still open, confirmed still open in this export** (do not assume these ran):
+- The three status moves: **Thomas Anthony L** (-> Retired + IAFF 1273776),
+  **Potts Christopher S** (-> Drop), **Clark Lawrence** (-> Retired) — all
+  three still read Active.
+- **The 25-member Mark-No files have NOT run** — only 7 members read No.
+- The rest of SO-2026-198: 21 reassignments and the rank changes.
+- By hand: **Robinson Karl H** (the plain record, no status) -> 00026734 +
+  Active + Yes · **DeSilva Sydney D** -> 00115723 · **Gibson Demarius** ->
+  Firefighter / Truck 08 / Platoon 4 + a status.
+- Merges: **Barbosa** pair, **McCoy** pair (both approved — confirm two men),
+  **Butler Arthenious** (Active, paying, no payroll number).
 
 ## Personnel Actions — the standing procedure (first run: SO-2026-198, 15 Aug)
 
