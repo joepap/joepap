@@ -25,6 +25,27 @@ test('the explanation names the reason and who settled it', () => {
   assert.match(line, /Joe/);
 });
 
+test('the ones Joe settled on 17 Aug all have an answer', () => {
+  // The eleven members sitting at $0.00 on the June register. Ten now have a
+  // written answer; DiPietro is the one still open, and must NOT get invented one.
+  const settled = ['00078082', '00103926', '00118038', '00007060',
+                   '00106864', '00033810', '00130126', '00133058', '00130127'];
+  for (const ps of settled) assert.ok(kr.reasonFor(ps), `no answer recorded for ${ps}`);
+  assert.equal(kr.reasonFor('00108259'), null, 'DiPietro has no ruling yet');
+});
+
+test('tells a drop apart from a member we are carrying active', () => {
+  // Carried active — the sheet must not read these as people who left.
+  for (const ps of ['00078082', '00103926', '00118038', '00007060', '00093437']) {
+    assert.doesNotMatch(kr.explain(ps), /no further dues lines/,
+      `${ps} is still one of ours`);
+  }
+  // Off the roll — no further dues expected.
+  for (const ps of ['00106864', '00033810', '00130126', '00133058']) {
+    assert.match(kr.explain(ps), /no further dues lines/);
+  }
+});
+
 test('flags that the status is waiting on a NEP dropdown, not on us', () => {
   const waiting = kr.awaitingStatus();
   assert.ok(waiting.length >= 1);
