@@ -1385,3 +1385,46 @@ overflow. Also on Joe's word (17 Aug): the deck says **"this morning"**, not
 **The three text plates on the roadmap section are GONE** (Joe, 17 Aug: "you
 can delete this") — the IAFF/NEP/Local 36 placeholders and their CSS were
 removed rather than left waiting for marks we do not have. Do not re-add them.
+
+## Paying but not in NEP — 49 sent by Joe, 17 Aug
+
+Joe's list from the "Treasurer - paying no record" sheet: 49 payroll numbers
+deducting on the 25 July register with no NEP record. Built by
+`scripts/paying-create.js`, checked by `scripts/paying-verify.js` (0 problems).
+
+**47 are genuinely new.** Tags **L36NEW068-114**. 44 of them are one block,
+payroll 00143793-00143865 — a class hired since the last roster, on payroll and
+paying before NEP ever heard of them. Three are older numbers that simply never
+got a record: Walker Infiniti 00103756, plus the two below.
+
+| file | rows | key |
+|---|---|---|
+| `Local36-PAYING-1-CREATE-47-new-members` | 47 | PeopleSoft Number |
+| `Local36-PAYING-2-platoon-and-phone-1` | 1 | PeopleSoft Number |
+| `Local36-PAYING-3-LINK-Bell-payroll-number` | 1 | IAFF Member Number |
+| `Local36-PAYING-4-LINK-Thomas-payroll-number` | 1 | First Name |
+
+**Two of the 49 were already on the roster under a different spelling**, and
+get their payroll number added rather than a second profile:
+
+- **Belle, TySean D 00079233** is NEP's **Bell, Tysean D** — NEP and the IAFF
+  roll both spell him Bell and agree on IAFF 1318785; only the DC payroll
+  writes Belle. His record had no payroll number. *Which spelling is legally
+  right is still open — payroll usually wins, but that is Joe's call.*
+- **Thomas, Cortni 00093402** is NEP's **Thomas, Corta M** — Class 377,
+  appointed 09/18/2016, no payroll number, and her classmates hold 00093410,
+  00093445 and 00093454, so 00093402 sits inside that block. The IAFF roll also
+  has her as Corta M. (1359071), which NEP does not hold. Her link also sets
+  Paying Yes, Platoon 1 and her phone.
+
+**Andrew Boyd Jr. (00143848) and Andrew Boyle Jr. (00120022) are two people** —
+confirmed by Joe, and by the register carrying both as separate lines. Only
+Boyd is created.
+
+Rank is set for nobody: the one createe on the staffing roster is **Griffin,
+Ethan — a recruit**, and NEP still has no Recruit value on the DC Fire Rank
+dropdown. He gets platoon Day Work and a phone in file 2; his rank waits on the
+same NEP request as the 13 company values.
+
+Only 1 of the 47 is on the IAFF roll, so the per-capita undercount grows by 46
+once these land.
