@@ -972,6 +972,45 @@ a print stylesheet gives one screen per page at 16:9, exported by
 Joe — present from the PDF, keep the artifact link as the backup, because the
 room's wifi is not worth trusting.
 
+## Per capita — the October rate (Joe, 17 Aug)
+
+**$19.05 is the CURRENT rate**, confirmed by Joe, and every figure in the deck
+and on the wall board uses it. The convention raised it by **about 81 cents,
+to roughly $19.86, effective 1 October 2026** — Joe's word, approximate, so it
+is labelled "about" everywhere it appears and the closing ask now says
+**confirm the exact figure in writing with the International**.
+
+At $19.86 (retirees at half, $9.93), computed the same way:
+
+| | at $19.05 | from 1 Oct (~$19.86) |
+|---|---|---|
+| the 180 they do not have | $41,148/yr | **$42,898/yr** |
+| the 514 retirees we cannot match | $58,781/yr | **$61,248/yr** |
+| bill on their roll | $473,483/yr | **$493,561/yr** |
+| bill on our verified records | $455,850/yr | **$475,210/yr** |
+| the two-sided difference | $17,633 | **$18,351** |
+
+**The rise alone costs the local about $20,078 a year** on the International's
+current roll ($19,360 on our verified records). That is the line on the deck:
+getting the count right is worth MORE after October, not less. When the exact
+rate lands, change `RATE`/`HALF` in `scratchpad/facts.js` and re-run.
+
+## The nine the International bills as active (Joe asked, 17 Aug)
+
+"Are these retired guys not paying anymore, or what?" — checked all nine
+against roster-55. **None of them pays the local anything.** Four we carry as
+**Retired** (Preslipsky, Eller — retired 09/22/2020 — Pennington, Robinson
+Wayne P, who is explicitly marked Paying = No) and five as **Drop** (Schott,
+Weinroth, Hutchins, Thornhill, White II). Not one appears on the July dues
+register. Only Pennington has ever paid retiree dues, and only for 2025 —
+nobody paid 2026.
+
+So they are not lapsed Active Retired members; they are people who left the
+active roll and the International was never told. **Their roll still types all
+nine MEM, so we are billed the FULL active rate for them — 9 × $19.05 × 12 =
+$2,057 a year, rising to $2,145 in October.** The deck row now says this
+plainly instead of "the overcount side of the gap".
+
 ## The office wall board (new, 17 Aug)
 
 `claude.ai/code/artifact/f81c07e6-6086-4f2c-990b-6368c38a7cd2` — Joe wants it
