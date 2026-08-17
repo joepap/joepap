@@ -772,3 +772,33 @@ the nine hold three different real ranks.
   Waiting on Joe to work the sheets; verify in his next export.
 - **Drive-folder automation** for the monthly scan — needs the public link
   confirmed and the folder name.
+
+## Board meeting, 18 Aug 2026 — what was presented
+
+Presentation: `claude.ai/code/artifact/c7a1773a-a50c-4430-9e54-91d7c3480bb1`
+(projected, scroll-snapped sections; same register-paper look as the punch
+list). Workbooks: `Local36-ALL-outstanding-work.xlsx` plus split copies
+`Local36-FOR-THE-IAFF.xlsx` and `Local36-FOR-THE-TREASURER.xlsx`.
+
+**The "where we were" baseline is roster-4 (25 July 2026)** — the last export
+before any of this work. Two findings anchor it: the `Paying Active Member`
+and `PeopleSoft Number` fields **did not exist in that export**, and the
+status vocabulary was unused (802 Active Retired against 3 Retired).
+
+Measured 25 July -> 17 Aug, all from `scratchpad/journey.js` (roster-4 vs
+roster-55, matched on email > IAFF number > name, then a fuzzy pass):
+1,639 payroll numbers added · 1,630 paying answers · 995 statuses corrected
+(813 changed + 182 set) · 1,043 IAFF numbers added/fixed · 512 ranks ·
+303 birthdates · 136 records created (**every one a paying member**) ·
+107 duplicates removed (same-name pairs 23 -> 6) · 55 names respelled.
+
+**The per-capita headline: we verified 1,815 paying members; the IAFF roll
+carries 1,635 MEM. A 180-member undercount**, plus 10 they bill as active
+whom we do not. **Joe still owes the per-capita rate** — the money slide has
+a marked slot for it and turns the 180 into dollars once he supplies it.
+Dues proven: $89,475.80 a pay period, $2,326,370 a year at 26 periods.
+
+IAFF lists recomputed against roster-55 (they shrank as the data got clean):
+215 not on their roll (180 of them paying) · 67 dropped numbers · 10 billed
+as active · 13 type corrections. Treasurer: 11 zero-dollar · 48 paying with
+no record · 38 to chase · 5 unexplained departures.
