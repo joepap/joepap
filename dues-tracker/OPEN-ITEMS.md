@@ -1039,7 +1039,16 @@ the note only and is Joe's to run or skip. This was flagged, not decided.
 The rest: **133 get status + note** (127 Retired, 5 Life, 1 Alumni) and
 **25 already read Active Retired** so they get the note alone.
 
-**Two traps this file avoids, both worth remembering:**
+**2026 retiree dues (Joe, 17 Aug): "mark these life members as not required.
+I will fill blanks only if they happened to pay dues."** Both 2026 columns are
+now on every tab — `L36 2026 Retired Dues` and `2026 Retired Dues` — set to
+**`Not Required`**, which is a value NEP already uses in these columns (1,106
+of them in the 2022 column alone). **28 of the 218 already read `Paid` and are
+left exactly as they are**; the review tab lists every one so Joe can see what
+was kept. Every cell on every row is filled with its current-or-new value,
+because a blank cell in an upload wipes the field.
+
+**Three traps this file avoids, all worth remembering:**
 1. **A Notes upload OVERWRITES the field.** Six of the 218 already had
    something written there — "LIFE MEMBER 50+", "Paid $200 in 2024 / He is a
    Legacy member" — so the file writes `50 year member — <what was there>`
@@ -1052,8 +1061,9 @@ The rest: **133 get status + note** (127 Retired, 5 Life, 1 Alumni) and
    four Deceased, sharing a last name, so they only matter if Joe runs tab 3.
 
 Every one of the 214 upload rows was re-checked against roster-57: each key
-resolves to exactly one member, and no Deceased record appears in a file that
-sets a status.
+resolves to exactly one member, no Deceased record appears in a file that sets
+a status, **no cell anywhere is empty**, and **not one row turns an existing
+`Paid` into `Not Required`**.
 
 **If Joe runs the status files, the roll shifts:** Active Retired 317 -> 450,
 Retired 634 -> 507, Life 20 -> 15, Alumni 100 -> 99. That changes the
