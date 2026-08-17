@@ -802,3 +802,18 @@ IAFF lists recomputed against roster-55 (they shrank as the data got clean):
 215 not on their roll (180 of them paying) · 67 dropped numbers · 10 billed
 as active · 13 type corrections. Treasurer: 11 zero-dollar · 48 paying with
 no record · 38 to chase · 5 unexplained departures.
+
+**Per-capita figures (Joe, 17 Aug): $19.05 per active member per month;
+active retired pay half ($9.53).** Rate was raised at last week's convention —
+Joe does not have the new number yet, so every figure below uses the current
+rate and will need re-running.
+
+- **Active side, solid**: 1,815 verified payers vs their 1,635 MEM = **180
+  undercounted** = $3,429/month, **$41,148/year**. Plus 180 firefighters who
+  may not be on the international's rolls for benefits at all.
+- **Retired side, a QUESTION not a claim**: their roll has 872 MRM; only 313
+  of our retirees pay retiree dues. If half-rate per capita is charged on all
+  of them, the 559 difference is $5,324/month, **$63,894/year**. Confirm with
+  the international before asserting it.
+- **Net**: a bill computed on their roll is $473,431/yr; on our verified
+  records $450,685/yr — **$22,746 apart**, the two gaps pulling opposite ways.
