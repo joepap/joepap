@@ -59,11 +59,27 @@ of only 16 — while working as a Platoon 4 firefighter EMT on a 2025-era payrol
 number. Almost certainly a keying error, but Life is an honour and not ours to
 overwrite in a batch, so Joe runs that file or skips it.
 
-**Nine of the 38 are not in NEP at all** and cannot be marked until a record
-exists: Boyd Keelin, Celestine Collin, Dillon Jamar J, Goldberg Joseph, Johnson
-Jeffrey A, Lee Jahred, Moore Justyn, Tapia Lima Jesus, Toure Alassane. Creating
-a record asserts membership, and whether these people joined is the open
-question on that sheet — so nothing was built for them. Waiting on Joe.
+**Nine of the 38 had no NEP record at all** — Joe asked for them on 17 Aug, so
+`Local36-NODUES-7-CREATE-9-new-members.xlsx` builds them: Boyd Keelin, Celestine
+Collin, Dillon Jamar J, Goldberg Joseph, Johnson Jeffrey A, Lee Jahred, Moore
+Justyn, Tapia Lima Jesus, Toure Alassane. Tags **L36NEW059-067**, continuing the
+002-058 batch already in NEP.
+
+Built by `scripts/nodues-create.js`, which **refuses to write** if any of them
+turns out to be on the roster by payroll number or by name — a name matching two
+records means "cannot tell apart", not "absent", and creating on top of that is
+how a duplicate profile gets made. All nine were checked: no payroll match, no
+surname-and-first-name match, no fuzzy match at 80 or above. There is no Tapia
+or Lima on the roster at all; the 43 Johnsons include no Jeffrey.
+
+Shape copied from the L36NEW 002-058 batch, which is the proven way to add:
+keyed on PeopleSoft Number, no email, **Role / Status / Groups deliberately
+left out** because NEP assigns them (all 47 of that batch came out Member /
+nonactive / "All Members, Active"). Member Status Active, Work Status Active
+Member, **Paying Active Member No** — the one deviation from that batch, and
+the point of the exercise. `Paramedic` was left out on purpose: 20 of the 190
+Firefighter Paramedics on the roster are marked No, so it cannot be derived
+from rank.
 
 ### The 50-year upload landed — 9 files of 11
 
