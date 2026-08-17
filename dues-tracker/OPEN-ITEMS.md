@@ -610,8 +610,12 @@ verified 25 July register:
    (the other union — Paramedic / EMT / Advanced Practice Provider) and
    1 recruit are correctly absent and excluded, with the sheet saying so.
    Of the 39: 28 already have NEP records (points at lost paperwork),
-   11 have none. Includes **Akers Dahvae** — the real spelling, no record
-   at all — and Bianco/Hines-era names from the old FORWARD-9 sheet.
+   11 have none — **10 after Joe fixed the Akers spelling 17 Aug**
+   (Dahave -> Dahvae, so the working man at Platoon 3 now has his own
+   record). Akers keeps a blank paying field, correctly: he is on no
+   register at either date, so he belongs on the chase list, not the
+   marked-member list. That also closes him out of the held-21 cohort
+   from the no-sign-of-life sweep — he was never missing, just misspelt.
 
 ## Ready and waiting to be forwarded
 
