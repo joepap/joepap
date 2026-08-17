@@ -62,10 +62,12 @@ Joe's rulings, now permanent:
 9b. **Recruit vs probationer** (Joe, 16 Aug): a RECRUIT is in the Training
    Division, not yet assigned to a company (telestaff's shift rosters don't
    carry them). A PROBATIONER is a rookie ON THE STREET at a company —
-   telestaff tags them "(PROBATION) {E21}". Both can pay dues, and payment
-   makes them members. The 45 new payers in the 00143-block are recruits
-   (paying, in training); Joseph T. Johnson and Eli Washabaugh are
-   probationers (paying, at companies).
+   telestaff tags them "(PROBATION) {E21}". Probationers paying dues is
+   normal. Whether/how RECRUITS pay is **Joe's open question for the
+   treasurer** — the July register shows the 00143-block recruit class
+   deducting 49.19 like everyone else, so the answer shapes what records
+   the 45 get. Joseph T. Johnson and Eli Washabaugh are probationers
+   (paying, at companies).
 10. **Separations reconcile against personnel actions** (Joe, 16 Aug). The
    DCHR register counts separations and shows who dropped off; the PAs say
    WHY. A drop-off covered by a PA follows the PA rules (retirement ->
@@ -377,6 +379,14 @@ the retired father has no record at all.
 
 Held out of every list until Joe settles who is who. Do not set his status,
 do not fix the Ridgway/Ridgeway spelling, do not touch the email.
+
+## Joe's questions for the treasurer
+
+- **Do recruits pay dues, and under what arrangement?** (16 Aug.) The July
+  register shows the whole 00143-block recruit class deducting the full
+  49.19 while still in the Training Division. The answer decides how their
+  45 NEP records get set up (and what the "Recruit" rank request to the
+  help desk should say).
 
 ## Waiting on Joe
 
