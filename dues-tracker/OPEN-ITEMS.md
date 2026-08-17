@@ -1051,6 +1051,38 @@ Firefighter and EMT, and `2D` is only 33% anything — so the sheet shows the
 grade and the most common rank at it, labelled as a hint to confirm. Nothing
 on the upload tabs comes from a grade.
 
+## Military leave — a Member Status value NEP does not have (Joe, 18 Aug)
+
+Members on long-term military leave have nowhere honest to sit. The dropdown
+holds only: Active · Active Retired · Alumni · Deceased · Drop · Honorary ·
+Life · Retired. They are not retired, not dropped and have not left — so today
+they read **Active**, which is wrong in the way that costs us time: no DC
+paycheck means no dues deducted, so they look like members who stopped paying.
+
+**`Local36-NEP-add-military-status.xlsx`** asks the help desk for one value,
+**`Military`**, in the same shape as the 15 Aug request, and restates what is
+still outstanding from it (Recruit rank · 13 company values · the Promotional
+Information tab).
+
+**First case: Barrow, Joshua M — 00093437.** Active, Firefighter, Engine 1,
+paying=No, not on the staffing roster, and **a $0.00 line on BOTH the June and
+July registers**. That is the signature: the checkoff is still in place, there
+is simply no paycheck to deduct from — the same shape as a suspension without
+pay. **Joe, 18 Aug: "no change at the moment till we get that category."** His
+record stays Active until NEP adds the value.
+
+He is also **first on the treasurer's dues-stopped sheet**, so a settled
+question was about to be asked again. `lib/knownreasons.js` (new, 4 tests) is
+where an answer gets written down once: the sheet now prints
+*"KNOWN — long-term military leave (Joe, 18 Aug 2026) · status to become
+Military (waiting on the NEP dropdown)"* in the Question column instead of
+"has this been chased?". It changes nothing in NEP.
+
+**When the value lands:** set Barrow to Military, then look again at the other
+$0.00 lines — Chen, Dufresne, Long, Tyler and Devendorf have all been $0.00
+since June with no explanation recorded, and at least some may be the same
+story. Suite now 101 tests.
+
 ## The 50-year members — the grouping that was lost (Joe, 17 Aug)
 
 The 50-year-plus members used to be held as a "company" in NEP; that went away
