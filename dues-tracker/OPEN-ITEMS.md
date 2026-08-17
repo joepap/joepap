@@ -3,38 +3,64 @@
 Things waiting on somebody, so they don't get lost between sessions.
 Close an item by deleting it. Anything finished lives in git history, not here.
 
-Roster state at last update: **NEP export of 17 Aug 2026, 12:42pm — 3,427 members**
-(`data/uploads/roster-56`, gitignored). This is the LAST export before the
-18 Aug board meeting.
+Roster state at last update: **NEP export of 17 Aug 2026, 2:41pm — 3,427 members**
+(`data/uploads/roster-57`, gitignored). LAST export before the 18 Aug board
+meeting.
 
-**Active 1,834 · Active Retired 313 · Retired 634 · Drop 320 · Alumni 100 ·
-Deceased 85 · Honorary 27 · Life 20 · no status 94.** Paying Yes 1,773 · No 7 ·
-61 active members with the dues question still unanswered. **Active with a
-payroll number: 1,782 of 1,834 (97%).** **Active with a rank: 1,808 of 1,834**
-— 106 -> 26 after this morning's fill. Duplicate payroll numbers: 2
-(00115712 barbosa/Barbosa, 00132282 McCoy/Mccoy Jr), both known merge pairs.
+**Active 1,829 · Active Retired 317 · Retired 634 · Drop 321 · Alumni 100 ·
+Deceased 85 · Honorary 27 · Life 20 · no status 94.** Paying Yes 1,770 · No 10 ·
+61 active members with the dues question unanswered. **Active with a payroll
+number 1,782 of 1,829 (97%)** · **Active with a rank 1,803 of 1,829** ·
+2026 retiree dues Paid: **361**. Duplicate payroll numbers: 2 (00115712
+barbosa/Barbosa, 00132282 McCoy/Mccoy Jr).
 
-**roster-55 -> roster-56 verified with the multiset diff: exactly 80 rows
-changed and the ONLY field that moved anywhere in the file was `DC Fire Rank`.**
-All 80 rank uploads landed on the right people (checked one by one against the
-upload tabs). No collateral damage.
+### THE FIVE UNEXPLAINED DEPARTURES ARE SETTLED (Joe, 17 Aug afternoon)
 
-**Also confirmed landed, by looking rather than assuming:** the SO-2026-198
-retirements — **Turner Andre R, Williams Alfred C, Streat Sr.** are all Active
-Retired with 2026 retiree dues Paid — and **Washabaugh John A now carries
-00083207**.
+Rule 10 worked exactly as designed: a drop-off with no personnel action behind
+it went to Joe rather than getting a status by guess, and he settled all five.
 
-**Still open, confirmed still open in this export** (do not assume these ran):
-- The three status moves: **Thomas Anthony L** (-> Retired + IAFF 1273776),
-  **Potts Christopher S** (-> Drop), **Clark Lawrence** (-> Retired) — all
-  three still read Active.
-- **The 25-member Mark-No files have NOT run** — only 7 members read No.
+| | now reads |
+|---|---|
+| Mullins, Anthony L | Active Retired · 2026 retiree dues Paid · paying No |
+| Washington, Sr., David V | Active Retired · 2026 Paid · paying No |
+| Latimer Jr., John E | Active Retired · 2026 Paid · **still paying = Yes** |
+| Covey, Jonathan B | Active Retired · **no 2026 dues marked** · **still paying = Yes** |
+| Mangiameli, Nicholas | Drop · paying No |
+
+**Two loose ends flagged to Joe, both real:**
+1. **Covey is the only one of the 317 Active Retired without 2026 retiree dues
+   marked Paid.** Joe's own sweep rule is "2026 Paid = Active Retired", so
+   either the tick is missing or he belongs in another status.
+2. **Covey and Latimer Jr. still read `Paying Active Member = Yes`** although
+   they are off the register; the other three were set to No.
+   **NOT an error for Streat Sr., Turner and Williams**, who also read Yes —
+   they work until 22 Aug, and PA rule 3 says the next register self-corrects.
+
+roster-56 -> roster-57: six records touched, nothing else moved.
+roster-55 -> roster-56 was the rank fill: exactly 80 rows, `DC Fire Rank` the
+only field that changed anywhere, all 80 verified on the right people.
+
+**Also confirmed landed:** the SO-2026-198 retirements (Turner, Williams,
+Streat Sr. — all Active Retired + 2026 Paid) and **Washabaugh John A = 00083207**.
+
+**Still open, verified still open in roster-57** (do not assume these ran):
+- Status moves: **Thomas Anthony L** (-> Retired + IAFF 1273776), **Potts
+  Christopher S** (-> Drop), **Clark Lawrence** (-> Retired) — all still Active.
+- **The 25-member Mark-No files have NOT run** — only 10 members read No.
 - The rest of SO-2026-198: 21 reassignments and the rank changes.
-- By hand: **Robinson Karl H** (the plain record, no status) -> 00026734 +
-  Active + Yes · **DeSilva Sydney D** -> 00115723 · **Gibson Demarius** ->
-  Firefighter / Truck 08 / Platoon 4 + a status.
-- Merges: **Barbosa** pair, **McCoy** pair (both approved — confirm two men),
+- By hand: **Robinson Karl H** (plain record, no status) -> 00026734 + Active +
+  Yes · **DeSilva Sydney D** -> 00115723 · **Gibson Demarius** -> Firefighter /
+  Truck 08 / Platoon 4 + a status.
+- Merges: **Barbosa** pair · **McCoy** pair (both approved — confirm two men) ·
   **Butler Arthenious** (Active, paying, no payroll number).
+- **26 active members with no rank** — the staffing roster cannot supply them.
+
+### Per capita at roster-57
+
+180 undercounted (unchanged) · **511 overcounted** (872 MRM - 361 paying
+retirees) = $4,870/mo, **$58,438/yr**. Bill on their roll $473,483; on ours
+$456,193; **apart by $17,290**. At the October rate (~$19.86): $42,898 and
+$60,891, apart by $17,993.
 
 ## Personnel Actions — the standing procedure (first run: SO-2026-198, 15 Aug)
 
