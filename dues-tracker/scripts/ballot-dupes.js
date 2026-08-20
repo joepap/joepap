@@ -57,7 +57,9 @@ link(r => { const p = L(r['PeopleSoft Number']).replace(/\D/g, ''); return p ? '
 link(r => { const n = L(r['IAFF Member Number']).replace(/\D/g, ''); return n ? 'iaff:' + n : ''; });
 // A shared birth date is only a link when the first names agree too. Long,
 // Keith T and Long, Kenneth W share 12/24/1967 and are two different men with
-// two different IAFF numbers — a birthday must not outrank a first name.
+// two different IAFF numbers — Keith is a line-of-duty death, Kenneth is the
+// member carried Active through a suspension. A birthday must not outrank a
+// first name; the first draft of this had one of them deleted.
 link(r => surname(r) && L(r['Date of Birth'])
   ? 'dob:' + surname(r) + '|' + norm(r['First Name']).slice(0, 4) + '|' + L(r['Date of Birth']) : '');
 link(r => surname(r) ? 'nm:' + surname(r) + '|' + norm(r['First Name']).slice(0, 6) : '');

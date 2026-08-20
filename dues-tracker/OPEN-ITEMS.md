@@ -1526,3 +1526,26 @@ Two traps this run walked into and now guards against:
 The keeper is usually the record holding the service history, and the record
 being deleted usually holds the **only email address** — which is exactly what
 the copy-across sheet is for.
+
+### Long, Keith T — line-of-duty death recorded as a Drop (Joe, 20 Aug)
+
+Battalion Fire Chief, Battalion Fire Chief 2, Platoon 1, Class 329, appointed
+03/26/2001, IAFF 1055217. NEP carried him as **Member Status = Drop**.
+`Local36-LODD-Keith-Long-KEY-ON-Email.xlsx` sets Member Status **Deceased** and
+LODD **Yes**, keyed on his email, which is unique roster-wide.
+
+**The LODD column has never been used — it is blank on all 3,484 records**, as is
+LODD Spouse Insurance Participant. Keith would be the first. If the local wants
+its line-of-duty deaths marked — for the memorial, or for spouse insurance —
+none of them currently are, and nothing in NEP can tell them from any other
+deceased member. Worth a proper pass.
+
+Work Status is deliberately left alone: 67 of the 85 Deceased records carry no
+Work Status at all, and the two that read "Deceased" there are the pair still
+holding a **voting** Member Status (Fowler, Zollars) — the wrong way round.
+Groups are left alone too; NEP writes "Member Status - Deceased" itself.
+
+He is not a ballot problem — Drop was already ineligible — but he shares the
+birth date 12/24/1967 with **Long, Kenneth W**, which is what nearly got one of
+them deleted as a duplicate. They are plainly two different men. One of those
+two birth dates is probably wrong.
