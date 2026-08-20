@@ -1549,3 +1549,52 @@ He is not a ballot problem — Drop was already ineligible — but he shares the
 birth date 12/24/1967 with **Long, Kenneth W**, which is what nearly got one of
 them deleted as a duplicate. They are plainly two different men. One of those
 two birth dates is probably wrong.
+
+## RULE — Work Status is not ours to change (Joe, 20 Aug)
+
+Joe, verbatim: *"every member here's work status is active member. that's an NEP
+field that we don't change to anything but active. our member status is the one
+that changes right now."*
+
+**Work Status = Active Member for everybody, always.** Never copy a different
+value across in a merge, never propose changing it, never read meaning into it.
+1,204 records disagree with it today (1,077 blank, 115 "Retired Member", and a
+scatter of Deceased / Quit / Employee / Resigned). Joe: *"we'll handle that field
+later."*
+
+Consequence: the ballot check's "two deceased would get a ballot" finding
+(Fowler Charles L, Zollars David E) rested only on Work Status = Deceased. That
+field is not maintained, so treat it as a hint to verify, not a fact.
+
+## The twelve duplicates, worked through one at a time — 20 Aug
+
+Full record in `docs/duplicate-decisions-20aug.md`: every pair, the keeper, what
+must be copied across first, and what is still open. **Nine to merge** (Barbosa,
+Glaze, Frazier, Henyon, Matthews, Bobo, Gilbert, Dean, Washington), **two
+cleanup** (Akers, Farrow), **one to leave alone**.
+
+**Sellitto is two men, not a duplicate.** Michael (Active Retired, paying retiree
+dues) and Michael J (Active, Engine 27, payroll 00033832, paying on the register)
+at one address. The IAFF roll settles it — **two member numbers, 0321288 and
+1161880**. Father and son. Two ballots is correct, and the automated rule wanted
+to delete the retiree. **Check the IAFF roll for two people of a name before any
+merge**; NEP alone could not tell, because the retiree's record holds no IAFF
+number at all.
+
+**In six of the nine merges, the record being deleted is the only one carrying
+the Retiree Insurance Group** — Frazier, Henyon, Bobo, Gilbert, Dean, Washington.
+That is the Kevin Adams trap at six times the rate anyone assumed. **85 duplicate
+pairs are still untouched from the 11 Aug pass, and merges done before that rule
+existed may already have dropped people off the insurance roll with no trace.**
+Worth a dedicated pass once the ballot is away.
+
+**Three merges decide where a ballot lands**: Bobo (Myrtle Beach SC vs Mineral
+VA), Farrow (Menifee CA vs Washington DC), Henyon (same house, spelling only).
+
+Picked up along the way, each needing a fix: Glaze's keeper has Date of Birth
+11/20/2022 against a 1986 appointment; Henyon's two records disagree on rank
+(Marine Engineer vs Firefighter); Washington Joseph is filed Alumni but is a
+retired Lieutenant on the insurance group; Sellitto's retiree record should carry
+IAFF 0321288; Akers has no payroll number though the staffing roster says
+00072958; and Frazier, Henyon and Matthews each have two emails with nothing to
+say which is current.
