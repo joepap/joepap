@@ -1458,3 +1458,37 @@ dropdown. His rank waits on the same request as the 13 company values.
 
 Only 1 of the 47 is on the IAFF roll, so the per-capita undercount grows by 46
 once these land.
+
+## Ballot file check — roster-62, 20 Aug 2026
+
+Joe is sending the roll to the election ballot vendor. `scripts/ballot-check.js`
+builds `Local36-BALLOT-file-check.xlsx` — six tabs of everything needing a
+decision first. Counting Active / Active Retired / Retired / Life / Honorary as
+eligible, **2,887 of 3,484 would be sent a ballot**.
+
+**Eligibility is our assumption, not a rule anyone has agreed.** Confirm it
+before the file is used — it decides 597 people either way.
+
+1. **545 of the 2,887 (19%) have no address to post to.** 467 Active, 39 Active
+   Retired, 32 Retired, 3 Honorary, 2 Life. **429 of them are confirmed dues
+   payers on the 25 July register.** 275 have no email either. 102 are the
+   records we created this month — we never had addresses for those.
+2. **Duplicates that would send two envelopes.** Two payroll numbers on two
+   records each: Barbosa Becaye 00115712, McCoy James 00132282. A brand-new
+   duplicate **Akers, Dahvae** (second record, Status pending, no Member Status)
+   appeared since 17 Aug. Same date of birth: Henyon Michael, Bobo Ronald. Same
+   address: Frazier/Shumate Lashon, Matthews Norita, Gilbert Stephen. Four
+   blank-status pairs: Long Brian, Taylor Charles, Taylor Herbert, Neal Jimmy.
+3. **Three records that are not people would be posted a ballot**: "Sepeartation
+   Status, Dennis D" (status Retired, has an address), "Admin, Local 36", and
+   "Firefighters Local 36, DC". Plus **two deceased members with Work Status
+   Deceased still carrying a voting Member Status** — Fowler Charles L and
+   Zollars David E — both with good addresses.
+4. **89 records have no Member Status**, so no rule reaches them; 43 have
+   addresses. Includes the five from the NODUES 4 and 5 files, still not run.
+5. **Five dues payers whose payroll number is on no eligible record**: Belle
+   TySean D, Griffin Ethan, DeSilva Sydney David, Johnson Brianna M, Johnson
+   Joseph. The last three match two records each and cannot be told apart.
+
+**The nameless stub on payroll 00143865 is still there** — Griffin, Ethan. The
+REPAIR file was never run, so he pays dues and would get no ballot.
