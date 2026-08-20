@@ -1492,3 +1492,37 @@ before the file is used — it decides 597 people either way.
 
 **The nameless stub on payroll 00143865 is still there** — Griffin, Ethan. The
 REPAIR file was never run, so he pays dues and would get no ballot.
+
+### The duplicate-ballot fix — `Local36-BALLOT-duplicate-fix.xlsx`
+
+`scripts/ballot-dupes.js`, built to the rule the Gooding/Reed merge left behind:
+one sheet, every field of every record side by side, keeper marked. **12 groups
+have a keeper decided; 18 are marked STOP; 29 values must be copied across
+before anything is deleted; 3 pairs disagree about where the member lives.**
+
+An upload cannot delete a record, so this is hand work in NEP, in this order:
+read the side-by-side sheet, copy the values across, then delete.
+
+**Nine send two ballots today**: Barbosa Becaye, Glaze Charles, Frazier Lashon,
+Henyon Michael, Sellitto Michael, Matthews Norita, Bobo Ronald, Gilbert Stephen,
+Dean Thomas. Three more are one person twice but only one ballot today — Akers
+Dahvae (the record that appeared on 17 Aug), Washington Joseph L, Farrow Shirley.
+
+**18 marked STOP.** Two approved logins means two real people (Smith Christopher,
+McCoy James — the pair already named in the merge rule — Johnson Joseph, Abell
+Michael), or the identity fields disagree outright.
+
+Two traps this run walked into and now guards against:
+
+- **Name grouping alone missed McCoy.** "McCoy, James" and "Mccoy, Jr., James M"
+  share payroll 00132282 but not a surname string. Records are now joined by
+  payroll number, IAFF number, name, and surname-plus-birth-date, followed
+  transitively.
+- **A shared birth date must not outrank a first name.** Long **Keith T** and
+  Long **Kenneth W** share 12/24/1967 and hold different IAFF numbers — two
+  different men, and the first draft had one of them deleted. A birth date or an
+  address now only counts as evidence when the first names agree.
+
+The keeper is usually the record holding the service history, and the record
+being deleted usually holds the **only email address** — which is exactly what
+the copy-across sheet is for.
