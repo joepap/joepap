@@ -1598,3 +1598,55 @@ retired Lieutenant on the insurance group; Sellitto's retiree record should carr
 IAFF 0321288; Akers has no payroll number though the staffing roster says
 00072958; and Frazier, Henyon and Matthews each have two emails with nothing to
 say which is current.
+
+## The container was wiped — 22 Aug 2026
+
+Everything under `data/` is gitignored, correctly, because it holds member PII.
+When the container was rebuilt on 22 Aug that took **all of it**: 62 NEP roster
+exports, `dues.db` with the June and July registers parsed and eye-verified,
+the IAFF roll, and `telestaff-2.csv`. The upload folder was cleared at the same
+time, so there was nothing to rebuild from. No off-box backup exists.
+
+Everything committed survived — scripts, `lib/knownreasons.js`, the duplicate
+decisions in `docs/`, this file.
+
+**Joe holds the only durable copies of the source files.** Worth building the
+encrypted per-import backup the check-in app already has the shape for, once
+the election is past.
+
+## The August staffing roster — merged from four platoon exports, 22 Aug
+
+TeleStaff shows who is **on duty**, not who is employed, so one export is one
+platoon on one day. Joe worked this out himself and pulled four consecutive
+days: 28 Aug Platoon 4 · 29 Aug Platoon 1 · 30–31 Aug Platoon 2 · 31 Aug
+Platoon 3. `scripts/telestaff-merge.js` merges them.
+
+**1,745 unique employees.** Only 72 appear in more than one file — day-work and
+specialists (hazmat, ROCC, battalion aides) who are not on a platoon rotation.
+So the four files are complementary, not copies.
+
+Against `roster-63` (22 Aug 3:50pm, 3,475 records):
+
+| | |
+|---|---|
+| in NEP by payroll number | 1,592 |
+| in NEP but the record carries no payroll number | 60 |
+| **not in NEP at all, bargaining unit** | **55** |
+| set aside — chiefs 4, single-role EMS 25, recruits 5, ambiguous 3 | 37 |
+
+**51 of the 55 are tagged PROBATION by TeleStaff** and sit in one payroll block,
+**00142066–00142684** — an academy class now out on the street with company
+assignments. Under standing rule 7 probationary appointments were skipped on
+SO-2026-198; these people are now *at companies*, which is the point at which
+they stop being recruits (rule 9b) and start being members who pay.
+
+Four are not from that class and are a different problem: **Belle TySean D
+00079233** (still the missing payroll number on NEP's "Bell, Tysean D"),
+**Kennedy David A 00103335**, **Guzeh Nueta Z 00128212**, **Gilligan Brendan
+00136079**.
+
+**Still needed before records can be created:** the training academy personnel
+action assigning this class to companies — Joe asked for it and we do not have
+it; the SO-2026-198 scan is gone with everything else, and its Cadet 28 /
+Recruit 414 appointments were skipped anyway. And the August dues register, to
+say which of the 55 are already paying.
