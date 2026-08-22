@@ -1706,19 +1706,24 @@ created from a personnel action.**
   appointment date is **the date printed on the action**. For Cadet Class 28
   that is **08/23/2026**.
 - **Recruit training class** — the appointment date is **when they started the
-  academy**, not the date on the order. *We do not hold that date.* Leave
-  Appointment Date empty rather than stamping the order's date on them.
+  fire academy**, not the date on the order. *We do not hold that date.* Leave
+  Appointment Date empty rather than stamping the order's date on them. This
+  holds even for a recruit who worked for DC before: an earlier payroll number
+  means prior service somewhere in the District, but that date does not come
+  over to our records — ours starts at the fire academy.
 
 So a create built from an order splits into two files by class, because the two
 differ on Class Number, the Cadet flag **and** whether Appointment Date can be
 filled at all.
 
-**Two of Recruit Class 414 are not new employees.** The class sits in payroll
-block 001426xx (35 of 37), but **Kennedy, David A — 00103335** and **Guzeh,
-Nueta Z — 00128212** carry numbers years older. They were already on the DC
-payroll before this academy, so their appointment date is their original hire
-date, not an academy start. Worth asking what they were before — the usual path
-is single-role EMS cross-training to firefighter.
+**Prior DC service does not come over to our records** (Joe, 22 Aug). Two of
+Recruit Class 414 carry payroll numbers years older than the rest — **Kennedy,
+David A — 00103335** and **Guzeh, Nueta Z — 00128212**, against the 001426xx
+block the other 35 sit in. They worked for DC before this academy, and not
+necessarily for EMS; it could be any DC agency. **It makes no difference to the
+appointment date either way** — for Local 36 that date is when they started the
+fire academy, so they are treated exactly like the other 35 and their
+Appointment Date is left empty too. There is no special case.
 
 Cadet Class 28 sits at 00142066-00142233, **below** the recruit block, which
 fits: cadets are on payroll before the class that graduated with them.
