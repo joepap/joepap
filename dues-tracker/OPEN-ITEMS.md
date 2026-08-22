@@ -1650,3 +1650,49 @@ action assigning this class to companies — Joe asked for it and we do not have
 it; the SO-2026-198 scan is gone with everything else, and its Cadet 28 /
 Recruit 414 appointments were skipped anyway. And the August dues register, to
 say which of the 55 are already paying.
+
+## SO-2026-198 against the staffing roster — 22 Aug
+
+Joe sent the signed order. `scripts/pa-parse.js` reads it out of the PDF and
+matches it to the four merged TeleStaff exports. **79 actions**: 2 promotions,
+1 technician, 1 vice-technician, 17 reassignments, 3 retirements, and **55
+probationary appointments — Cadet Class 28 (18) and Recruit Class 414 (37)**,
+all effective 0700 Sunday 23 August.
+
+**All 55 are on the street and none of them is in NEP.** That is the whole of
+the gap: the 55 bargaining-unit members missing from `roster-63` are this
+order's class, less two, plus two others.
+
+The order's code carries the company **and** the platoon — `E-14-2` is Engine
+14 Platoon 2, `TL-3-3` is Tower 3 — so both were checked. **52 of 55 stand
+exactly where the order sent them.** Three do not:
+
+| | order says | on duty |
+|---|---|---|
+| Brault, Ryan P. 00142663 | Engine 18, Platoon 2 | **Platoon 4** |
+| Jensen, Douglas K. 00142652 | Engine 10, Platoon 3 | **Day Work** |
+| Sanford, Alexander B. 00142666 | Engine 9, Platoon 4 | **Day Work** |
+
+Under rule 5 the order wins, so those three go in as the order reads unless
+Joe knows of a later change. Day Work on a brand-new probationer usually means
+light duty or an injury.
+
+**Two are on the street, absent from NEP, and not on this order** — each needs
+its own explanation: **Belle, TySean D 00079233** (Engine 33P — still the
+missing payroll number on NEP's "Bell, Tysean D", outstanding since 17 Aug) and
+**Gilligan, Brendan 00136079** (Ambulance 13; not the same man as Reilly
+Gilligan, who *is* on the order).
+
+Rank on the order: 8 Firefighter Paramedic, 47 plain Firefighter. Under rule 6
+the bare "Firefighter" is the order's house shorthand — TeleStaff carries most
+of them as FIREFIGHTER EMT, and **that EMT designation must not be stripped**.
+
+**Still needed before records are created:** the August dues register, to say
+which of the 55 already have a deduction running. At $49.19 a fortnight the
+class is roughly $2,700 a pay period.
+
+Two matching traps this run hit and now guards against: a two-word surname
+("Brayan A. Flores Guevara" is TeleStaff's "Flores, Brayan") needs every split
+point tried, not just the last word; and "on duty but not in NEP" has to
+exclude chiefs, single-role EMS, recruits and anyone matched by name, or it
+returns a hundred people who are not missing at all.
