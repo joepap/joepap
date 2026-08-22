@@ -1696,3 +1696,34 @@ Two matching traps this run hit and now guards against: a two-word surname
 point tried, not just the last word; and "on duty but not in NEP" has to
 exclude chiefs, single-role EMS, recruits and anyone matched by name, or it
 returns a hundred people who are not missing at all.
+
+## Appointment Date for a class — Joe's rule, 22 Aug
+
+**Cadets and recruits are dated differently, and it matters when records are
+created from a personnel action.**
+
+- **Cadet class** — kids who came up through a DC programme. Their official
+  appointment date is **the date printed on the action**. For Cadet Class 28
+  that is **08/23/2026**.
+- **Recruit training class** — the appointment date is **when they started the
+  academy**, not the date on the order. *We do not hold that date.* Leave
+  Appointment Date empty rather than stamping the order's date on them.
+
+So a create built from an order splits into two files by class, because the two
+differ on Class Number, the Cadet flag **and** whether Appointment Date can be
+filled at all.
+
+**Two of Recruit Class 414 are not new employees.** The class sits in payroll
+block 001426xx (35 of 37), but **Kennedy, David A — 00103335** and **Guzeh,
+Nueta Z — 00128212** carry numbers years older. They were already on the DC
+payroll before this academy, so their appointment date is their original hire
+date, not an academy start. Worth asking what they were before — the usual path
+is single-role EMS cross-training to firefighter.
+
+Cadet Class 28 sits at 00142066-00142233, **below** the recruit block, which
+fits: cadets are on payroll before the class that graduated with them.
+
+No NEP record between 00138000 and 00143000 carries an appointment date, so
+there is no neighbouring number to date the block from. If the academy start is
+wanted later, the earliest dues register showing the 001426xx block deducting
+would date it approximately — recruits are paid from their first academy day.
