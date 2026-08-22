@@ -1732,3 +1732,42 @@ No NEP record between 00138000 and 00143000 carries an appointment date, so
 there is no neighbouring number to date the block from. If the academy start is
 wanted later, the earliest dues register showing the 001426xx block deducting
 would date it approximately — recruits are paid from their first academy day.
+
+## Both classes landed — roster-64, 22 Aug
+
+`roster-64` (3,529 records, 54 columns). **All 55 records from
+SO-2026-198 imported with every field exact** — checked column by column
+against both upload files, nothing wrong on a single row. Active rose
+1,884 → 1,939.
+
+NEP assigned what it always assigns: Role Member, Status nonactive, Groups
+"All Members, Active, Platoon - n". Class Number reads 414 on 37 and CC28 on
+18, Cadet No/Yes to match, and **Paying Active Member is blank on all 55** —
+the honest position until a register speaks.
+
+### Griffin, Ethan 00143865 — now has no record at all
+
+The nameless stub was deleted rather than repaired, so there are **zero
+nameless records left** (good) but Griffin is gone with it. **L36NEW092 is the
+one missing tag in the whole sequence** — his.
+
+He is a **RECRUIT at the Training Division** on the current staffing files
+(`{TD}`, NQTD), which is why the class import did not cover him: he is not on
+SO-2026-198, and rule 9b says a recruit is not yet a probationer at a company.
+But he **was deducting $49.19 on the 25 July register**, so he is paying with
+no record. Needs creating on his own, and his rank waits on NEP adding
+"Recruit" to the DC Fire Rank dropdown.
+
+### The help desk delivered part of the Promotional Information request
+
+Nine new columns arrived: **Company Assignments 1**, **Vice Technician 1/2/3
+Start and End**, **Technician Start and End**. All empty so far.
+
+Still missing from the 15 August request: **Field Training Officer** start/end,
+and the promotion-date-plus-exam pairs for **Sergeant, Lieutenant, Captain,
+Battalion Fire Chief, Deputy, Assistant and Fire Chief** — the bulk of the 24
+fields. So the PROMO data files for 494 officers still cannot run; only the
+technician and vice-technician dates could go now.
+
+Worth chasing the help desk with what arrived and what did not, since they are
+clearly working the ticket.
