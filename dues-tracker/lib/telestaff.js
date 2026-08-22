@@ -53,6 +53,23 @@ function padEmplid(v) {
 const PLATOON = { '1': 'Platoon 1', '2': 'Platoon 2', '3': 'Platoon 3', '4': 'Platoon 4', DW: 'Day Work' };
 
 /**
+ * Which platoon a member belongs to.
+ *
+ * "Formula ID" is the rota engine's home-platoon code and it goes stale: after
+ * SO-2026-198 moved Ryan Brault to Engine 18 Platoon 2 it still read 4, and two
+ * probationers posted to companies still read DW from their academy days. The
+ * "Shift" column is what they actually stood, written as "*_2 PLT", and it
+ * agreed with the signed order in every case. So read the shift first and keep
+ * Formula ID only as a fallback for a row that has no shift.
+ */
+function platoonOf(r) {
+  const m = L(r.Shift).match(/_(\d)\s*PLT/i) || L(r.Shift).match(/\bPLT\s*#?(\d)/i);
+  if (m) return 'Platoon ' + m[1];
+  if (/DAYWORK|DAY WORK/i.test(L(r.Shift))) return 'Day Work';
+  return PLATOON[L(r['Formula ID'])] || '';
+}
+
+/**
  * Collapse the raw export to one entry per person. Telestaff repeats a member
  * once per shift, trade, detail or leave entry; name, rank, phone and shift
  * are identical across those rows (checked: 526 of the 528 people with more
@@ -69,7 +86,7 @@ function collapse(records) {
     out.set(emplid, {
       emplid, last_name: last, first_name: first,
       rank: L(r.Rank),
-      platoon: PLATOON[L(r['Formula ID'])] || '',
+      platoon: platoonOf(r),
       phone: L(r['First Contact']),
       norm_last: match.normalizeName(last), norm_first: match.normalizeName(first)
     });
@@ -239,5 +256,5 @@ function explainStopped(person) {
       (person.platoon ? ', ' + person.platoon : '') };
 }
 
-module.exports = { collapse, crossCheck, peoplesoftNumber, planPeoplesoftWrites,
+module.exports = { collapse, platoonOf, crossCheck, peoplesoftNumber, planPeoplesoftWrites,
   isOutsideLocal, explainStopped, cleanName, splitName, padEmplid };

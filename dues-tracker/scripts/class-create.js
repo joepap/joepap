@@ -96,7 +96,7 @@ const phone = s => { const d = L(s).replace(/\D/g, ''); return d.length >= 10 ? 
 const tidy = s => L(s).replace(/\s+/g, ' ').replace(/(\s[A-Z])\.$/, '$1');
 
 let tag = Math.max(0, ...N.map(r => Number((L(r['Notes']).match(/L36NEW(\d+)/i) || [])[1]) || 0));
-const problems = [], nameDiff = [], built = {};
+const problems = [], nameDiff = [], unsureInitial = [], built = {};
 for (const e of entries) {
   const hit = bestMatch(e.name);
   if (!hit) { problems.push(`${e.name}: not on the staffing roster, so no payroll number`); continue; }
@@ -113,7 +113,17 @@ for (const e of entries) {
   if (!ph) problems.push(`${e.name}: no usable phone number`);
   // Prefer the order's spelling — it is the signed document — but say where it
   // differs from the department's own staffing system.
-  const first = tidy(hit.first), last = tidy(hit.last);
+  let first = tidy(hit.first);
+  const last = tidy(hit.last);
+  // Where the order and TeleStaff give different middle initials, one of them is
+  // wrong and we cannot tell which — so assert neither. Joe, 22 Aug: "leave off
+  // the middle initial if we aren't sure."
+  const ini = x => (L(x).match(/\s([A-Z])\.?$/i) || [])[1];
+  const a = ini(first), b = ini(p.first_name);
+  if (a && b && a.toUpperCase() !== b.toUpperCase()) {
+    unsureInitial.push([p.emplid, last + ', ' + first, p.last_name + ', ' + p.first_name]);
+    first = first.replace(/\s[A-Z]\.?$/i, '');
+  }
   const tsName = p.last_name + ', ' + p.first_name;
   if (match.normalizeName(last) !== match.normalizeName(p.last_name) ||
       match.normalizeName(first) !== match.normalizeName(p.first_name))
@@ -152,6 +162,10 @@ for (const [section, rows] of Object.entries(built)) {
   console.log(`${name}\n   ${rows.length} records · ${header.length} columns · Class Number ${rows[0].classNo} · Cadet ${cadet ? 'Yes' : 'No'} · Appointment Date ${cadet ? rows[0].appt : '(left off — academy start not held)'}`);
 }
 console.log('\nPaying Active Member is on neither file — DCHR lag means "No" would read as "never joined".');
+if (unsureInitial.length) {
+  console.log(`\nmiddle initial dropped — the two sources disagree (${unsureInitial.length}):`);
+  unsureInitial.forEach(d => console.log('   ' + d[0] + '  order "' + d[1] + '"  vs TeleStaff "' + d[2] + '"  -> initial left off'));
+}
 if (nameDiff.length) {
   console.log(`\nname differs between the order and TeleStaff (${nameDiff.length}) — the order's spelling is used:`);
   nameDiff.forEach(d => console.log('   ' + d[0] + '  order "' + d[2] + '"   TeleStaff "' + d[3] + '"'));
