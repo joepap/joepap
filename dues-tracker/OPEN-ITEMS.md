@@ -1944,3 +1944,39 @@ zip without a street, so that is the only gap between the two counts.
 
 Say which count is meant whenever the number is quoted. The mailable number is
 the one that decides who gets a ballot.
+
+### Cox, Kenneth M — deceased, not deleted
+
+Joe, 27 Sep: *"ken cox is now deceased."* That settles the missing record. His
+Member Status changed to Deceased, which put him outside the Active / Active
+Retired filter the export uses, so he left the roster without anything being
+deleted. Possibility 2 of the two above.
+
+Keith Long is the confirming case: recorded as a line-of-duty death on 20 Aug
+and likewise absent from roster-68 — only Kenneth W, Kurt M, Dyante and Brody
+Longo remain. Same mechanism, already seen once.
+
+The file-6 row for him is moot. NEP matches an import key against the record
+whatever its status, so it most likely landed; there is no way to see it and
+no reason to care. Loose ends: strike him from the call list in
+`Local36-RETURNS-followup-lists.xlsx` (the blank-address workbook, built from
+the later roster, already omits him), and his paid 2026 retired dues may raise
+a refund question for the treasurer.
+
+### A death is invisible to this project
+
+Every roster we are given is filtered to Active and Active Retired. A deceased
+member does not arrive marked deceased — he simply stops appearing, which on
+the wire is indistinguishable from a deleted record. This one was caught only
+by counting rows between two exports eight minutes apart.
+
+The consequence is not cosmetic. **LODD reads as filled on 0 of 2,391 records,
+and so does LODD Spouse Insurance Participant** — but that is not evidence the
+fields are empty, because no deceased member is in any export we hold. We have
+never verified that Keith Long's LODD flag was actually set, or that his widow
+is flagged for spouse insurance. Those are the two fields a death exists in the
+database to drive.
+
+**Ask Joe for one export that includes Deceased**, or a Deceased-only one. It
+would let the LODD and spouse-insurance fields be checked, and would make a
+future death read as a death rather than as a vanished row.
