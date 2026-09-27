@@ -1874,3 +1874,54 @@ unmatched key has a blank Member Status and would also sit outside the export.
 still needs clearing and the note adding. If he is not, the record has to be
 rebuilt — a paid-up life member must not fall off the roll over a bad address.
 He is on the call list either way.
+
+## Every blank address, not just the 177 — 27 Sep 2026
+
+Joe, 27 Sep: *"i will try and contact more than just the 177.... i will attempt
+to reach out to all the blank addressess."* So the list is the whole **736**,
+and the useful split is not who bounced but what handle we hold.
+
+| | |
+|---|---|
+| email on file | 370 |
+| no email, phone on file | 232 |
+| no email, no phone, but assigned to a company or platoon | 35 |
+| no route at all | 99 |
+
+**679 of the 736 are working members; only 57 are retirees.** That inverts the
+assumption behind the returns work. A working member has always been reachable
+at the firehouse, so nobody ever collected a home address — the hole is not
+people who moved without telling us, it is people we never asked.
+
+**86 of the 99 unreachable are records we created ourselves** off the July
+payroll register (they carry an L36NEW tag). They were built from a name and a
+payroll number because that is all the register gives. They are not lost
+members. DC HR holds their details and TeleStaff holds their phone numbers, so
+one export closes most of that 99 — worth more than 99 phone calls nobody can
+place.
+
+`scripts/blank-outreach.js` builds the workbook, one sheet per route.
+
+### Five were never really blank
+
+They count as blank and would get no ballot, but only one field of four is
+missing, and a city and a zip name their state between them:
+
+| | | |
+|---|---|---|
+| Quinn, Connor | 90 Hammonds Lane, Brooklyn Park **MD** 21225 | state |
+| Driggers, David | 4905 Plata St, Clinton **MD** 20735 | state, duplicate line 2 |
+| Banks, Patrick | 21831 Wetipquin Road, Quantico **MD** 21856 | state, duplicate line 2 |
+| Settle, Wayne | 1323 Redwood Circle, La Plata **MD** 20646 | state, stray comma |
+| Lambert, Raymond I | 230 Nut Hatch Ln Unit C, Murrells Inlet SC **29576** | zip — confirm |
+
+**Never infer a state from the city.** Banks's "Quantico" is the Maryland one
+(21856, Wicomico County), not the Virginia one. The zip decides it, and the
+script only fills in a state where the zip and the city agree on one answer.
+
+Driggers and Banks both repeat the street on the second address line — the
+Bustillo defect again, now three of 45 records that carry a line 2. Worth a
+sweep of the other 42 before the ballot file goes out.
+
+Lambert's zip is the one guess in the batch: Murrells Inlet SC has a single
+zip, but it is inferred rather than held, so it is marked for Joe's eye.
