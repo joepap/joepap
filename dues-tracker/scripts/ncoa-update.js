@@ -58,12 +58,28 @@ const keyFor = rec => {
   return null;
 };
 
-const updates = [], removals = [], byHand = [], problems = [];
+/* A roster export filtered to Active and Active Retired cannot prove a name is
+ * unique: the surname may well appear again among Retired or Drop records that
+ * are not in the file. Detect that and refuse a name-based key rather than
+ * key an upload onto a member we cannot see. */
+const PARTIAL = !N.some(r => /^(Retired|Drop|Deceased|Alumni)$/.test(L(r['Member Status'])));
+if (PARTIAL) console.log('NOTE: this roster holds only ' +
+  [...new Set(N.map(r => L(r['Member Status'])))].join(' and ') +
+  ' — name-based keys cannot be verified and go to the by-hand list.\n');
+
+/* Anyone handled by another batch this round is skipped, so no member is
+ * written twice by two files that disagree about what they should say. */
+const SKIP = new Set((process.env.SKIP || '').split(';').map(x => x.trim().toUpperCase()).filter(Boolean));
+
+const updates = [], removals = [], byHand = [], problems = [], skipped = [];
 for (const r of movers) {
   const rec = nep.get(norm(r.last) + '|' + norm(r.first));
   if (!rec) { problems.push(`${r.last}, ${r.first}: no NEP record`); continue; }
+  if (SKIP.has((L(r.last) + ',' + L(r.first)).toUpperCase())) { skipped.push([r, rec]); continue; }
   const k = keyFor(rec);
   if (!k) { byHand.push([r, rec, 'no field on the record is unique roster-wide']); continue; }
+  if (PARTIAL && /Name$/.test(k.field)) {
+    byHand.push([r, rec, `the only unique key is ${k.field}, which this partial roster cannot verify`]); continue; }
   const gone = /no forwarding/i.test(L(r.address));
   // Keep whatever the record already says — six of these are "50 year member".
   const prior = L(rec['Notes']);
@@ -121,6 +137,9 @@ for (const f of ['Email', 'PeopleSoft Number', 'IAFF Member Number', 'Last Name'
 console.log(`${movers.length} movers · ${updates.length} new addresses · ${removals.length} removals · ${byHand.length} by hand`);
 for (const [name, rows] of files) console.log(`  ${name}  —  ${rows} rows`);
 console.log(`\nNotes appended, never replaced — ${updates.concat(removals).filter(u => L(u.rec['Notes'])).length} of these carry an existing note.`);
-if (byHand.length) { console.log('\nBY HAND:'); byHand.forEach(([r, , why]) => console.log(`  ${r.last}, ${r.first} — ${why}`)); }
+if (skipped.length) { console.log(`\nskipped — already handled by another batch this round (${skipped.length}):`);
+  skipped.forEach(([r]) => console.log(`  ${r.last}, ${r.first}`)); }
+if (byHand.length) { console.log('\nBY HAND:');
+  byHand.forEach(([r, rec, why]) => console.log(`  ${r.last}, ${r.first} — ${why}\n      set address to: ${L(r.address)}, ${L(r.city)} ${L(r.st)} ${zip5(r.zip)}`)); }
 console.log('\nremovals:');
 removals.forEach(x => console.log(`  ${x.r.last}, ${x.r.first}  (key ${x.k.field} ${x.k.value})`));
