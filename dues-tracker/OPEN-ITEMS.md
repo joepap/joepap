@@ -1925,3 +1925,22 @@ sweep of the other 42 before the ballot file goes out.
 
 Lambert's zip is the one guess in the batch: Murrells Inlet SC has a single
 zip, but it is inferred rather than held, so it is marked for Joe's eye.
+
+### 731 or 736 depends on what you mean by "no address"
+
+Joe, 27 Sep, reading NEP: *"i'm seeing 54 active retired without a home address
+and 677 active without an address. is this right?"* Yes — and so is 736. NEP is
+counting an empty street line; this project counts what can be put in the post,
+which needs street, city, state and zip.
+
+```
+no Street Address at all        Active 677 · Active Retired 54  = 731
+missing any of the four fields  Active 679 · Active Retired 57  = 736
+```
+
+The five in the gap are the one-field-short list above: Quinn and Banks active,
+Driggers, Settle and Lambert retired. No record anywhere holds a city, state or
+zip without a street, so that is the only gap between the two counts.
+
+Say which count is meant whenever the number is quoted. The mailable number is
+the one that decides who gets a ballot.
