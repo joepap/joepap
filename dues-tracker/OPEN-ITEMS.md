@@ -1771,3 +1771,62 @@ technician and vice-technician dates could go now.
 
 Worth chasing the help desk with what arrived and what did not, since they are
 clearly working the ticket.
+
+## The nominations mailing returns — 27 Sep 2026
+
+184 came back undeliverable of **1,854 actually posted** (9.9%). The file sent
+to MK held 2,359 members, but **505 had no address and were never mailed**, so
+689 of 2,359 — 29% — received nothing.
+
+All 184 matched the roster: 167 by IAFF number (MK's "MemberID" column is the
+IAFF number), 17 by name, none ambiguous. Every address MK reports matches what
+was sent, so their reporting is sound.
+
+### The NCOA files from 22 August were never run
+
+**70 of the 71 movers still hold their old address** and the three removals
+never happened. That is why the mailing went to stale addresses. USPS forwarded
+most of them, which is why only four movers bounced — the three with no
+forwarding address, and Drosin, whose forwarding order expired in March 2026.
+
+**29 of the 71 have expired forwarding.** They did not bounce this time but the
+ballot is where they will. Running those files is worth more than the returns
+work, because it prevents returns rather than reacting to them.
+
+### Joe's rule and the four exceptions
+
+Joe, 27 Sep: anyone whose NEP address already differs from the one mailed has
+fixed it themselves and is left alone; everyone else has their address moved
+into Notes and the field cleared. A blank address means no ballot, so no return.
+
+| | |
+|---|---|
+| already fixed it themselves — left alone | 2 |
+| given the NCOA forwarding address we hold | 1 |
+| our own typo, corrected not cleared | 2 |
+| six-digit zip — corrected, needs an eye | 2 |
+| **address cleared and recorded in Notes** | **177** |
+
+**Drosin would have been wrongly blanked** by the rule as written — his NEP
+address matches what was mailed, but we hold his Hyattsville forwarding address
+in the movers file. Always check the movers list before clearing.
+
+**All 74 of the cleared who have no email have a phone number**, so nobody is
+left unreachable. Joe, 27 Sep: all the mail was physically returned, none
+unclaimed, so no endorsement codes were chased.
+
+**51 of the 184 are in the "2024 returned mail" group — they bounced two years
+ago as well.** Whatever chasing happened then did not stick, which argues for
+the call list being worked rather than only emailed.
+
+### Do not guess a six-digit zip
+
+"222309" is Alexandria **22309** (drop a leading 2) but "288226" is Charlotte
+**28226** (drop an 8). Taking the first five or the last five gets one of them
+wrong either way, and the first draft of `scripts/returns-apply.js` wrote 22230
+and 28822 — two addresses that would have bounced again. Six-digit zips now go
+to a YOUR-CALL file with the candidates printed; only a four-digit zip missing
+its leading zero is fixed automatically.
+
+After this work the roster stands at **1,652 mailable of 2,392** — 737 blanks,
+which is honest, against 560 blanks plus 184 envelopes that come straight back.
