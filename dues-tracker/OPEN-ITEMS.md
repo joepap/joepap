@@ -1830,3 +1830,47 @@ its leading zero is fixed automatically.
 
 After this work the roster stands at **1,652 mailable of 2,392** — 737 blanks,
 which is honest, against 560 blanks plus 184 envelopes that come straight back.
+
+### What landed — checked against roster-68, 27 Sep 23:42
+
+All eight files ran. `scripts/returns-verify.js` reads each file back cell by
+cell against the export and compares what NEP holds to what the file asked for,
+so "landed" means the field is actually blank, not that the upload reported a
+row count.
+
+```
+landed  1-new-address-1               1/1
+landed  2-Bustillo-remove-duplicate   1/1
+landed  3-typo-fixed-1                1/1
+landed  4-address-cleared-103     103/103
+landed  5-address-cleared-54        54/54
+PARTIAL 6-address-cleared-20         19/20
+landed  7-YOUR-CALL-zip-Kelly         1/1
+landed  8-YOUR-CALL-zip-Biggs         1/1
+
+181 of 182 rows landed · roster-68: 2,391 records · mailable 1,655 · blank 736
+```
+
+### The one that did not: Cox, Kenneth M — the record itself is gone
+
+IAFF **147440** matches nothing on roster-68, and the roster is one record
+smaller than roster-67 pulled eight minutes earlier. The name-and-birth-date
+diff between the two exports names exactly one missing person: **Cox, Kenneth
+M**, Active Retired, Life Member, 2026 retired dues **Paid**, phone
++1 703-780-6058, 13650 Heathcote Blvd #212, Gainsville VA 20155. He was already
+in the "2024 returned mail" group, so this is his second bounce.
+
+An import cannot delete a record, so file 6 did not do this. Two things fit:
+
+1. His record was **deleted** in NEP between the two exports.
+2. His **Member Status changed** to something the "Active and Active Retired"
+   export does not carry, so he is still there but outside the filter.
+
+The Active Retired count fell by exactly one (452 → 451) and no nameless stub
+appeared, which does not separate the two — a record NEP creates from an
+unmatched key has a blank Member Status and would also sit outside the export.
+
+**Joe: search NEP for Cox with no status filter.** If he is there, the address
+still needs clearing and the note adding. If he is not, the record has to be
+rebuilt — a paid-up life member must not fall off the roll over a bad address.
+He is on the call list either way.
