@@ -1980,3 +1980,88 @@ database to drive.
 **Ask Joe for one export that includes Deceased**, or a Deceased-only one. It
 would let the LODD and spouse-insurance fields be checked, and would make a
 future death read as a death rather than as a vanished row.
+
+## The address campaign worked — roster-69, 8 Oct 2026
+
+Eleven days after the notices went out, and four days after the 4 Oct deadline.
+
+```
+                 records   mailable   blank
+roster-68 27 Sep    2391       1655     736
+roster-69  8 Oct    2390       1761     629
+```
+
+**108 members put an address in; none lost one.** Three corrected an address
+they already had (Mackinnon dropped a stale apartment number, Knaggs and Korb
+moved house). All five BLANKFIX rows landed — Quinn, Banks, Driggers, Settle
+and Lambert are mailable.
+
+**Only 30 of those 108 were from the bounce list.** Of the 180 whose address we
+cleared on 27 Sep, 150 are still blank. The other 78 gains came from members
+who had never had an address at all. That is the right way round: we could not
+mail the bounce list, so they were reached by email or phone if at all, and
+they are the hardest group to move. Expect the remaining 150 to need calls.
+
+Still blank: **629** — 575 Active, 54 Active Retired. 288 have an email, 207
+have only a phone, 134 have neither.
+
+### The self-service login writes to the record
+
+Members updating their own address are editing more than the address.
+
+**A new duplicate: Cole, Leonard.** He registered on 8 Oct and NEP made a
+second record rather than finding the one we had. Same company, platoon, rank
+and paramedic flag as "Cole, Leonard W" (PS 00096782, appointed 03/06/2017,
+1607 U St SE). One man, two records. The new one is `approved` — his own
+login — so by the 15 Aug rule it is the keeper, but every hard fact lives on
+the old one: payroll number, appointment date, address, Paying Active Member.
+`Local36-MERGE-Cole-carry-across-KEY-ON-Email.xlsx` moves them before the
+delete. Not a double-ballot risk today, since the new record has no address.
+
+**Ten members lost their middle initial** — Person Andrew A, Lane Jr.
+Christopher L, Tulenko Ethan J, Ravlin Ethan T, Horta Jacob A, Fofana Lamine T,
+Gobantes Matthew D, Richmond Micah S, Baker Nicholas A, Mooney Patrick M. All
+ten are from the August academy class, all ten gained an email, six gained an
+address. They typed their own names in and the middle initial went. Harmless in
+itself, but it is the handle the duplicate scan leans on, and it is how
+"Mccoy, Jr., James M" and "McCoy, James" became two records in the first place.
+
+### Johnson, Joseph B is off the roster and may have been a real member
+
+`roster-68` carried two men at Engine 23:
+
+| | payroll | IAFF | appointed | address |
+|---|---|---|---|---|
+| Johnson, Joseph B (invited) | 00055446 | 1215048 | 04/27/2009 | 2876 Chippewa St, Bryans Road MD |
+| Johnson, Joseph W (approved) | 00004546 | 1107561 | 01/26/2004 | 472 Hawkridge Ln, Sykesville MD |
+
+Different payroll numbers, different IAFF numbers, five years apart, different
+houses. **Two IAFF numbers means two people** — that is the Sellitto rule, and
+it was written after an automated pass tried to delete the wrong man. Joseph B
+is gone from roster-69 and Joseph W remains, which is exactly the shape of a
+mistaken merge of the `invited` record into the `approved` one.
+
+It may be innocent — a retirement, a drop, a death would also remove him, since
+the export only carries Active and Active Retired. **Ask Joe to look him up in
+NEP with the status filter off.** If the record was deleted, a working member
+with nine years' service has lost his record, his address and his ballot.
+
+MacFawn, Owen (PS 00135981, approved, no company, no appointment, no address)
+is also gone, with no same-name partner and nothing to suggest a merge.
+
+### scripts/roster-dupes.js
+
+The August duplicate scripts all open `data/dues.db`, which a container wipe
+takes with it. This one works from the roster alone, which is all the question
+needs: two records for one member means two ballots whatever the dues register
+says. Union-find over payroll number, IAFF number, email, and name paired with
+a birth date, an appointment date or a street — with the rule that a birth date
+or an address only joins when the first names agree, which is what kept Long
+Keith T off a delete list against Long Kenneth W.
+
+roster-69: **23 possible groups, 14 of them with more than one mailable record
+— 14 chances to post two ballots.** Only McCoy is a strong match (two records
+on payroll 00132282, open since August). The rest match on name alone and most
+look like genuine father-and-son pairs at one firehouse; Sellitto is already
+settled as two men and must be left alone. They need an eye before the file
+goes to MK, not a merge.
