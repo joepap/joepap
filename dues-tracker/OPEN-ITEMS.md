@@ -2065,3 +2065,66 @@ on payroll 00132282, open since August). The rest match on name alone and most
 look like genuine father-and-son pairs at one firehouse; Sellitto is already
 settled as two men and must be left alone. They need an eye before the file
 goes to MK, not a merge.
+
+## Why `data/` keeps disappearing, and what now stops it being a surprise
+
+Joe, 8 Oct: *"How did it get wiped? How do we prevent that in the future."*
+
+Nothing broke and nobody did anything wrong. This project runs in a disposable
+cloud container. When the session goes idle long enough, or ends, the machine is
+reclaimed and its disk goes with it. The next session clones the repository
+fresh from GitHub, so **everything in git comes back and everything not in git
+does not.** `data/`, `backups/` and `certs/` are gitignored by the standing rule
+that member PII is never committed, so they live only on that temporary disk.
+Twice now — 22 Aug and 27 Sep — that cost all of it.
+
+This is the price of a rule worth keeping. Committing the data would end the
+wipes by breaking the thing that matters more.
+
+### What was actually lost, both times
+
+Nothing irreplaceable, *as long as Joe keeps his downloads*. Every source file
+came from him in the first place — NEP, DCHR, TeleStaff, MK Elections. `dues.db`
+is derived from the registers and rebuilds. Code, docs, decisions and this file
+all survived on the branch.
+
+So the real exposure is not the container. It is that **Joe is the only backup
+and did not know it.** The diagnosis was written here on 22 Aug and then nothing
+was built, which is why 27 Sep played out identically — and why the loss was
+found by `ballot-dupes.js` failing rather than by anyone noticing.
+
+### Two scripts, so the next one is a twenty-minute inconvenience
+
+`scripts/data-manifest.js --write` writes `docs/data-manifest.md`: every file in
+`data/`, with its size, a SHA-256 prefix, a row and column count, and where it
+came from. No member data — checked, and it is committed deliberately. Run it
+after installing any new source file.
+
+`scripts/data-restore.js` reads that manifest and says what is present, what is
+missing, and what is present but different. Given a folder of re-uploads it
+matches each file **by checksum** and installs it under the name the project
+uses, so `members_export_...2026-10-08-16-07.xlsx` lands as `roster-69` without
+anyone having to remember. A file whose checksum is not in the manifest is
+reported and left alone: a roster one row different from a known one is a *new*
+roster, and installing it under the old name would quietly rewrite history.
+
+What this does not do is make a copy. It cannot — the data must not go in the
+repository. It converts "something is wrong and we do not know what" into a
+named list.
+
+### What would actually prevent the loss
+
+A copy somewhere that is not this container, which is Joe's decision because it
+means member PII leaving it:
+
+1. **A folder Joe keeps** of every file he has sent, under the names he sent
+   them. Nearly true already; it just is not deliberate. Cheapest and safest.
+2. **The union's own cloud storage** — Google Drive, Dropbox or Box, all of
+   which this session can reach. Union records would normally live there
+   anyway, so it is not a new exposure, but it is a third party and it is Joe's
+   call, not a thing to do unasked.
+3. **An encrypted per-import backup**, which the check-in app already has the
+   shape for. Most work, and it puts a key in the hands of a non-technical
+   owner. Worth it only if 1 and 2 are refused.
+
+Recommend 1 now and 2 if the local already uses a drive.
