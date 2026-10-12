@@ -2128,3 +2128,87 @@ means member PII leaving it:
    owner. Worth it only if 1 and 2 are refused.
 
 Recommend 1 now and 2 if the local already uses a drive.
+
+## The ballot address file — 12 Oct 2026
+
+Joe, 12 Oct: *"the focus right now is to get the spreadsheet right to send to the
+ballot company."* `scripts/ballot-file-build.js` builds it and reports what is
+in it. Columns and order are copied byte-for-byte from the 21 Aug file MK
+already has; handing a vendor a new schema mid-election is its own risk, and
+MK's returns report keys on the IAFF number under the name "MemberID".
+
+```
+roster-69:  2390 on the roll · 2390 rows in the file · 1761 mailable · 629 blank
+```
+
+### The rule the September mailing taught us
+
+**An address USPS delivered is better evidence than a rule.** Of the 15
+malformed zips in the August file, three bounced — both six-digit ones and one
+of three four-digit ones. All seven ZIP+4s were delivered, all 16 lowercase
+surnames were delivered, and so were all 11 records whose state disagreed with
+its own zip. So only the defects with a bounce behind them get corrected.
+
+| | |
+|---|---|
+| second address line repeated the street — removed | 21 |
+| four-digit zip padded where the city and state confirm it | 2 |
+| double spaces collapsed | 2 |
+
+The 21 line-2 duplicates are the Bustillo defect, which has grown from 2
+records to 21 — and Bustillo is the one that bounced.
+
+### Deliberately left alone
+
+- **Delahunty, Ira** — zip "2015", Bowie MD. Padding gives 02015, which is
+  Massachusetts, so the leading-zero rule does not apply. It was delivered.
+- **Yiare, Simon A** — zip "200032", 22 18th St SE, Washington DC. Both 20003
+  and 20032 are real DC zips and the street reaches into both. Delivered, and
+  USPS NCOA did not flag it.
+- **The 11 state/zip mismatches** — Glaze (Haymarket is VA not MD), Jeffery IV
+  (North Beach is MD not VA), Hoenig (Winchester VA with a DC zip), Mason,
+  Davis, Comer, Bulman, Brooke, Hatcher, Walsh (Murrells Inlet SC written
+  28576, which is NC), Felder (Middle River MD written 20220). Every one was
+  delivered. USPS routes on the zip and ignores the state, which is why a wrong
+  state never bites. Worth correcting in NEP afterwards — NCOA matches on the
+  whole address and a wrong state can quietly cost a forwarding order — but not
+  in this file, days before a mailing.
+- **16 lowercase surnames** ("morrow / amber"). Cosmetic on an official
+  mailing; zero delivery risk, and title-casing would wreck "de Lima".
+
+### The 14 same-name pairs are 14 pairs of real men
+
+This is the result worth having. The raw duplicate scan flags 14 groups where
+more than one record is mailable, which reads as 14 double ballots. Applying
+the Sellitto rule to each — **two IAFF member numbers means two people** —
+thirteen of the fourteen carry two distinct IAFF numbers and are father-and-son
+pairs, mostly at one firehouse: Jeffery III/IV, Thompson Jr, Carter, Taylor,
+Faulkner, Rainwater, Kline, Sellitto, Gilson I/II, Baltimore III, Spencer,
+Rose, Price.
+
+The fourteenth, **Abell**, has no IAFF number on one record — the same gap that
+made Sellitto look like one man. It is settled another way: Michael Abell is
+Active Retired in Pasadena MD paying L36 retiree dues and sitting in the
+Retiree Insurance Group, while Michael B Abell is an active firefighter on
+Rescue 3 in Mechanicsville with payroll 00035373. Both paying at once, 40 miles
+apart. Two men. **Look up Michael Abell's IAFF number so the next scan does not
+ask again.**
+
+**Do not merge any of the fourteen.** Two ballots is correct.
+
+### Three things that still need Joe
+
+1. **McCoy** — payroll 00132282 is on two records and one person has one payroll
+   number. The only genuine duplicate on the roll. Open since August.
+2. **Fowler, Charles L** — Work Status reads Deceased and the record is
+   mailable. That field is not maintained (Joe, 20 Aug) so it is a hint, not a
+   fact, but verify before a ballot goes to him.
+3. **388 rows carry no IAFF Member Number, 150 of them mailable.** MK keys its
+   returns on it, so a bounce from one of those 150 cannot be matched back to a
+   member automatically — which is the work that took longest last time.
+
+### One procedural point
+
+roster-69 was pulled on 8 Oct and members are still logging in. **Pull a fresh
+export immediately before sending** and re-run the builder; it is one command
+and the audit comes with it.
