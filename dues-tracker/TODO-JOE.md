@@ -54,6 +54,15 @@ roll are the three that unblock real work.
 
 ---
 
+## Before the ballot file goes to MK
+
+- [ ] **Run the six `Local36-ADDRFIX-*` files**, one at a time, Notes set to
+      Trust File. They put the same corrections into NEP that the outgoing file
+      already carries, so the next export does not undo them.
+- [ ] **HENDERSON, EMMETT** by hand: "5705  1ST STREET N.W." has a double space.
+- [ ] **Pull a fresh roster right before sending** and tell me — the builder
+      re-runs in one command and the audit comes with it.
+
 ## Still open — not for tomorrow
 
 - [ ] **Look up Johnson, Joseph B in NEP with the status filter off.** He and
@@ -70,10 +79,14 @@ roll are the three that unblock real work.
       payroll number, appointment date and address are only on the old record.
 - [ ] **McCoy, James** — two records on payroll 00132282, open since August.
       One is mailable. Two ballots.
-- [ ] **The 14 duplicate pairs with more than one mailable record** —
-      `Local36-DUPES-roster-69.xlsx`. Most look like real father-and-son pairs
-      at one firehouse, and Sellitto is settled as two men. Needs an eye, not a
-      merge, before the file goes to MK.
+- [x] **The 14 same-name pairs** — settled 12 Oct. All fourteen are two real
+      men: thirteen carry two distinct IAFF numbers, and Abell is settled by
+      both records paying different dues at addresses 40 miles apart. Do not
+      merge any of them.
+- [ ] **Look up Michael Abell's IAFF member number.** His record has none,
+      which is the same gap that made Sellitto look like one man.
+- [ ] **Fowler, Charles L** — Work Status reads Deceased and the record is
+      mailable. The field is not maintained, so verify before a ballot goes.
 - [ ] **Quarry, Lawrence J** by hand in NEP: 4931 Milligans Cove Rd,
       Manns Choice PA 15550.
 - [ ] **Call the 150.** Of the 180 whose address we cleared on 27 Sep, 150 are

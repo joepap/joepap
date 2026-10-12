@@ -20,7 +20,13 @@
 const path = require('path');
 const DT = path.join(__dirname, '..');
 const argv = process.argv.slice(2);
-const NOBLANK = argv.includes('--no-blanks');
+// Joe, 12 Oct: "remove anyone from the spreadsheet that doesn't have anything
+// in the street address section. does that make sense- they wouldnt get a
+// mailer." It does, and the test is his: a street line, not all four fields.
+// The two are not the same number — eleven records have a street, a city and a
+// zip but no state, and USPS routes on the zip, so those DO get a mailer and
+// belong in the file.
+const NOBLANK = argv.includes('--no-blanks') || argv.includes('--mailable-only');
 const rest = argv.filter(a => !a.startsWith('--'));
 const ROSTER = rest[0] || 'roster-69';
 const OUT = rest[1] || process.cwd();
@@ -50,7 +56,7 @@ const rows = [];
 let included = 0, skipped = 0;
 
 for (const r of N) {
-  if (NOBLANK && !mail(r)) { skipped++; continue; }
+  if (NOBLANK && !L(r['Street Address'])) { skipped++; continue; }
   const out = {};
   for (const c of COLS) out[c] = L(r[c]);
 
@@ -88,6 +94,17 @@ for (const r of N) {
   // on the strength of a rule is the bigger risk. Reported because it is a real
   // error, and because NCOA matches on the whole address and can lose a
   // forwarding order over it.
+  // A blank state next to a good zip is missing data, not a working address —
+  // the self-service login does not insist on one. Filling it in is strictly
+  // better for MK, whose NCOA pass matches on the whole address. Overwriting a
+  // state that disagrees with its zip is a different thing and is NOT done
+  // below, because those addresses were all delivered as they stand.
+  if (!out['State'] && out['Zip'] && out['City']) {
+    const s2 = stateForZip(out['Zip']);
+    if (s2) { out['State'] = s2; notes.fixed.push([who(r), `state was blank, filled in as ${s2} from zip ${out['Zip']}`]); }
+    else notes.flagged.push([who(r), `state is blank and zip "${out['Zip']}" is not a shape we can read it from`]);
+  }
+  if (!out['Country'] && out['State']) out['Country'] = 'USA';
   const zs = mail(r) && stateForZip(out['Zip']);
   if (zs && zs !== out['State'])
     mismatch.push([who(r), `${out['Street Address']}, ${out['City']} — record says ${out['State']}, ` +
@@ -156,11 +173,10 @@ XLSX.writeFile(wb, path.join(OUT, name));
 
 const mailable = rows.filter(mail).length;
 console.log(`${ROSTER}: ${N.length} records on the roll\n`);
-console.log(`  rows in the file        ${String(included).padStart(5)}`);
-if (skipped) console.log(`  left out (no address)   ${String(skipped).padStart(5)}`);
-console.log(`  of those, mailable      ${String(mailable).padStart(5)}`);
-console.log(`  in the file, no address ${String(included - mailable).padStart(5)}` +
-  (included - mailable ? '   — on the voter roll, nothing to post to' : ''));
+console.log(`  rows in the file           ${String(included).padStart(5)}`);
+if (skipped) console.log(`  left out, no street line   ${String(skipped).padStart(5)}   — they would get no mailer`);
+console.log(`  of those, a full address   ${String(mailable).padStart(5)}`);
+if (included - mailable) console.log(`  still short a field        ${String(included - mailable).padStart(5)}`);
 console.log(`\ncorrected (${notes.fixed.length}):`);
 notes.fixed.forEach(([w, m]) => console.log(`  ${w.padEnd(26)} ${m}`));
 console.log(`\nleft alone, worth an eye (${notes.flagged.length}):`);
@@ -174,3 +190,70 @@ console.log(`\nsame name, two ballots, and that is CORRECT (${twoPeople.length})
 twoPeople.forEach(([p, why]) => console.log(`  ${p}\n      ${why}`));
 if (gains.length) { console.log(`\nworth fixing while we are here (${gains.length}):`); gains.forEach(([w, m]) => console.log(`  ${w} — ${m}`)); }
 console.log(`\nFILE  ${name}`);
+
+/* ---- put the same corrections back into NEP ---- */
+// The outgoing file is a copy. If the corrections only live in it, NEP stays
+// wrong and the next export undoes the work — which is how the 21 duplicated
+// address lines grew from 2 in the first place.
+//
+// One file per thing being fixed, split by key, because a blank cell CLEARS a
+// field: a file that carries "Street Address 2" would wipe Quinn's legitimate
+// "Apartment 243" on any row that was not meant to lose one.
+const KEYNAME = { Email: 'Email', 'PeopleSoft Number': 'PeopleSoft-Number', 'IAFF Member Number': 'IAFF-Member-Number' };
+const uniq = (f, v) => N.filter(x => (f === 'Email' ? L(x[f]).toLowerCase() : num(x[f]))
+  === (f === 'Email' ? L(v).toLowerCase() : num(v))).length === 1;
+const keyFor = r => ['Email', 'PeopleSoft Number', 'IAFF Member Number']
+  .map(f => ({ f, v: L(r[f]) })).find(k => k.v && uniq(k.f, k.v));
+
+const JOBS = [
+  { tag: 'clear-duplicate-address-line-2', col: 'Street Address 2',
+    pick: r => L(r['Street Address 2']) && L(r['Street Address 2']).toLowerCase() === L(r['Street Address']).toLowerCase(),
+    value: () => '', note: r => `the second address line repeated the street "${L(r['Street Address'])}" and was removed` },
+  { tag: 'fill-blank-state', col: 'State',
+    pick: r => L(r['Street Address']) && L(r['Zip']) && L(r['City']) && !L(r['State']) && stateForZip(r['Zip']),
+    value: r => stateForZip(r['Zip']), note: r => `state was blank, filled in as ${stateForZip(r['Zip'])} from zip ${L(r['Zip'])}` },
+  { tag: 'pad-four-digit-zip', col: 'Zip',
+    pick: r => { const d = L(r['Zip']).replace(/\D/g, ''); return d.length === 4 && ZIP0['0' + d] === L(r['State']); },
+    value: r => '0' + L(r['Zip']).replace(/\D/g, ''), note: r => `zip ${L(r['Zip'])} was missing its leading zero` },
+  { tag: 'collapse-double-spaces', col: 'Street Address',
+    pick: r => /\s{2,}/.test(L(r['Street Address'])),
+    value: r => L(r['Street Address']).replace(/\s+/g, ' '), note: r => `"${L(r['Street Address'])}" had a double space` },
+];
+
+const fixFiles = [], handwork = [];
+let fn = 0;
+for (const job of JOBS) {
+  const hits = N.filter(job.pick);
+  if (!hits.length) continue;
+  const byKey = new Map(), byHand = [];
+  for (const r of hits) {
+    const k = keyFor(r);
+    if (!k) { byHand.push(r); continue; }
+    if (!byKey.has(k.f)) byKey.set(k.f, []);
+    byKey.get(k.f).push({ r, k });
+  }
+  for (const [field, group] of byKey) {
+    const hdr = [field, job.col, 'Notes'];
+    const aoa2 = [hdr, ...group.map(({ r, k }) => [k.v, job.value(r),
+      (L(r['Notes']) ? L(r['Notes']) + ' | ' : '') + `address tidied ${new Date().toISOString().slice(0, 10)} before the ballot file — ` + job.note(r)])];
+    const w = XLSX.utils.book_new();
+    const sh = XLSX.utils.aoa_to_sheet(aoa2);
+    sh['!cols'] = [{ wch: 28 }, { wch: 30 }, { wch: 120 }];
+    XLSX.utils.book_append_sheet(w, sh, 'Upload');
+    const nm = `Local36-ADDRFIX-${++fn}-${job.tag}-${group.length}-KEY-ON-${KEYNAME[field]}.xlsx`;
+    XLSX.writeFile(w, path.join(OUT, nm));
+    fixFiles.push([nm, group.length, field, job.col]);
+  }
+  for (const r of byHand) handwork.push([who(r), `${job.note(r)} — no unique key to upload on, so do this one in NEP by hand`]);
+}
+if (fixFiles.length) {
+  console.log('\nNEP CORRECTION FILES — one at a time, Notes set to Trust File:');
+  for (const [nm, n2, field, col] of fixFiles)
+    console.log(`  ${nm}\n      ${n2} row${n2 === 1 ? '' : 's'} · sets ${col} · at step 3 choose primary key: ${field}`);
+  console.log('      A blank cell clears the field. That is intended in the clear-duplicate-line-2 file');
+  console.log('      and is why each file carries only the one column it changes.');
+}
+if (handwork.length) {
+  console.log(`\nNO FILE — do these in NEP by hand (${handwork.length}):`);
+  handwork.forEach(([w, m]) => console.log(`  ${w} — ${m}`));
+}

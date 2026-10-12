@@ -2212,3 +2212,52 @@ ask again.**
 roster-69 was pulled on 8 Oct and members are still logging in. **Pull a fresh
 export immediately before sending** and re-run the builder; it is one command
 and the audit comes with it.
+
+### Joe's rule for who is in the file, 12 Oct
+
+Joe: *"yes let's remove anyone from the spreadsheet that doesn't have anything
+in the street address section. does that make sense- they wouldnt get a
+mailer."* It does, and his test is the right one — but it is **618, not 629**.
+
+```
+on the roll                           2390
+no street line at all — left out       618
+in the file                           1772
+```
+
+Eleven records have a street, a city and a zip but **no state**, so they fail
+the all-four-fields test while still being perfectly deliverable: USPS routes
+on the zip and ignores the state, which the September mailing proved eleven
+times over. Those eleven belong in the file.
+
+Their state is filled in from the zip. That is a different act from the eleven
+state/zip *mismatches*, which are left exactly as NEP holds them: filling a
+blank adds information, overwriting a state that disagrees with its zip would
+change an address that was delivered. `lib/zipstate.js` only answers for a zip
+of a shape it can read, so "2015" and "200032" get no guess.
+
+All eleven are self-registrations — the login form does not insist on a state.
+Same cause as the twenty-one duplicated address lines and the ten lost middle
+initials: members editing their own records.
+
+### The corrections go back into NEP, not just into the vendor's copy
+
+The outgoing file is a copy. Corrections that live only in it are undone by the
+next export — which is how the duplicated address line grew from 2 records to
+21. So the builder also writes `Local36-ADDRFIX-*` files:
+
+| | rows | key | sets |
+|---|---|---|---|
+| clear duplicate address line 2 | 20 | Email | Street Address 2 |
+| clear duplicate address line 2 | 1 | PeopleSoft Number | Street Address 2 |
+| fill blank state | 10 | Email | State |
+| fill blank state | 1 | PeopleSoft Number | State |
+| pad four-digit zip | 2 | Email | Zip |
+| collapse double spaces | 1 | Email | Street Address |
+
+**One column per file, on purpose.** A blank cell clears a field, so a file
+carrying "Street Address 2" would wipe Quinn's legitimate "Apartment 243" on
+any row not meant to lose one. Clearing is intended only in the first two.
+
+HENDERSON, EMMETT has no unique key and is the one to do by hand: "5705  1ST
+STREET N.W." has a double space.
