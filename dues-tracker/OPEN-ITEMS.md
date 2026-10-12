@@ -2261,3 +2261,73 @@ any row not meant to lose one. Clearing is intended only in the first two.
 
 HENDERSON, EMMETT has no unique key and is the one to do by hand: "5705  1ST
 STREET N.W." has a double space.
+
+## roster-70, 12 Oct 15:02 — five of six correction files landed
+
+```
+                        records   street line   full address
+roster-69   8 Oct 16:07    2390          1772           1761
+roster-70  12 Oct 15:02    2390          1773           1773
+```
+
+Nobody joined or left the roll. Twelve records gained a full address — the
+eleven blank states plus one member who filled his own in.
+
+| | before | after |
+|---|---|---|
+| second address line repeating the street | 21 | **0** |
+| street and city and zip but no state | 11 | **0** |
+| double space in a street line | 2 | 1 |
+| four-digit zip | 3 | 3 |
+
+ADDRFIX 1, 2, 3, 4 and 6 all landed clean. **File 5 was missed** — Joe, 12 Oct:
+*"i missed it."* Stoppiello still reads 7735 and Schuler still reads 8223.
+
+Worth recording why that was checked rather than assumed: the obvious
+explanation for a leading zero not sticking is a numeric field, and NEP holds
+thirteen zips beginning with a zero, so the field is fine. Asking beat guessing.
+
+HENDERSON, EMMETT is still to do by hand — no email and no payroll number, so
+nothing can key to him.
+
+## Fowler, Charles L — the unmaintained field was right
+
+Joe, 12 Oct: *"i just corrected fowler but after thedownload"* — marked
+deceased. His Work Status had read Deceased since at least 20 August, and the
+rule written then was that the field *"is not maintained, so it is a hint to
+verify, not a fact."* The hint was correct. The rule still stands — a hint is
+what sent Joe to look — but it is worth knowing it pointed at a real death.
+
+That is the third death this project has met and the third time it arrived as
+an absence: Keith Long, Ken Cox, now Fowler. Only Fowler was caught before a
+ballot went out, and only because Work Status happened to carry it.
+
+### lib/ballotexclusions.js
+
+An export is a snapshot. Fowler was marked deceased minutes after roster-70
+came down, so the export still carries him, and the ballot file must not. The
+alternative was hand-editing the outgoing spreadsheet, which leaves no record
+of who was removed or why.
+
+Each entry names who decided and when, and is matched on **every** field it
+lists — Fowler on surname, first name *and* birth date, because his record has
+no IAFF or payroll number and a name alone must never drop somebody off a
+ballot when the roll holds real father-and-son pairs. `isStale()` reports any
+entry that stops matching exactly one record, so a list entry cannot quietly
+stop working after a rename.
+
+## The file as it stands
+
+```
+roster-70: 2390 on the roll
+  1772 rows in the file
+   617 left out, no street line — they would get no mailer
+     1 left out by name — Fowler, deceased
+```
+
+Verified: header identical to the August file, no blank address fields, no
+repeated address lines, no double spaces, Stoppiello 07735, Schuler 08223,
+HENDERSON "5705 1ST STREET N.W.", Fowler absent.
+
+Two things still open: **McCoy** (payroll 00132282 on two records) and the
+**150 rows with no IAFF Member Number**, which is what MK keys its returns on.

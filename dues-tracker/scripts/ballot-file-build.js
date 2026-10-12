@@ -34,6 +34,7 @@ const fs = require('fs');
 const XLSX = require(path.join(DT, 'node_modules/xlsx'));
 const t = require(path.join(DT, 'lib/tabular'));
 const { stateForZip } = require(path.join(DT, 'lib/zipstate'));
+const excl = require(path.join(DT, 'lib/ballotexclusions'));
 const L = v => String(v == null ? '' : v).trim();
 const num = v => L(v).replace(/\D/g, '').replace(/^0+/, '');
 
@@ -52,10 +53,17 @@ const who = r => L(r['Last Name']) + ', ' + L(r['First Name']);
 const ZIP0 = { '07735': 'New Jersey', '08223': 'New Jersey', '07932': 'New Jersey' };
 const notes = { fixed: [], flagged: [] };
 const mismatch = [];
+const warn = [];
 const rows = [];
 let included = 0, skipped = 0;
 
+// An export is a snapshot, and a member corrected after it was pulled is still
+// in it. Removing them here, from a list that records who decided and when,
+// beats hand-editing the outgoing spreadsheet and leaving no trace.
+const left = [];
 for (const r of N) {
+  const e = excl.excludedReason(r);
+  if (e) { left.push([who(r), e]); continue; }
   if (NOBLANK && !L(r['Street Address'])) { skipped++; continue; }
   const out = {};
   for (const c of COLS) out[c] = L(r[c]);
@@ -113,7 +121,7 @@ for (const r of N) {
 }
 
 /* ---- the things no file can fix ---- */
-const warn = [], twoPeople = [], gains = [];
+const twoPeople = [], gains = [];
 // Two records for one member is two ballots. Grouped the way
 // scripts/roster-dupes.js groups them, and only where both would be mailed.
 const SUF = /\b(jr|sr|ii|iii|iv|v)\b\.?/gi;
@@ -151,7 +159,9 @@ for (const [ps, g] of samePS) if (g.length > 1)
     g.map(x => `${who(x)} (${mail(x) ? 'mailable' : 'no address'})`).join(' / ')]);
 // Work Status is not maintained (Joe, 20 Aug), so this is a prompt to check,
 // never a reason to drop anybody from a ballot.
-for (const r of N) if (/deceased/i.test(L(r['Work Status'])) && (!NOBLANK || mail(r)))
+// Not for anyone already on the exclusion list — that question is settled and
+// repeating it buries the warnings that are still live.
+for (const r of N) if (/deceased/i.test(L(r['Work Status'])) && !excl.excludedReason(r) && (!NOBLANK || mail(r)))
   warn.push(['MARKED DECEASED', `${who(r)} — Work Status says Deceased and this record is ${mail(r) ? 'MAILABLE' : 'not mailable'}. ` +
     `That field is not maintained so it is a hint, not a fact. Verify before a ballot goes out`]);
 // Without a MemberID, MK cannot report a return against a person. Only the
@@ -175,6 +185,14 @@ const mailable = rows.filter(mail).length;
 console.log(`${ROSTER}: ${N.length} records on the roll\n`);
 console.log(`  rows in the file           ${String(included).padStart(5)}`);
 if (skipped) console.log(`  left out, no street line   ${String(skipped).padStart(5)}   — they would get no mailer`);
+if (left.length) {
+  console.log(`  left out by name           ${String(left.length).padStart(5)}`);
+  left.forEach(([w, e]) => console.log(`      ${w} — ${e.reason} (${e.who})`));
+}
+// A list entry that matches nothing has quietly stopped working.
+for (const { entry, hits } of excl.isStale(N))
+  warn.push(['EXCLUSION LIST', `the entry for ${entry.lastName}, ${entry.firstName} matches ${hits} records on ` +
+    `${ROSTER} — it should match exactly one. If the record was deleted this is expected and the entry can go`]);
 console.log(`  of those, a full address   ${String(mailable).padStart(5)}`);
 if (included - mailable) console.log(`  still short a field        ${String(included - mailable).padStart(5)}`);
 console.log(`\ncorrected (${notes.fixed.length}):`);
