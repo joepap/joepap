@@ -2331,3 +2331,34 @@ HENDERSON "5705 1ST STREET N.W.", Fowler absent.
 
 Two things still open: **McCoy** (payroll 00132282 on two records) and the
 **150 rows with no IAFF Member Number**, which is what MK keys its returns on.
+
+## roster-71, 12 Oct 15:07 — everything landed
+
+Five minutes after roster-70. Fowler is off the roll (Active Retired 451 → 450)
+and **file 5 landed too** — Stoppiello now reads 07735 and Schuler 08223, and
+NEP holds fifteen zips beginning with a zero where it held thirteen.
+
+All six correction files are in. What is left in the data is what was left
+alone on purpose:
+
+| | |
+|---|---|
+| Delahunty, Ira — zip "2015", Bowie MD | padding gives 02015, which is Massachusetts |
+| Yiare, Simon A — zip "200032", 22 18th St SE | 20003 and 20032 are both real and the street reaches both |
+| HENDERSON, EMMETT — `5705  1ST STREET N.W.` | no email, no payroll number, nothing to key on |
+| the 11 state/zip mismatches | every one delivered in September |
+
+Henderson's double space is corrected in the outgoing file; the NEP record
+still needs it done by hand.
+
+Fowler's exclusion entry is marked **resolved**: he is expected to match no
+record now, and `isStale()` only reports a resolved entry if it starts matching
+again — which would mean the record came back. The decision stays on record
+without reporting itself as broken on every run.
+
+```
+roster-71: 2389 on the roll · 1772 rows in the file · 617 left out, no street line
+```
+
+Still open: **McCoy** (payroll 00132282 on two records) and the **150 rows with
+no IAFF Member Number**.

@@ -23,6 +23,10 @@ const EXCLUDED = [
     lastName: 'Fowler', firstName: 'Charles L', dob: '07/14/1944',
     reason: 'deceased',
     who: 'Joe, 12 Oct 2026',
+    // Set once the record has left the roster for the same reason, so the entry
+    // keeps the decision on record without reporting itself as broken on every
+    // run. An entry is only resolved when the absence is confirmed on an export.
+    resolved: '12 Oct 2026 — gone from roster-71, so the export no longer carries him',
     detail: 'Marked deceased in NEP after roster-70 was exported, so the export still carries him. ' +
             'His Work Status already read Deceased, which the 20 Aug rule treats as a hint rather than a fact — ' +
             'this time the hint was right.',
@@ -48,10 +52,12 @@ function excludedReason(r) {
 
 // Which entries no longer pick out exactly one record on a given roster. An
 // entry matching none has gone stale — usually because the record was deleted,
-// which is fine, but it must be seen rather than assumed.
+// which is fine, but it must be seen rather than assumed. A resolved entry is
+// expected to match nothing and is only reported if it starts matching again,
+// which would mean the record came back.
 function isStale(records) {
   return EXCLUDED.map(e => ({ entry: e, hits: records.filter(r => matches(e, r)).length }))
-    .filter(x => x.hits !== 1);
+    .filter(x => x.entry.resolved ? x.hits !== 0 : x.hits !== 1);
 }
 
 module.exports = { EXCLUDED, excludedReason, isStale };

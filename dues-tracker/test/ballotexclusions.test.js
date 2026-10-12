@@ -25,11 +25,27 @@ test('excludes nobody it was not told about', () => {
   assert.equal(be.excludedReason({}), null);
 });
 
-test('reports an entry that stops matching, instead of silently doing nothing', () => {
-  assert.deepEqual(be.isStale([fowler]), []);
-  const stale = be.isStale([]);
-  assert.equal(stale.length, 1);
-  assert.equal(stale[0].hits, 0);
-  // Two records answering to one entry is equally a fault.
-  assert.equal(be.isStale([fowler, { ...fowler }])[0].hits, 2);
+test('a resolved entry is expected to match nothing', () => {
+  // Fowler left the roster once he was marked deceased, so his entry matching
+  // no record is the correct end state, not a fault to report every run.
+  assert.ok(be.EXCLUDED.every(e => !e.resolved || e.reason));
+  assert.deepEqual(be.isStale([]), []);
+});
+
+test('but reports a resolved entry whose record has come back', () => {
+  const back = be.isStale([fowler]);
+  assert.equal(back.length, 1);
+  assert.equal(back[0].hits, 1);
+});
+
+test('reports an unresolved entry that matches the wrong number of records', () => {
+  const open = { lastName: 'Nobody', firstName: 'At All', reason: 'test', who: 'test' };
+  const saved = be.EXCLUDED.slice();
+  be.EXCLUDED.length = 0; be.EXCLUDED.push(open);
+  try {
+    assert.equal(be.isStale([]).length, 1, 'matching none is a fault while unresolved');
+    const one = [{ 'Last Name': 'Nobody', 'First Name': 'At All' }];
+    assert.equal(be.isStale(one).length, 0, 'matching exactly one is right');
+    assert.equal(be.isStale([...one, ...one])[0].hits, 2, 'matching two is a fault');
+  } finally { be.EXCLUDED.length = 0; be.EXCLUDED.push(...saved); }
 });

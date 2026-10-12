@@ -9,7 +9,7 @@ Regenerate with `node scripts/data-manifest.js --write` after installing any
 new source file, and commit it. After a wipe, `node scripts/data-restore.js`
 reads this and says exactly what is missing.
 
-Last written: 2026-10-12 — 9 files, 2.3 MB
+Last written: 2026-10-12 — 10 files, 2.6 MB
 
 | file | from | shape | KB | sha256 (first 16) | last modified |
 |---|---|---|---|---|---|
@@ -21,6 +21,7 @@ Last written: 2026-10-12 — 9 files, 2.3 MB
 | `uploads/roster-68` | NEP member export — Active and Active Retired | 2391 rows × 54 columns | 351 | `42a4e763622d7ff6` | 2026-09-27 |
 | `uploads/roster-69` | NEP member export — Active and Active Retired | 2390 rows × 54 columns | 357 | `0e95709b4c7d41c2` | 2026-10-08 |
 | `uploads/roster-70` | NEP member export — Active and Active Retired | 2390 rows × 54 columns | 359 | `b7e7a7d363b34cd7` | 2026-10-12 |
+| `uploads/roster-71` | NEP member export — Active and Active Retired | 2389 rows × 54 columns | 359 | `ff7b67bbae7c4a4a` | 2026-10-12 |
 | `uploads/sent-to-mk.xlsx` | the address file we sent MK Elections | 2359 rows × 9 columns | 150 | `7ac5b3ee28702700` | 2026-09-27 |
 
 ## Known gaps
