@@ -2688,3 +2688,103 @@ members or staff, none of them from these files.
 all (mostly recent hires), 145 are September returns, 7 have a roll address the
 International marks invalid, and 2 — Hurda and Hughes — are waiting to be
 entered by hand because no upload can key to them.
+
+## Reaching members at their DC address — 10 Nov 2026
+
+Joe, after the count of payers who are not Active in NEP: "and add to that
+anyone that we don't have an email address for. I want to send them an email to
+their dc account."
+
+`scripts/dc-email-list.js` on the 19 Sept register and roster-73:
+
+```
+ 1,805  people payroll took dues from
+   512  on the list
+     9     not Active in NEP
+   510     no email address in NEP        (7 are both)
+   440  DC address likely
+    72  DC address a guess
+   399  have a phone number in NEP
+```
+
+NEP holds almost no dc.gov addresses, so each one is built as
+first.last@dc.gov from the payroll name. The script scores that rule on every
+run against the paying members whose real dc.gov address NEP does hold:
+
+```
+55 known addresses
+   49 the rule calls likely     40 exactly right · 8 right but for a digit · 1 other
+    6 the rule calls a guess     2 exactly right
+```
+
+So about four in five of the "likely" ones are right, and nearly all the misses
+are the digit DC adds when another employee already has the name. That miss
+need not bounce — it can land with a different DC employee of the same name.
+The message has to be one that is harmless in a stranger's inbox.
+
+A row is a guess when the name is shared by two of our own people, when it has
+a space, hyphen, apostrophe or suffix, or when NEP spells the first name
+differently from the payroll. A built address that comes out the same for two
+people on the list is a guess for both, and a name too broken to build from
+stops the run.
+
+### Two answers to one question
+
+The first version of this script joined the register to NEP itself and said 14
+payers were not Active, where `three-way.js` had said 9. The five extra were
+the four NEP payroll-number typos and the Belle/Bell link, which only the full
+join knows. The join now lives in `lib/reglink.js`, both scripts use it, and it
+has tests.
+
+### The names on the register had not been checked
+
+The payroll numbers and the money were verified three ways on 10 Nov. The
+names were taken as read. Building addresses from them exposed it: two men
+both came out as one address, and one line had no first name at all.
+
+Every name that disagreed with NEP's was then read from the page — 29 first
+names and 11 surnames. 26 were the reader's mistakes (an x for an r, a g on the
+end of a surname, "Jr." taken for a first name, a first name split at its
+apostrophe) and are corrected in `tools/register-2026-09-19/finalize.js`. The
+other 14 are real differences between the payroll and NEP, left as the payroll
+prints them. Rebuilding changed 26 names and nothing else; every count in the
+three-way comparison is the same as before.
+
+What this does not cover: a name the reader got wrong in a way that still
+agrees with NEP's first word and surname (a middle initial, say). Nothing
+downstream uses those.
+
+## Are the members missing from the International's roll in NEP? — 10 Nov 2026
+
+Joe: "what about any new recurits that you mentioned...some 200. are they in
+nep?"
+
+243 people paying dues are not on the International's roll.
+
+```
+   238  have a NEP record        237 Active, 1 Drop · paying flag Yes on 234
+     3  have no NEP record       all three 2026 hires
+     2  are in NEP, but two records could be theirs
+```
+
+What NEP holds for the 238: an IAFF number on 11; an email on 127; a phone on
+150; a street address on 95. 88 have none of the three — a name and a payroll
+number and nothing else. 90 were created by us from an earlier register.
+
+**I had said these were "nearly all hired since 2023." That was wrong.** By
+payroll number:
+
+```
+payroll block       payers   not on the roll
+001430 and up           47        47
+00138–00142             70        45
+00132–00137            111        43
+00115–00131            282        27
+older                1,295        81
+```
+
+A little over half (135) are in the three newest blocks. 108 are longer-serving
+members — NEP's appointment dates for the older ones run from 1991 to 2021 —
+whom the International simply does not list. Three of the 243 look like the
+same person under another spelling on the roll; the rest have no entry there
+that our matching can find, by number or by name.

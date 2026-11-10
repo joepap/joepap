@@ -15,7 +15,19 @@ const EYE={'9:19':'00092196','12:2':'00097184','13:24':'00099966','26:4':'000846
 const NAMEFIX={'26:25':['Korotcova','Anastasia',''],'26:4':['Kinard','Eriq','A'],'34:15':["O'Brien",'Cullen',''],'9:19':['Coates',"Q'Juan",'P'],
   '7:28':["Ca' Merono",'Chazzreno',''],'11:24':['Deavers','Warren','M'],'12:21':['Donnelly','David','R'],'17:5':['Gaskins','Oliver','W'],'17:16':['Gibson','Kendall','A'],
   '21:26':['Hill III','Joseph',''],'21:32':['Hinz','August','D'],'23:1':['Huskins','Michael','A.'],'24:4':['Johnson III','Eldon','Lloyd'],'25:5':['Jones','Marquet',''],
-  '34:10':["O'Byrne",'Ian','C'],'39:36':['Scalise','Anthony',''],'51:6':['Zdobysz','Christopher','J'],'39:7':['Rust','Dominque','']};
+  '34:10':["O'Byrne",'Ian','C'],'39:36':['Scalise','Anthony',''],'51:6':['Zdobysz','Christopher','J'],'39:7':['Rust','Dominque',''],
+  // The numbers and the money were checked three ways on 10 Nov; the names were
+  // not. Building dc.gov addresses from them showed it: every name that
+  // disagreed with NEP's (29 first names, 11 surnames) was read from the page,
+  // and these 26 were the reader's mistakes. The other 14 are real differences
+  // between the payroll and NEP and are left as the payroll prints them.
+  '4:11':['Best','Antonio','D'],'5:14':['Brady','Richard','D'],'5:18':['Brandon','Daquan','C'],'7:21':['Butler',"Da'Ron",'R'],
+  '10:25':['Culver','John','S'],'10:30':['Curry Jr.','John','W.'],'10:35':['Dalboe','Nicholas',''],'11:1':['Dana','Logan',''],
+  '13:29':['Eddowes','Benjamin','T'],'15:18':['Fitzgerald','John','T'],'16:2':['Forsee','Gregory','A'],'17:2':['Garrett','Aarion','A'],
+  '18:13':['Gore','Dhameer',''],'20:1':['Harris','Clint','J'],'23:6':['Iannuzzi','Christopher',''],'23:36':['Jennette','Tekoar',''],
+  '27:15':['Lea',"D'Andre",'L'],'29:28':['Martoni','Nicholas','David'],'30:16':['McClellan Jr.','Michael',''],'30:18':['McClendon',"Janae'",''],
+  '31:6':['McRae',"Da'Von",'A'],'39:31':['Saunders',"Ki'Ree",'D'],'41:14':['Sheltra','Richard','S'],'47:23':['Washabaugh','Eli',''],
+  '49:22':['Williams','Teo','D'],'50:24':['Wright','Zakarij','M.']};
 const out=[];
 for(const r of rows){
   const k=r.page+':'+r.line;

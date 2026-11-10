@@ -17,7 +17,7 @@ Last written: 2026-11-10 — 16 files listed, 5 on disk now, 11 not on disk
 
 | file | from | shape | KB | sha256 (first 16) | last modified |
 |---|---|---|---|---|---|
-| `registers/register-2026-09-19.json` | DERIVED — the register as read; rebuilt from the scan | parsed rows | 311 | `f8eb9deef67fc65a` | 2026-11-10 |
+| `registers/register-2026-09-19.json` | DERIVED — the register as read; rebuilt from the scan | parsed rows | 311 | `0b12c817c3f5e1f6` | 2026-11-10 |
 | `registers/register-2026-09-19.read1.json` | DERIVED — the register as read; rebuilt from the scan | parsed rows | 747 | `b43764644f28935b` | 2026-11-10 |
 | `uploads/iaff-roll-2026-11-10.csv` | IAFF member roll export | 2512 rows × 20 columns | 984 | `99d57e26a8e741b4` | 2026-11-10 |
 | `uploads/movers-1.xls` | MK Elections NCOA (USPS change-of-address) return | 71 rows × 17 columns | 42 | `e2da8fb896f1201e` | 2026-09-27 |

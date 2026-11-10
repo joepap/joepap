@@ -18,3 +18,8 @@ Set `REG_WORK` to a scratch folder holding `register.pdf`, then in order:
    `data/registers/register-2026-09-19.json` with no SSN digits in it.
 
 `finalize.js` holds the eye-read corrections. They are the expensive part.
+
+The names need the same care as the numbers. The first reading checked the
+payroll numbers and the money three ways and took the names as read; 26 of
+them were wrong. Any name that disagrees with NEP's has to be read from the
+page, and the corrections go in `NAMEFIX`.
