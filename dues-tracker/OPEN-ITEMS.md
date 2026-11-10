@@ -2567,3 +2567,45 @@ invisible" note asked for.
   line of duty. The LODD field is empty on all 3,545 records and LODD Spouse
   Insurance likewise, and none of the 89 Deceased records carries it. This is
   the thing the 27 Sept note feared and could not see.
+
+## Are the International's addresses the ones we deleted? — 10 Nov 2026
+
+Joe asked whether the addresses on the International's roll are the same ones
+that came back undeliverable and were cleared out of NEP in September.
+
+The MK returns file itself went in the wipe, but nothing was lost: every
+cleared record carries the bounced address in its own note, so NEP is the
+complete list of what was deleted. 177 records were cleared; 31 members have
+since put an address back in; 146 are still blank.
+
+For those 146, comparing the bounced address with the International's:
+
+| | | of which the International marks INVALID |
+|---|---|---|
+| the same address that came back | 46 | 16 |
+| the same place, written differently | 16 | 5 |
+| a different address | 66 | 7 |
+| the International has no entry | 18 | |
+
+So for about a third, yes — it is the address we deleted, and loading it would
+undo the September work.
+
+**The sixteen "written differently" are the useful ones.** They read like the
+reason the mail bounced: 1674 Hammond Drive against 1647; 842 48th Street NW
+against NE; 1031 Kearney Street against Kearny; 7908 West Wood Court against
+Westwood. In each the International's version has been through USPS
+standardisation (nearly every address on the roll carries a ZIP+4) and ours
+had not.
+
+**The International's INVALID flag is not a clean bill.** Of 46 addresses known
+to have bounced, it flags 16. An address it does not flag has passed format
+validation, not delivery.
+
+Across all 389 members blank in NEP where the roll has an address: 30 are the
+same address that came back, 34 are marked INVALID, and 325 are worth trying —
+255 of them for members NEP never had an address for at all.
+
+`lib/addresskey.js` does the comparison and gives three answers, not two: same,
+near, different. "Near" is one slip in the house number or one in the street,
+never a little of each — 1447 U St and 1440 V St are two characters apart and
+two addresses, and the first version of the rule called them one.

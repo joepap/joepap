@@ -162,15 +162,32 @@ for (const [r, x] of nepToRoll) {
 }
 
 /* ---- addresses the International holds and NEP does not ---- */
+// 177 addresses were cleared out of NEP after the September mailing came back,
+// each with a note recording the address that bounced. Before an address from
+// the International is put back in, it has to be asked whether it is that same
+// address — and "same" has three answers, not two (lib/addresskey.js).
+const addr = require(path.join(DT, 'lib/addresskey'));
+const BOUNCED = /returned undeliverable from the nominations mailing[^|]*?(?:old address was|as mailed it was|address was):\s*([^|]+)/i;
+const bouncedAddress = r => {
+  const m = L(r['Notes']).match(BOUNCED);
+  if (!m || !/address removed/i.test(L(r['Notes']))) return null;
+  const whole = m[1].trim();
+  return { whole, street: whole.split(',')[0].trim(), zip: (whole.match(/(\d{5})(?:-\d{4})?\s*$/) || [])[1] || '' };
+};
 const E = [];
 for (const [r, x] of nepToRoll) {
   if (!/^(Active|Active Retired)$/.test(status(r)) || L(r['Street Address'])) continue;
   if (!L(x['Home Address 1'])) continue;
-  // An address NEP already tried and had returned is not a new address.
-  const bounced = /returned undeliverable/i.test(L(r['Notes'])) &&
-    L(r['Notes']).toLowerCase().includes(L(x['Home Address 1']).toLowerCase().slice(0, 12));
-  E.push([r, x, L(x['Invalid Address']) ? 'the International marks it INVALID' : bounced ? 'same address that was returned in September' : 'usable']);
+  const old = bouncedAddress(r);
+  const cmp = old ? addr.compare(old, { street: x['Home Address 1'], zip: x['Zip/Postal Code'] }) : null;
+  const verdict = L(x['Invalid Address']) ? 'do not use — the International marks it INVALID'
+    : cmp === 'same' ? 'do not use — the SAME address that came back in September'
+    : cmp === 'near' ? 'try it — the same place as the one that came back, written differently'
+    : cmp === 'different' ? 'try it — a different address from the one that came back'
+    : 'try it — NEP never had an address for this member';
+  E.push([r, x, verdict, old ? old.whole : '']);
 }
+const usable = e => /^try it/.test(e[2]);
 
 /* ---- the workbook ---- */
 const wb = XLSX.utils.book_new();
@@ -221,7 +238,12 @@ const S = [
   ['', ''],
   ['ADDRESSES', ''],
   ['Members with no address in NEP where the International holds one', E.length],
-  ['   of those, usable', E.filter(e => e[2] === 'usable').length],
+  ['   the same address that came back in September — do not reload', E.filter(e => /SAME/.test(e[2])).length],
+  ['   marked INVALID by the International', E.filter(e => /INVALID/.test(e[2])).length],
+  ['   worth trying', E.filter(usable).length],
+  ['      the same place as the one that came back, written differently', E.filter(e => /written differently/.test(e[2])).length],
+  ['      a different address from the one that came back', E.filter(e => /a different address/.test(e[2])).length],
+  ['      NEP never had an address for the member', E.filter(e => /never had/.test(e[2])).length],
 ];
 sheet('Start here', S[0], S.slice(1), [70, 12]);
 
@@ -257,9 +279,10 @@ sheet('Gone in NEP - still on roll', ['NEP name', 'NEP status', 'IAFF number', '
   D.goneButOnRoll.map(([r, x]) => [nepName(r), status(r), L(x['Id']), iName(x), TYPE[L(x['Member Type'])] || L(x['Member Type'])]), [30, 14, 14, 34, 12]);
 sheet('Active vs retired mismatch', ['NEP name', 'NEP status', 'IAFF number', 'Name on the roll', 'What disagrees'],
   D.typeMismatch.map(([r, x, why]) => [nepName(r), status(r), L(x['Id']), iName(x), why]), [30, 16, 14, 34, 44]);
-sheet('Addresses from the Intl', ['NEP name', 'NEP status', 'NEP payroll no.', 'IAFF number', 'Street', 'Line 2', 'City', 'State', 'Zip', 'Can it be used'],
-  E.map(([r, x, why]) => [nepName(r), status(r), L(r['PeopleSoft Number']), L(x['Id']), L(x['Home Address 1']), L(x['Home Address 2']), L(x['City']), L(x['State Province']), L(x['Zip/Postal Code']), why]),
-  [30, 16, 14, 12, 34, 16, 20, 8, 12, 40]);
+sheet('Addresses from the Intl', ['NEP name', 'NEP status', 'NEP payroll no.', 'IAFF number', 'Street', 'Line 2', 'City', 'State', 'Zip', 'Verdict', 'The address that came back in September'],
+  E.sort((p, q) => p[2].localeCompare(q[2]) || nepName(p[0]).localeCompare(nepName(q[0])))
+    .map(([r, x, why, old]) => [nepName(r), status(r), L(r['PeopleSoft Number']), L(x['Id']), L(x['Home Address 1']), L(x['Home Address 2']), L(x['City']), L(x['State Province']), L(x['Zip/Postal Code']), why, old]),
+  [30, 16, 14, 12, 34, 16, 20, 8, 12, 62, 60]);
 
 const stamp = new Date().toISOString().slice(0, 10);
 const file = path.join(OUT, `Local36-THREE-WAY-${stamp}.xlsx`);
