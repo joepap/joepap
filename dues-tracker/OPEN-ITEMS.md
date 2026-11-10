@@ -2609,3 +2609,12 @@ same address that came back, 34 are marked INVALID, and 325 are worth trying —
 near, different. "Near" is one slip in the house number or one in the street,
 never a little of each — 1447 U St and 1440 V St are two characters apart and
 two addresses, and the first version of the rule called them one.
+
+### Kenny is MK Elections
+
+Joe, 10 Nov: *"kenny is MK elections."* Kenny is the contact at the ballot
+vendor, and MK is who ran the USPS change-of-address (NCOA) pass on the
+address book in August. So "ask Kenny to re-run NCOA" and "ask MK" are one
+request to one person, and the route for checking the International's 325
+addresses before loading them is a file to Kenny in the address-book format he
+already has.
