@@ -2655,3 +2655,16 @@ already holds.
 `lib/rolllink.js` now holds the NEP-to-roll join for both this and
 `three-way.js`, and every link records whether it was made by number or by
 name so that whatever is built on it can decide how far to trust it.
+
+### 7701 Landover Rd is a home — Joe, 10 Nov 2026
+
+*"thats a volunteer firehouse where they live. its ok for them to have that
+address."* Nine members of the roll are listed there and the builder had held
+Setchell and Ortiz back as a placeholder. They are live-in volunteers, and the
+address is where their mail goes.
+
+So a shared address is a reason to ask, not a reason to refuse. The ruling is
+recorded in `scripts/iaff-address-upload.js` keyed on the place, and the two
+go in a file of their own (file 6) so that files 1–5, one of which had already
+been sent, are byte-for-byte unchanged. 253 addresses in six files; two members
+still to enter by hand.

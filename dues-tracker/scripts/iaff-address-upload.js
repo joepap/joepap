@@ -59,7 +59,13 @@ for (const x of I) shared.set(place(x), (shared.get(place(x)) || 0) + 1);
 const uniq = (f, v) => N.filter(x => (f === 'Email' ? L(x[f]).toLowerCase() : num(x[f])) === (f === 'Email' ? L(v).toLowerCase() : num(v))).length === 1;
 const keyFor = r => ['Email', 'PeopleSoft Number', 'IAFF Member Number'].map(f => ({ f, v: L(r[f]) })).find(k => k.v && uniq(k.f, k.v));
 
-const byNumber = [], byName = [], held = [];
+// A shared address is usually a placeholder, but not always. Joe, 10 Nov 2026,
+// on 7701 Landover Rd: "thats a volunteer firehouse where they live. its ok for
+// them to have that address." Rulings like that are recorded here, keyed on the
+// place, and those members get a file of their own so the files already built
+// and sent do not change under anyone's feet.
+const LIVE_IN = { [addr.compact('7701 Landover Rd') + '|20785']: 'a volunteer firehouse where the member lives (Joe, 10 Nov 2026)' };
+const byNumber = [], byName = [], liveIn = [], held = [];
 for (const [r, x] of RL.nepToRoll) {
   if (!/^(Active|Active Retired)$/.test(L(r['Member Status']))) continue;
   if (L(r['Street Address']) || !L(x['Home Address 1'])) continue;
@@ -67,13 +73,14 @@ for (const [r, x] of RL.nepToRoll) {
   if (/old address was|address removed|returned undeliverable/i.test(L(r['Notes']))) continue;
   if (L(x['Invalid Address'])) continue;
   const state = STATE[L(x['State Province']).toUpperCase()], zip = addr.zip5(x['Zip/Postal Code']);
-  if (shared.get(place(x)) >= 3) { held.push([r, x, `the address is shared by ${shared.get(place(x))} members of the roll — a placeholder, not a home`]); continue; }
+  const ruling = LIVE_IN[place(x)];
+  if (shared.get(place(x)) >= 3 && !ruling) { held.push([r, x, `the address is shared by ${shared.get(place(x))} members of the roll — a placeholder unless Joe says otherwise`]); continue; }
   if (/not want mail/i.test(L(x['Home Address 2']))) { held.push([r, x, 'the roll says this member does not want mailings']); continue; }
   if (!state || zip.length !== 5 || !L(x['City'])) { held.push([r, x, 'the roll\'s address is missing a state, city or zip NEP can take']); continue; }
   const k = keyFor(r);
   if (!k) { held.push([r, x, 'no unique email, payroll number or IAFF number to upload on — enter by hand']); continue; }
-  const row = { r, x, k, cells: [L(x['Home Address 1']), L(x['City']), state, zip, 'USA'] };
-  (RL.how.get(r) === 'number' ? byNumber : byName).push(row);
+  const row = { r, x, k, ruling, cells: [L(x['Home Address 1']), L(x['City']), state, zip, 'USA'] };
+  (ruling ? liveIn : RL.how.get(r) === 'number' ? byNumber : byName).push(row);
 }
 
 const KEYNAME = { Email: 'Email', 'PeopleSoft Number': 'PeopleSoft-Number', 'IAFF Member Number': 'IAFF-Member-Number' };
@@ -103,6 +110,9 @@ write(byNumber, 'addresses', () => `address added ${TODAY} from the IAFF Interna
 write(byName, 'LOOK-FIRST-matched-by-name', row => `address added ${TODAY} from the IAFF International roll — NEP had none on file; ` +
   `matched to the roll by name (${rollName(row.x)}, IAFF ${L(row.x['Id'])})`);
 
+write(liveIn, 'firehouse-live-ins', row => `address added ${TODAY} from the IAFF International roll — NEP had none on file; ` +
+  `${row.ruling}` + (RL.how.get(row.r) === 'name' ? `; matched to the roll by name (${rollName(row.x)}, IAFF ${L(row.x['Id'])})` : ''));
+
 // the ones no file can carry, with what is needed to act on them by hand
 if (held.length) {
   const ws = XLSX.utils.aoa_to_sheet([['Member', 'NEP status', 'Why it is not in an upload file', 'Street', 'City', 'State', 'Zip', 'Name on the roll'],
@@ -116,6 +126,7 @@ if (held.length) {
 console.log(`${ROSTER} against ${IAFF}\n`);
 console.log(`  matched by IAFF number, in upload files   ${String(byNumber.length).padStart(4)}`);
 console.log(`  matched by name only, in LOOK-FIRST files ${String(byName.length).padStart(4)}`);
+console.log(`  living at a firehouse, by Joe's ruling    ${String(liveIn.length).padStart(4)}`);
 console.log(`  held back                                 ${String(held.length).padStart(4)}`);
 held.forEach(([r, , why]) => console.log(`      ${who(r)} — ${why}`));
 console.log('\nFILES — one at a time, in this order, every field on Trust File:');
