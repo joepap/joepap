@@ -2362,3 +2362,78 @@ roster-71: 2389 on the roll · 1772 rows in the file · 617 left out, no street 
 
 Still open: **McCoy** (payroll 00132282 on two records) and the **150 rows with
 no IAFF Member Number**.
+
+## The 19 Sept register, and a third wipe — 10 Nov 2026
+
+Joe sent a 56-page scan, `SKM_C300i26110914251.pdf`: the DCHR Employee Union
+Dues Report for **pay period 9/6–9/19/2026**, check date 10/2, run 9/25. It was
+scanned on 9 Nov, so it is seven weeks old; pay periods ending 10/3, 10/17 and
+10/31 should have produced three more.
+
+The container had been wiped again. `data/` and `node_modules` were both gone.
+`scripts/data-restore.js` named all ten missing files from the manifest in one
+command, which is what it was built for. Every roster export is among them, so
+**the register cannot be compared to NEP until Joe sends a fresh export.**
+
+### The register prints its own answer key
+
+The last pages carry totals, which makes the reading checkable:
+
+| | printed | read |
+|---|---|---|
+| active participants, Fire & EMS (FB) | 1,806 | 1,806 non-zero rows |
+| "in-active" participants | 9 | 9 rows at $0.00 |
+| one member in another agency (KT, bargaining code BNA) | 1 | 1 |
+| employee deduction, FB | $88,838.76 | reconciles to the penny, below |
+| vendor total | $88,888.76 | + $50.00 for the KT member |
+
+The scan has no text layer, so it went through `lib/ocr.js` and `lib/parse.js`
+at 300 dpi: 15 seconds a page. 1,816 rows read against 1,816 printed.
+
+**The dollars reconcile exactly**: 1,802 rows at $49.19 plus 2 rows at $99.19
+is $88,838.76. Every other first-column amount on the register begins with a 4
+(the 49.19 family, OCR noise included), so there is no room for another
+unusual amount.
+
+### What the register says
+
+- **Nine at $0.00.** Six were settled on 17 Aug and still read zero. Three are
+  new and have no answer on record: **Gobantes, Isaiah · Mason, Dominique B ·
+  Wilson, Devaughn**.
+- **Four who left in the summer are still printed by DC at $0.00** — Chen,
+  Devendorf, Dufresne, Newton. Harmless, but it means the register's list of
+  names is not a list of members.
+- **Rembert is paying again, at $99.19.** She was at $0.00 in June. Gerber,
+  Stephen Henry also paid $99.19. Each is exactly $50.00 over the standard
+  deduction, which reads like a catch-up; the treasurer will know.
+- **Glover, Tye M is back at $49.19**, as the August note predicted.
+- **DiPietro (00108259) is not on this register at all**, by number or by
+  name. He was the one $0.00 member with no ruling in August.
+- **Beckham, Tyrell has five lines**: three charges of $49.19 and two
+  reversals, four of them marked off-cycle. The printed total equals the sum
+  of the positive lines only — the reversals are not subtracted. Either the
+  union was paid $98.38 more than his lines net to, or the printed total
+  overstates the deposit by that much. A question for the treasurer against
+  the 10/2 deposit ($88,708.26 after the agency charge).
+- The last eight names on the Fire & EMS list are lowercase — `mesa,joan`,
+  `newkirk,kia`, `powell,markel` — which is where NEP's lowercase surnames
+  come from. They are DC's spelling, not ours.
+
+### The payroll number is the weak point of the reading
+
+The row count and the zero/non-zero split are solid. The eight-digit payroll
+number is not: 22 rows came back with a number that does not parse (usually a
+ninth digit inserted), and three numbers were read onto two different people,
+so at least three more are wrong. A misread that collides is visible; one that
+does not is not, and a wrong payroll number is exactly how a paying member gets
+reported as "not in NEP".
+
+So every number is being read a second time, independently — the left-hand
+strip of each page at 600 dpi on its own. Agreement between the two reads
+confirms a row; disagreement sends it to be read by eye from the page image;
+and the NEP roster, when it arrives, is the third check (number and name must
+both agree).
+
+Kept in `data/` only: the scan as `uploads/register-2026-09-19.pdf` and the
+parsed rows. **The parsed rows carry the last four digits of each SSN in their
+raw text and must never leave `data/`.**
