@@ -1,0 +1,528 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Local 36 To-Do List</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow column built for a side panel. A compact header with the
+   open count, a filter row, then one section per workstream holding
+   hairline-separated rows: checkbox, task, who it sits with. */
+:root {
+  --bg: #F4F6F9;
+  --surface: #FFFFFF;
+  --fg: #111B2B;
+  --muted: #596579;
+  --line: #DCE1E9;
+  --accent: #8F6410;        /* badge brass */
+  --accent-soft: #F4EAD3;
+  --navy: #1D4480;          /* Class A navy: Joe's items */
+  --navy-soft: #E4ECF8;
+  --quiet-soft: #ECEFF4;    /* Claude's items */
+  --hot: #B3261E;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D131C; --surface: #141C28; --fg: #E7ECF3; --muted: #97A3B5;
+    --line: #263244; --accent: #D8A545; --accent-soft: #3A2D12;
+    --navy: #8DB4EE; --navy-soft: #1B2C47; --quiet-soft: #1E2735; --hot: #F2857D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D131C; --surface: #141C28; --fg: #E7ECF3; --muted: #97A3B5;
+  --line: #263244; --accent: #D8A545; --accent-soft: #3A2D12;
+  --navy: #8DB4EE; --navy-soft: #1B2C47; --quiet-soft: #1E2735; --hot: #F2857D;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+}
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.top { display: flex; flex-direction: column; gap: 4px; }
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.tally { margin: 4px 0 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.chip .n { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip[aria-pressed="true"] .n { color: var(--bg); opacity: 0.75; }
+
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--fg);
+  font-size: 15px;
+}
+
+.list { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.group { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.group h2 {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.group h2 .count {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+}
+.item + .item { border-top: 1px solid var(--line); }
+.item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.item input[type="checkbox"]:disabled { cursor: default; }
+.body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.title { font-weight: 500; cursor: pointer; overflow-wrap: anywhere; }
+.item.done .title { color: var(--muted); text-decoration: line-through; font-weight: 400; }
+.status { font-size: 13px; font-weight: 600; color: var(--accent); }
+.status.hot { color: var(--hot); }
+details { min-width: 0; }
+summary {
+  width: fit-content;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+details[open] summary::before { transform: rotate(45deg); }
+.detail { margin: 6px 0 2px; font-size: 15px; color: var(--muted); max-width: 60ch; overflow-wrap: anywhere; }
+.who {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.who-joe { background: var(--navy-soft); color: var(--navy); }
+.who-claude { background: var(--quiet-soft); color: var(--muted); }
+
+.empty {
+  margin: 0;
+  padding: 22px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.add { display: flex; flex-direction: column; gap: 8px; }
+.add-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.add-row input[type="text"] {
+  flex: 1 1 200px;
+  min-width: 0;
+  font: inherit;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--fg);
+}
+.add-row select, .add-row button {
+  font: inherit;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--fg);
+}
+.add-row button {
+  font-weight: 600;
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+  cursor: pointer;
+}
+.add-row button:disabled { opacity: 0.5; cursor: default; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { summary::before { transition: none; } }
+</style>
+
+<div class="page">
+  <header class="top">
+    <p class="eyebrow">IAFF Local 36 · membership records</p>
+    <h1>To-do list</h1>
+    <p class="tally" id="tally" aria-live="polite">Loading the list…</p>
+  </header>
+
+  <div class="filters" role="group" aria-label="Show">
+    <button type="button" class="chip" id="f-open" data-filter="open" aria-pressed="true">Open <span class="n" id="n-open"></span></button>
+    <button type="button" class="chip" id="f-joe" data-filter="joe" aria-pressed="false">Yours <span class="n" id="n-joe"></span></button>
+    <button type="button" class="chip" id="f-claude" data-filter="claude" aria-pressed="false">Claude's <span class="n" id="n-claude"></span></button>
+    <button type="button" class="chip" id="f-done" data-filter="done" aria-pressed="false">Done <span class="n" id="n-done"></span></button>
+  </div>
+
+  <p class="notice" id="notice" hidden></p>
+
+  <main class="list" id="list">
+    <p class="empty">Your to-dos will appear here. Tick one off when it is done. Claude adds new ones as the work goes on.</p>
+  </main>
+
+  <form class="add" id="add" autocomplete="off">
+    <label class="add-label" for="add-title">Add a to-do</label>
+    <div class="add-row">
+      <input id="add-title" type="text" maxlength="200" placeholder="What needs doing?" required>
+      <select id="add-who" aria-label="Who it is for">
+        <option value="joe">For me</option>
+        <option value="claude">For Claude</option>
+      </select>
+      <button type="submit" id="add-btn">Add</button>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var FILTERS = ["open", "joe", "claude", "done"];
+  var EMPTY = {
+    open: "Nothing open. Everything on the list is done.",
+    joe: "Nothing is waiting on you.",
+    claude: "Nothing is sitting with Claude.",
+    done: "Nothing has been ticked off yet."
+  };
+  var state = {
+    items: [], loaded: false, slow: false, dead: false, readOnly: false,
+    filter: "open", open: new Set(), busy: new Set(), adding: false, db: null,
+    saveError: ""
+  };
+
+  try {
+    var saved = localStorage.getItem("l36-todo-filter");
+    if (FILTERS.indexOf(saved) !== -1) state.filter = saved;
+  } catch (e) { /* storage is a convenience only */ }
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function str(v) { return typeof v === "string" ? v : ""; }
+  function num(v, d) { return typeof v === "number" && isFinite(v) ? v : d; }
+
+  // Rows are shared data, so every field is coerced and length-capped before
+  // it is shown, and only ever written with textContent.
+  function normalize(doc) {
+    var d = doc.data() || {};
+    return {
+      id: doc.id,
+      title: str(d.title).slice(0, 300) || "(untitled)",
+      detail: str(d.detail).slice(0, 2000),
+      group: str(d.group).slice(0, 80) || "Other",
+      groupOrder: num(d.groupOrder, 50),
+      order: num(d.order, 0),
+      who: d.who === "claude" ? "claude" : "joe",
+      done: d.done === true,
+      status: str(d.status).slice(0, 40),
+      doneAt: str(d.doneAt)
+    };
+  }
+
+  function matches(i) {
+    if (state.filter === "done") return i.done;
+    if (i.done) return false;
+    if (state.filter === "joe") return i.who === "joe";
+    if (state.filter === "claude") return i.who === "claude";
+    return true;
+  }
+
+  function buildItem(i) {
+    var li = el("li", "item" + (i.done ? " done" : ""));
+    var box = document.createElement("input");
+    box.type = "checkbox";
+    box.id = "cb-" + i.id;
+    box.checked = i.done;
+    box.disabled = state.readOnly || state.dead || !state.db || state.busy.has(i.id);
+    box.addEventListener("change", function () { toggle(i, box.checked, box); });
+    li.appendChild(box);
+
+    var body = el("div", "body");
+    var title = el("label", "title", i.title);
+    title.htmlFor = box.id;
+    body.appendChild(title);
+    if (i.status && !i.done) {
+      body.appendChild(el("span", "status" + (/block/i.test(i.status) ? " hot" : ""), i.status));
+    }
+    if (i.detail) {
+      var det = document.createElement("details");
+      det.open = state.open.has(i.id);
+      var sum = el("summary", "", "Details");
+      sum.id = "sm-" + i.id;
+      det.appendChild(sum);
+      det.appendChild(el("p", "detail", i.detail));
+      det.addEventListener("toggle", function () {
+        if (det.open) state.open.add(i.id); else state.open.delete(i.id);
+      });
+      body.appendChild(det);
+    }
+    li.appendChild(body);
+    li.appendChild(el("span", "who who-" + i.who, i.who === "claude" ? "Claude" : "You"));
+    return li;
+  }
+
+  function render() {
+    var items = state.items;
+    var open = items.filter(function (i) { return !i.done; });
+    var mine = open.filter(function (i) { return i.who === "joe"; }).length;
+    var theirs = open.length - mine;
+    var done = items.length - open.length;
+
+    $("n-open").textContent = state.loaded ? open.length : "";
+    $("n-joe").textContent = state.loaded ? mine : "";
+    $("n-claude").textContent = state.loaded ? theirs : "";
+    $("n-done").textContent = state.loaded ? done : "";
+    FILTERS.forEach(function (f) { $("f-" + f).setAttribute("aria-pressed", f === state.filter ? "true" : "false"); });
+
+    var tally = $("tally");
+    if (!state.loaded) {
+      tally.textContent = state.dead ? "The list could not be loaded."
+        : state.slow ? "The list can't be reached yet. It will appear when the connection comes back."
+        : "Loading the list…";
+    } else if (!items.length) {
+      tally.textContent = "Nothing on the list yet.";
+    } else {
+      tally.textContent = open.length + " open: " + mine + " yours, " + theirs + " with Claude. " + done + " done.";
+    }
+
+    var notes = [];
+    if (state.loaded && state.dead) notes.push("The list has stopped updating. Close this panel and open it again.");
+    else if (state.loaded && state.slow) notes.push("Showing a saved copy. It may be out of date.");
+    if (state.readOnly) notes.push("You can read this list but not change it.");
+    if (state.saveError) notes.push(state.saveError);
+    var notice = $("notice");
+    notice.textContent = notes.join(" ");
+    notice.hidden = notes.length === 0;
+
+    $("add").hidden = state.readOnly || !state.db || state.dead;
+    $("add-btn").disabled = state.adding;
+
+    var active = document.activeElement && document.activeElement.id;
+    var list = $("list");
+    list.textContent = "";
+    if (!state.loaded) {
+      list.appendChild(el("p", "empty", "Your to-dos will appear here. Tick one off when it is done. Claude adds new ones as the work goes on."));
+      return;
+    }
+    var shown = items.filter(matches);
+    if (!shown.length) {
+      list.appendChild(el("p", "empty", items.length ? EMPTY[state.filter] : "Nothing on the list yet. Add the first one below, or ask Claude to."));
+      return;
+    }
+    var groups = {};
+    shown.forEach(function (i) {
+      if (!groups[i.group]) groups[i.group] = { name: i.group, order: i.groupOrder, items: [] };
+      groups[i.group].order = Math.min(groups[i.group].order, i.groupOrder);
+      groups[i.group].items.push(i);
+    });
+    Object.keys(groups).map(function (k) { return groups[k]; })
+      .sort(function (a, b) { return a.order - b.order || a.name.localeCompare(b.name); })
+      .forEach(function (g) {
+        var sec = el("section", "group");
+        var h = el("h2");
+        h.appendChild(el("span", "", g.name));
+        var n = g.items.length;
+        h.appendChild(el("span", "count", state.filter === "done" ? n + " done" : n + " open"));
+        sec.appendChild(h);
+        var ul = el("ul", "rows");
+        g.items.sort(function (a, b) {
+          if (state.filter === "done") return b.doneAt.localeCompare(a.doneAt);
+          return a.order - b.order || a.title.localeCompare(b.title);
+        }).forEach(function (i) { ul.appendChild(buildItem(i)); });
+        sec.appendChild(ul);
+        list.appendChild(sec);
+      });
+    if (active) { var again = document.getElementById(active); if (again && !again.disabled) again.focus(); }
+  }
+
+  function writeFailed(e) {
+    var code = e && e.code;
+    if (code === "invalid_argument" || code === "revoked" || code === "not_granted") {
+      state.readOnly = true;
+      state.saveError = "";
+    } else if (code === "quota_exceeded") {
+      state.saveError = "The list is full. Ask Claude to clear out finished items.";
+    } else {
+      state.saveError = "That change did not save. Try it again in a moment.";
+    }
+  }
+
+  // One write at a time per item: its checkbox stays disabled until the store
+  // answers. The list itself redraws from the snapshot, not from this call.
+  function toggle(item, checked, box) {
+    if (!state.db || state.busy.has(item.id) || state.readOnly) { box.checked = item.done; return; }
+    state.busy.add(item.id);
+    box.disabled = true;
+    state.saveError = "";
+    state.db.collection("todos").doc(item.id)
+      .update({ done: checked, doneAt: checked ? new Date().toISOString() : "" })
+      .then(function () { state.busy.delete(item.id); render(); })
+      .catch(function (e) { state.busy.delete(item.id); writeFailed(e); render(); });
+  }
+
+  FILTERS.forEach(function (f) {
+    $("f-" + f).addEventListener("click", function () {
+      state.filter = f;
+      try { localStorage.setItem("l36-todo-filter", f); } catch (e) { /* fine without it */ }
+      render();
+    });
+  });
+
+  $("add").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var input = $("add-title");
+    var title = input.value.trim().slice(0, 200);
+    if (!title || !state.db || state.adding || state.readOnly) return;
+    var who = $("add-who").value === "claude" ? "claude" : "joe";
+    state.adding = true;
+    state.saveError = "";
+    $("add-btn").disabled = true;
+    state.db.collection("todos").add({
+      title: title, detail: "", group: "Added from this page", groupOrder: 90,
+      order: Date.now(), who: who, done: false, status: "", doneAt: "", addedBy: "page"
+    }).then(function () {
+      input.value = "";
+      // Make sure the new row is visible under the current filter.
+      if (state.filter === "done" || (state.filter !== "open" && state.filter !== who)) state.filter = "open";
+    }).catch(writeFailed).then(function () { state.adding = false; render(); });
+  });
+
+  function boot() {
+    render();
+    var c = window.claude;
+    if (!c || typeof c.use !== "function") { state.dead = true; render(); return; }
+    c.use("db").then(function (db) {
+      if (!db) { state.dead = true; render(); return; }
+      state.db = db;
+      var timer = setTimeout(function () { state.slow = true; render(); }, 10000);
+      db.collection("todos").onSnapshot(function (snap) {
+        state.items = snap.docs.map(normalize);
+        state.loaded = true;
+        if (!snap.metadata || !snap.metadata.fromCache) { clearTimeout(timer); state.slow = false; }
+        render();
+      }, function () {
+        clearTimeout(timer);
+        state.slow = false;
+        state.dead = true;
+        render();
+      });
+      render();
+    }, function () { state.dead = true; render(); });
+
+    c.use("user").then(function (user) {
+      if (!user || typeof user.can !== "function") return null;
+      return user.can("data.write");
+    }).then(function (ok) {
+      if (ok === false) { state.readOnly = true; render(); }
+    }, function () { /* not told: keep the controls and let a refused write decide */ });
+  }
+
+  boot();
+})();
+</script>

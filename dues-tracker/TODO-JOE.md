@@ -1,5 +1,11 @@
 # Joe's list
 
+**The live version of this list is a page you can tick things off on:**
+https://claude.ai/artifact/Xu6UCYFpiKjYhS3bLtj7Yj
+It is private to Joe. Its source is `tools/todo-page/local36-todo.html`; the
+items live in the page's own store (collection `todos`), not in this file, so
+Claude reads and updates them there. This file stays as the written record.
+
 Short, and only things that need Joe. Everything else lives in `OPEN-ITEMS.md`.
 
 ---
