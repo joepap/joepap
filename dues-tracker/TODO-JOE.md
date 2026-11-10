@@ -53,6 +53,20 @@ them to "roster latest" is how a set becomes unusable.
 
 Every file you download and send me goes in that folder first. One drag.
 
+### 5. An email address the copier scans to
+
+Joe, 10 Nov: *"make email address for scanner to auto send to the folder
+'local 36 membership data' and set that email address up … that all files go
+to that folder automatically."* This settles the route for the scan-to-Drive
+inbox: scan-to-email, not the copier's own Drive connector.
+
+- [ ] **Joe:** make the address. Simplest is a plus-address on a mailbox the
+      union already has (`name+scans@…`), which needs no new account. Give it
+      to the copier only — anything mailed to it gets filed.
+- [ ] **Claude:** build the rule that saves every attachment sent to that
+      address into `Local 36 Membership Data`, and test it with one scan from
+      the copier. Needs to know which mailbox the address is on.
+
 ### 4. Send me back what the project is missing
 
 `docs/data-manifest.md` lists it by name. The registers, TeleStaff and the IAFF
