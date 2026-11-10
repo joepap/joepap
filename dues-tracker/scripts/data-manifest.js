@@ -23,6 +23,10 @@ const DT = path.join(__dirname, '..');
 const fs = require('fs');
 const crypto = require('crypto');
 const WRITE = process.argv.includes('--write');
+const manifest = require(path.join(DT, 'lib/manifest'));
+// --forget <path> is the only way an entry leaves. A write never drops one,
+// because the manifest matters most when the folder is empty.
+const FORGET = process.argv.map((a, i, all) => a === '--forget' ? all[i + 1] : null).filter(Boolean);
 const OUT = path.join(DT, 'docs/data-manifest.md');
 const L = v => String(v == null ? '' : v).trim();
 
@@ -35,6 +39,7 @@ const SOURCE = [
   [/^returns/i, 'MK Elections undeliverables and reprints report'],
   [/^sent-to-mk/i, 'the address file we sent MK Elections'],
   [/^SO.*\.pdf$/i, 'DC Fire & EMS Special Order (personnel actions)'],
+  [/^register-.*\.json$/i, 'DERIVED — the register as read; rebuilt from the scan'],
   [/register|dues|payroll/i, 'DCHR payroll dues deduction register'],
   [/^iaff/i, 'IAFF member roll export'],
   [/\.db$/, 'DERIVED — rebuilt by importing the registers, not re-uploaded'],
@@ -47,6 +52,8 @@ function shape(file) {
   const ext = path.extname(file).toLowerCase();
   try {
     if (ext === '.db') return 'sqlite database';
+    if (ext === '.pdf') return 'scanned pages';
+    if (ext === '.json') return 'parsed rows';
     const buf = fs.readFileSync(file);
     const t = require(path.join(DT, 'lib/tabular'));
     const recs = t.parseUpload(buf, path.basename(file).replace(/^[^.]*$/, '$&.xlsx')).records;
@@ -60,7 +67,9 @@ const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e =>
 
 const root = path.join(DT, 'data');
 if (!fs.existsSync(root)) { console.error('no data/ directory — nothing to describe'); process.exit(1); }
-const files = walk(root).filter(f => !/\.db-(wal|shm)$/.test(f)).sort();
+// OCR language data and rendered page images are tools and by-products: both
+// are rebuilt on demand and neither is something Joe would re-upload.
+const files = walk(root).filter(f => !/\.db-(wal|shm)$/.test(f) && !/\/(tessdata|pages)\//.test(f)).sort();
 
 const rows = files.map(f => {
   const st = fs.statSync(f);
@@ -74,6 +83,10 @@ const rows = files.map(f => {
   };
 });
 
+const before = fs.existsSync(OUT) ? manifest.parse(fs.readFileSync(OUT, 'utf8')) : [];
+const merged = manifest.merge(before, rows, FORGET);
+const listed = merged.rows;
+
 const md = [
   '# What `data/` should contain',
   '',
@@ -86,12 +99,16 @@ const md = [
   'new source file, and commit it. After a wipe, `node scripts/data-restore.js`',
   'reads this and says exactly what is missing.',
   '',
-  `Last written: ${new Date().toISOString().slice(0, 10)} — ${rows.length} files, ` +
-    `${Math.round(rows.reduce((a, r) => a + r.kb, 0) / 1024 * 10) / 10} MB`,
+  'A write is a merge: an entry whose file is not on disk is kept, so writing',
+  'the manifest on a freshly wiped machine loses nothing. An entry leaves only',
+  'with `--forget <path>`.',
+  '',
+  `Last written: ${new Date().toISOString().slice(0, 10)} — ${listed.length} files listed, ` +
+    `${rows.length} on disk now, ${merged.kept.length} not on disk`,
   '',
   '| file | from | shape | KB | sha256 (first 16) | last modified |',
   '|---|---|---|---|---|---|',
-  ...rows.map(r => `| \`${r.rel}\` | ${r.source} | ${r.shape} | ${r.kb} | \`${r.sha}\` | ${r.mtime} |`),
+  ...listed.map(manifest.formatRow),
   '',
   '## Known gaps',
   '',
@@ -111,4 +128,8 @@ const md = [
 if (WRITE) { fs.writeFileSync(OUT, md + '\n'); console.log('wrote ' + path.relative(DT, OUT)); }
 console.log(`${rows.length} files in data/, ${Math.round(rows.reduce((a, r) => a + r.kb, 0) / 1024 * 10) / 10} MB`);
 for (const r of rows) console.log(`  ${r.rel.padEnd(24)} ${String(r.kb).padStart(5)} KB  ${r.shape.padEnd(26)} ${r.source}`);
+if (merged.kept.length) {
+  console.log(`\n${merged.kept.length} listed but not on disk — kept in the manifest:`);
+  for (const r of merged.kept) console.log(`  ${r.rel.padEnd(24)} ${r.shape.padEnd(26)} ${r.source}`);
+}
 if (!WRITE) console.log('\n(nothing written — pass --write to update docs/data-manifest.md)');

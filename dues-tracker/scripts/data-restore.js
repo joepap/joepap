@@ -32,11 +32,7 @@ if (!fs.existsSync(MAN)) {
   console.error('no docs/data-manifest.md — run: node scripts/data-manifest.js --write');
   process.exit(1);
 }
-const want = [];
-for (const line of fs.readFileSync(MAN, 'utf8').split('\n')) {
-  const m = line.match(/^\| `([^`]+)` \| (.+?) \| (.+?) \| (\d+) \| `([0-9a-f]+)` \| (\S+) \|$/);
-  if (m) want.push({ rel: m[1], source: m[2], shape: m[3], kb: +m[4], sha: m[5], mtime: m[6] });
-}
+const want = require(path.join(DT, 'lib/manifest')).parse(fs.readFileSync(MAN, 'utf8'));
 const sha = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0, 16);
 
 console.log(`manifest lists ${want.length} files\n`);

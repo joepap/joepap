@@ -9,13 +9,26 @@ Regenerate with `node scripts/data-manifest.js --write` after installing any
 new source file, and commit it. After a wipe, `node scripts/data-restore.js`
 reads this and says exactly what is missing.
 
-Last written: 2026-11-10 — 3 files, 18.4 MB
+A write is a merge: an entry whose file is not on disk is kept, so writing
+the manifest on a freshly wiped machine loses nothing. An entry leaves only
+with `--forget <path>`.
+
+Last written: 2026-11-10 — 12 files listed, 2 on disk now, 10 not on disk
 
 | file | from | shape | KB | sha256 (first 16) | last modified |
 |---|---|---|---|---|---|
-| `registers/register-2026-09-19.read1.json` | DCHR payroll dues deduction register | no rows | 747 | `b43764644f28935b` | 2026-11-10 |
-| `tessdata/eng.traineddata` | unknown — ask Joe where this came from | 30483 rows × 1 columns | 15040 | `8280aed0782fe272` | 2026-11-10 |
-| `uploads/register-2026-09-19.pdf` | DCHR payroll dues deduction register | 10172 rows × 1 columns | 3055 | `64386cdad552e9e1` | 2026-11-10 |
+| `registers/register-2026-09-19.read1.json` | DERIVED — the register as read; rebuilt from the scan | parsed rows | 747 | `b43764644f28935b` | 2026-11-10 |
+| `uploads/movers-1.xls` | MK Elections NCOA (USPS change-of-address) return | 71 rows × 17 columns | 42 | `e2da8fb896f1201e` | 2026-09-27 |
+| `uploads/register-2026-09-19.pdf` | DCHR payroll dues deduction register | scanned pages | 3055 | `64386cdad552e9e1` | 2026-11-10 |
+| `uploads/returns-1.csv` | MK Elections undeliverables and reprints report | 192 rows × 1 columns | 24 | `eeb35f1ed61747d0` | 2026-09-27 |
+| `uploads/roster-65` | NEP member export — Active and Active Retired | 2392 rows × 54 columns | 345 | `648b5274da17f9e9` | 2026-09-27 |
+| `uploads/roster-66` | NEP member export — Active and Active Retired | 2392 rows × 54 columns | 349 | `12c01a3965771285` | 2026-09-27 |
+| `uploads/roster-67` | NEP member export — Active and Active Retired | 2392 rows × 54 columns | 350 | `78c01343a43b3e05` | 2026-09-27 |
+| `uploads/roster-68` | NEP member export — Active and Active Retired | 2391 rows × 54 columns | 351 | `42a4e763622d7ff6` | 2026-09-27 |
+| `uploads/roster-69` | NEP member export — Active and Active Retired | 2390 rows × 54 columns | 357 | `0e95709b4c7d41c2` | 2026-10-08 |
+| `uploads/roster-70` | NEP member export — Active and Active Retired | 2390 rows × 54 columns | 359 | `b7e7a7d363b34cd7` | 2026-10-12 |
+| `uploads/roster-71` | NEP member export — Active and Active Retired | 2389 rows × 54 columns | 359 | `ff7b67bbae7c4a4a` | 2026-10-12 |
+| `uploads/sent-to-mk.xlsx` | the address file we sent MK Elections | 2359 rows × 9 columns | 150 | `7ac5b3ee28702700` | 2026-09-27 |
 
 ## Known gaps
 
