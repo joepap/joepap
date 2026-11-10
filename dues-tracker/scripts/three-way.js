@@ -107,6 +107,16 @@ for (const p of P) {
   }
 }
 
+/* ---- everyone on the register, by what NEP calls them ---- */
+// Joe, 10 Nov 2026: "for all our members that are on the dchr dues paying list,
+// how many are not listed as active members in nep?" The answer is every person
+// on the register whose NEP record is anything but Active — including those
+// with no record, and those where two records could be theirs.
+const ambiguousPeople = new Set(A.ambiguous.map(([p]) => p));
+const nepStatusOf = p => link.has(p) ? status(link.get(p)) : ambiguousPeople.has(p) ? 'two NEP records could be theirs' : 'no NEP record';
+const tallyBy = list => list.reduce((acc, p) => { const k = nepStatusOf(p); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
+const notActive = P.filter(p => nepStatusOf(p) !== 'Active');
+
 /* ---- NEP -> register ---- */
 // Marked as a paying active member, and payroll took nothing this period.
 const notOnRegister = N.filter(r => status(r) === 'Active' && L(r['Paying Active Member']) === 'Yes' && !used.has(r));
@@ -196,6 +206,13 @@ const S = [
   ['Active members on the International\'s roll (MEM)', I.filter(x => L(x['Member Type']) === 'MEM').length],
   ['Retired members on the International\'s roll (MRM)', I.filter(x => L(x['Member Type']) === 'MRM').length],
   ['', ''],
+  ['ON THE REGISTER, BY NEP STATUS', ''],
+  ['People on the register (paying or at $0.00)', P.length],
+  ['   Active in NEP', P.filter(p => nepStatusOf(p) === 'Active').length],
+  ['   NOT Active in NEP', notActive.length],
+  ['      of those, paying dues', notActive.filter(p => p.paying).length],
+  ['      of those, at $0.00', notActive.filter(p => !p.paying).length],
+  ['', ''],
   ['PAYROLL AGAINST NEP', ''],
   ['Paying dues, no NEP record at all', A.noRecord.filter(([p]) => p.paying).length],
   ['Paying dues, NEP record has no payroll number — add it', A.addNumber.filter(([p]) => p.paying).length],
@@ -230,6 +247,9 @@ const S = [
 ];
 sheet('Start here', S[0], S.slice(1), [70, 12]);
 
+sheet('On register - not Active', ['Payroll no.', 'Name on the register', 'Deducted', 'What NEP says', ...NEPH],
+  notActive.sort((a, b) => Number(b.paying) - Number(a.paying) || nepStatusOf(a).localeCompare(nepStatusOf(b)) || a.name.localeCompare(b.name))
+    .map(p => [p.emplid, p.name, amt(p), nepStatusOf(p), ...nepCols(link.get(p))]), [14, 34, 12, 30, 30, 16, 14, 14, 14, 18]);
 sheet('Paying - no NEP record', ['Payroll no.', 'Name on the register', 'Deducted', 'Others in NEP with that surname and first name'],
   A.noRecord.filter(([p]) => p.paying).map(([p, c]) => [p.emplid, p.name, amt(p), c.map(h => nepName(h) + ' [' + status(h) + ', ' + (L(h['PeopleSoft Number']) || 'no payroll no.') + ']').join(' / ')]), [14, 34, 16, 70]);
 sheet('Paying - add payroll no.', ['Payroll no. to add', 'Name on the register', 'Deducted', ...NEPH],
@@ -270,5 +290,8 @@ sheet('Addresses from the Intl', ['NEP name', 'NEP status', 'NEP payroll no.', '
 const stamp = new Date().toISOString().slice(0, 10);
 const file = path.join(OUT, `Local36-THREE-WAY-${stamp}.xlsx`);
 XLSX.writeFile(wb, file);
+console.log('paying, by NEP status: ' + JSON.stringify(tallyBy(payers)));
+console.log('at $0.00, by NEP status: ' + JSON.stringify(tallyBy(zeros)));
+for (const p of notActive) console.log('   ' + (p.paying ? 'paying ' : 'at zero') + '  ' + p.emplid + '  ' + p.name.padEnd(32) + nepStatusOf(p));
 for (const [label, n] of S.slice(1)) if (label) console.log(n === '' ? '\n' + label : '  ' + String(n).padStart(5) + '  ' + label);
 console.log('\nWORKBOOK  ' + path.basename(file));
