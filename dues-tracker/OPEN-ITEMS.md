@@ -2668,3 +2668,23 @@ recorded in `scripts/iaff-address-upload.js` keyed on the place, and the two
 go in a file of their own (file 6) so that files 1–5, one of which had already
 been sent, are byte-for-byte unchanged. 253 addresses in six files; two members
 still to enter by hand.
+
+### All 253 landed — roster-73, 10 Nov 18:11
+
+`scripts/upload-verify.js` against the six IAFFADDR files: 253 of 253 rows
+landed, each carrying its note; still 3,545 records, so no key missed and made
+a stub; nothing was overwritten.
+
+```
+Active + Active Retired with a street address
+roster-72  16:11    1,772 of 2,387
+roster-73  18:11    2,025 of 2,387
+```
+
+Five other records changed in the same two hours — ordinary address edits by
+members or staff, none of them from these files.
+
+362 are still without an address: 208 are not on the International's roll at
+all (mostly recent hires), 145 are September returns, 7 have a roll address the
+International marks invalid, and 2 — Hurda and Hughes — are waiting to be
+entered by hand because no upload can key to them.

@@ -13,7 +13,7 @@ A write is a merge: an entry whose file is not on disk is kept, so writing
 the manifest on a freshly wiped machine loses nothing. An entry leaves only
 with `--forget <path>`.
 
-Last written: 2026-11-10 — 15 files listed, 4 on disk now, 11 not on disk
+Last written: 2026-11-10 — 16 files listed, 5 on disk now, 11 not on disk
 
 | file | from | shape | KB | sha256 (first 16) | last modified |
 |---|---|---|---|---|---|
@@ -31,6 +31,7 @@ Last written: 2026-11-10 — 15 files listed, 4 on disk now, 11 not on disk
 | `uploads/roster-70` | NEP member export — Active and Active Retired | 2390 rows × 54 columns | 359 | `b7e7a7d363b34cd7` | 2026-10-12 |
 | `uploads/roster-71` | NEP member export — Active and Active Retired | 2389 rows × 54 columns | 359 | `ff7b67bbae7c4a4a` | 2026-10-12 |
 | `uploads/roster-72` | NEP member export — Active and Active Retired | 3545 rows × 54 columns | 509 | `0de571bdd9c1ce1e` | 2026-11-10 |
+| `uploads/roster-73` | NEP member export — Active and Active Retired | 3545 rows × 54 columns | 522 | `77296b40603c5ec0` | 2026-11-10 |
 | `uploads/sent-to-mk.xlsx` | the address file we sent MK Elections | 2359 rows × 9 columns | 150 | `7ac5b3ee28702700` | 2026-09-27 |
 
 ## Known gaps
