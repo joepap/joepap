@@ -63,6 +63,39 @@ roll are the three that unblock real work.
 - [ ] **Pull a fresh roster right before sending** and tell me — the builder
       re-runs in one command and the audit comes with it.
 
+## To build — a scan-to-Drive inbox for the dues registers
+
+Joe, 10 Nov: *"we should make it easy for the copier to scan these to a google
+drive folder that you watch."*
+
+Why it is worth building: the register arrives on paper every two weeks, gets
+scanned on the office copier, and then has to be found, downloaded and sent by
+hand — the one that arrived on 10 Nov was the 19 Sept pay period, seven weeks
+old. And a Drive folder is a copy that survives a container wipe, so this also
+closes the backup gap for the registers.
+
+**Joe's part**
+
+- [ ] Make the folder on the union Drive — e.g. `Local 36 Membership Data /
+      DCHR dues registers / Inbox`. It has to be reachable from the Google
+      account that is connected to Claude; if the union Drive is a different
+      account, share the folder with the connected one.
+- [ ] Get a one-touch "Scan to Dues Inbox" button on the copier. The scan
+      filenames (`SKM_C300i…`) say it is a Konica Minolta bizhub C300i. Two
+      routes, whichever the copier supports: its own Google Drive connector,
+      or scan-to-email to a dedicated address whose attachments are auto-saved
+      to the folder. Whoever services the copier can set this up.
+
+**Claude's part, once the folder exists**
+
+- [ ] A scheduled check of the inbox folder. For each new PDF: OCR it, verify
+      the row count against the register's own printed totals, compare it to
+      the newest NEP roster, and report who is paying without a record, who is
+      marked paying but missing, and who is on the list at $0.00.
+- [ ] Move each processed scan to a `Processed` subfolder named by pay period,
+      and record it in `docs/data-manifest.md`.
+- [ ] Same treatment later for anything else that arrives on paper.
+
 ## Still open — not for tomorrow
 
 - [ ] **Look up Johnson, Joseph B in NEP with the status filter off.** He and
