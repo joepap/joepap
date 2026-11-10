@@ -2618,3 +2618,40 @@ address book in August. So "ask Kenny to re-run NCOA" and "ask MK" are one
 request to one person, and the route for checking the International's 325
 addresses before loading them is a file to Kenny in the address-book format he
 already has.
+
+## Addresses NEP never had, from the International's roll — 10 Nov 2026
+
+Joe: *"lets upload the 255 that we have never had."* These are Active and
+Active Retired members with no street address in NEP, no note of one ever
+being removed, and an address on the roll the International has not marked
+invalid. Never mailed, never bounced.
+
+`scripts/iaff-address-upload.js` builds the files; `scripts/upload-verify.js`
+checks any batch against a roster, before and after.
+
+| | |
+|---|---|
+| matched to the roll by IAFF number — three files | 236 |
+| matched by name only — two LOOK-FIRST files | 15 |
+| held back | 4 |
+
+**Held back.** Setchell and Ortiz both show 7701 Landover Rd, Hyattsville,
+which nine members of the roll share — a placeholder, not a home. Hurda and
+Hughes have no unique email, payroll number or IAFF number, so no upload can
+reach them.
+
+**Name-only matches are kept apart** because a father and son can share a
+name and a wrong match here sends a ballot to the wrong house. Each of those
+fifteen rows records the roll name and IAFF number it was matched to.
+
+The roll's addresses are USPS-standardised with a ZIP+4. They go into NEP with
+the five-digit zip, which is what NEP holds everywhere else, the state spelled
+out as NEP spells it, and Country = USA.
+
+Pre-flight on roster-72: 251 rows, 251 distinct members, every key matches
+exactly one of the 3,545 records, and no row would replace a value NEP
+already holds.
+
+`lib/rolllink.js` now holds the NEP-to-roll join for both this and
+`three-way.js`, and every link records whether it was made by number or by
+name so that whatever is built on it can decide how far to trust it.

@@ -114,28 +114,11 @@ const notOnRegister = N.filter(r => status(r) === 'Active' && L(r['Paying Active
 /* ---- the International's roll ---- */
 const iName = r => L(r['Last Name']) + (L(r['Suffix']) ? ' ' + L(r['Suffix']) : '') + ', ' + L(r['First Name']) + (L(r['Middle Name']) ? ' ' + L(r['Middle Name']) : '');
 const TYPE = { MEM: 'active', MRM: 'retired', HMM: 'honorary' };
-const iById = new Map(I.map(r => [num(r['Id']), r]));
-const iByNm = new Map();
-for (const r of I) { const k = sur(r['Last Name']) + '|' + f1(r['First Name']); iByNm.set(k, (iByNm.get(k) || []).concat([r])); }
-
-// NEP record -> roll entry. By number first; by name only when the number is
-// missing and exactly one unclaimed roll entry of that name agrees on the
-// middle initial (where both have one). A father and son share everything else.
-const nepToRoll = new Map(), rollClaimed = new Map();
-const B = { fill: [], numberNotOnRoll: [], nameAmbiguous: [] };
-for (const r of N) {
-  const ia = num(r['IAFF Member Number']);
-  if (ia && iById.has(ia)) { nepToRoll.set(r, iById.get(ia)); rollClaimed.set(iById.get(ia), (rollClaimed.get(iById.get(ia)) || []).concat([r])); }
-  else if (ia) B.numberNotOnRoll.push(r);
-}
-for (const r of N) {
-  if (num(r['IAFF Member Number'])) continue;
-  const c = (iByNm.get(sur(r['Last Name']) + '|' + f1(r['First Name'])) || []).filter(x => !rollClaimed.has(x));
-  const m = mi(r['First Name']);
-  const ok = c.filter(x => !m || !L(x['Middle Name']) || L(x['Middle Name']).slice(0, 1).toUpperCase() === m);
-  if (ok.length === 1) { nepToRoll.set(r, ok[0]); rollClaimed.set(ok[0], [r]); B.fill.push([r, ok[0]]); }
-  else if (ok.length > 1) B.nameAmbiguous.push([r, ok]);
-}
+// NEP record -> roll entry: lib/rolllink.js, by number first and by name only
+// when one unclaimed roll entry of that name agrees on the middle initial.
+const RL = require(path.join(DT, 'lib/rolllink')).link(N, I);
+const { nepToRoll, rollClaimed, iByNm } = RL;
+const B = { fill: RL.fill, numberNotOnRoll: RL.numberNotOnRoll, nameAmbiguous: RL.nameAmbiguous };
 const rollNotInNep = I.filter(x => !rollClaimed.has(x));
 
 /* ---- register <-> roll ---- */
