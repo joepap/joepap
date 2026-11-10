@@ -2390,8 +2390,8 @@ The last pages carry totals, which makes the reading checkable:
 The scan has no text layer, so it went through `lib/ocr.js` and `lib/parse.js`
 at 300 dpi: 15 seconds a page. 1,816 rows read against 1,816 printed.
 
-**The dollars reconcile exactly**: 1,802 rows at $49.19 plus 2 rows at $99.19
-is $88,838.76. Every other first-column amount on the register begins with a 4
+**The dollars reconcile exactly** — though not the way first written here; the
+corrected arithmetic is under "Two dropped lines" below. Every other first-column amount on the register begins with a 4
 (the 49.19 family, OCR noise included), so there is no room for another
 unusual amount.
 
@@ -2410,11 +2410,10 @@ unusual amount.
 - **DiPietro (00108259) is not on this register at all**, by number or by
   name. He was the one $0.00 member with no ruling in August.
 - **Beckham, Tyrell has five lines**: three charges of $49.19 and two
-  reversals, four of them marked off-cycle. The printed total equals the sum
-  of the positive lines only — the reversals are not subtracted. Either the
-  union was paid $98.38 more than his lines net to, or the printed total
-  overstates the deposit by that much. A question for the treasurer against
-  the 10/2 deposit ($88,708.26 after the agency charge).
+  reversals, four of them marked off-cycle. ~~The printed total equals the sum
+  of the positive lines only.~~ **That was wrong — see "Two dropped lines"
+  below.** The register nets his reversals correctly and there is nothing here
+  for the treasurer.
 - The last eight names on the Fire & EMS list are lowercase — `mesa,joan`,
   `newkirk,kia`, `powell,markel` — which is where NEP's lowercase surnames
   come from. They are DC's spelling, not ours.
@@ -2437,3 +2436,134 @@ both agree).
 Kept in `data/` only: the scan as `uploads/register-2026-09-19.pdf` and the
 parsed rows. **The parsed rows carry the last four digits of each SSN in their
 raw text and must never leave `data/`.**
+
+## Two dropped lines, and a wrong finding that fitted to the penny — 10 Nov 2026
+
+The first reading of the 19 Sept register returned 1,816 lines and was reported
+as matching the register's printed 1,806 + 9 + 1. It did not match. It was two
+lines short, and the "match" was a coincidence built on misreading what the
+printed totals count.
+
+**What the printed totals actually count.** "Active Participants" is the number
+of lines with a *positive* deduction. "In-Active" is the lines at zero. A
+reversal line is in neither. The dollar total is the sum of every line,
+reversals included:
+
+```
+1,806 positive lines   1,804 x 49.19 + 2 x 99.19   =  88,937.14
+    2 reversal lines   2 x -49.19                  =     -98.38
+    9 lines at zero                                         0.00
+                                                      ----------
+1,817 Fire & EMS lines                                 88,838.76   as printed
+```
+
+**What went wrong.** The reader dropped two whole lines — Brimage Sr., Corey
+Duane on page 5 and Campbell Jr., Cornelius on page 7. Two missing lines at
+$49.19 is $98.38, which is exactly Beckham's two reversals. So "the printed
+total leaves the reversals out" explained the shortfall to the penny, was
+written up as a question for the treasurer, and was false.
+
+It was caught because Brimage then appeared on the "marked paying in NEP,
+nothing deducted" list while being plainly visible on the page image.
+
+**The checks that would have caught it at once**, now in
+`tools/register-2026-09-19/finalize.js` and to be carried into the scan-inbox
+reader:
+
+1. every full page must carry the same number of lines (36). Pages 5 and 7
+   came back with 35 and nobody looked.
+2. positive lines must equal the printed Active count; zero lines the printed
+   In-Active count; the sum of *all* lines the printed deduction. Checked
+   separately, the first reading fails the first of these by two.
+
+A total that closes to the penny is strong evidence only when the hypothesis
+was fixed before the arithmetic was done.
+
+## Two reads that agree are not a verified payroll number
+
+Every payroll number was read twice, independently (300 dpi full page, then
+600 dpi on the left-hand strip alone). They agreed on 1,629 of 1,816 lines.
+**Sixteen of those agreements were wrong** — the scan's "9" is misread the same
+way at both resolutions (as 5, 3, 2, 8). Agreement between two passes of the
+same reader over the same glyph is not independence.
+
+What settled the numbers was a third witness of a different kind: NEP, where a
+number counts only if the surname on that NEP record agrees with the surname
+on the register line. 1,733 lines were confirmed that way. Every line NEP did
+not confirm — 68 of them — was enlarged from the page image and read by eye.
+
+And NEP is not the answer key either. **Four of its payroll numbers are
+typos**, proven against the enlarged scan: Boozer (00022875, should be
+00022975), Brady (00138347 → 00138947), Hoston (00020577 → 00090577), Richards
+(00099359 → 00099959). Taking NEP's number wherever it was one digit from a
+read would have written four errors into the register.
+
+## The three-way comparison — register, NEP, the International
+
+`scripts/three-way.js`, run on the 19 Sept register, roster-72 (10 Nov, all
+3,545 records of every status) and the IAFF roll export of 10 Nov (2,512
+members: 1,631 active, 874 retired, 7 honorary).
+
+```
+people DC payroll took dues from               1,805
+NEP records Active and Paying = Yes            1,807
+active members on the International's roll     1,631
+```
+
+**Payroll against NEP is nearly clean**, which is the summer's work showing.
+Of 1,805 payers, about twenty do not line up:
+
+- 3 with no NEP record: Burton, Sean (00143796 — a second Sean Burton, hired
+  2026; Sean A, 00027472, is also paying), Griffin, Ethan (00143865, open
+  since August), White, Daniel (00143802; NEP holds only a retired Daniel J).
+- 8 whose NEP record lacks the payroll number, Belle/Bell among them — the
+  17 Aug link upload never landed.
+- the 4 typos above.
+- Robinson, Karl H and Robinson Jr., Karl H are both paying; NEP has two
+  records and a payroll number on neither.
+- 4 paying whose NEP status is not Active: Johnson, Joseph (a new member whose
+  record has no status at all), Johnson, Joseph B (Retired — he was still on
+  the payroll on 19 Sept and retired after; timing, not an error), Kline,
+  Kevin W (NEP says Active Retired, payroll says working), Butler, LaShay M
+  (NEP says Drop; she pays $50.00 through another agency).
+- 11 marked paying with nothing deducted. Eight are real questions: Brown,
+  Demitri · Brown, Paula · Dennis, David R · DiPietro, Andrew · Faulkner, John
+  (the father) · Hine, Kaden · Marshall, Brian · Murphy, Mark. Two are second
+  records for people who are paying under another (Butler, Arthenious; "Ne,
+  Dennis"), and one is Robinson Jr.
+
+**The International's roll is where the distance is.**
+
+- **243 people paying dues are not on the International's roll.** 237 are
+  Active in NEP, 227 have no IAFF number, and their payroll numbers cluster in
+  the 00133, 00138 and 00143 blocks — hires since 2023 who were never enrolled.
+- 77 the International counts as active are not paying through payroll; NEP
+  has 11 of them as Drop and 5 as Retired.
+- 98 that NEP has as Deceased (25) or Drop (73) are still on the roll.
+- 110 IAFF numbers NEP lacks can be supplied from the roll by name.
+- 429 IAFF numbers NEP holds are not on the roll at all — mostly retired,
+  dropped and alumni records, but 19 Active and 71 Active Retired.
+
+**Addresses.** The roll has a home address for every one of its 2,512 members.
+389 Active or Active Retired members have none in NEP where the roll has one;
+327 are usable, 34 the International itself marks invalid, 28 are the address
+that came back in September.
+
+### Questions the full export answered
+
+Roster-72 is the first export with every status, which is what the "a death is
+invisible" note asked for.
+
+- **Johnson, Joseph B** — Retired in NEP, a retired member on the roll. Not a
+  bad merge. And there is a third: Joseph T, active on the roll, who is the
+  bare "Johnson, Joseph" NEP record and is paying on payroll 00139634.
+- **MacFawn, Owen** — Drop.
+- **McCoy** — the roll lists exactly one James M McCoy Jr, so the two NEP
+  records are one man. Neither is on the 19 Sept register.
+- **Abell, Michael** — on the roll as Michael P, a retired member. Two men,
+  as concluded.
+- **Cox** and **Fowler** — Deceased in NEP. Cox is still on the roll.
+- **Long, Keith T is filed as Drop.** Joe said on 20 Aug that he died in the
+  line of duty. The LODD field is empty on all 3,545 records and LODD Spouse
+  Insurance likewise, and none of the 89 Deceased records carries it. This is
+  the thing the 27 Sept note feared and could not see.
