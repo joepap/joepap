@@ -2788,3 +2788,41 @@ members — NEP's appointment dates for the older ones run from 1991 to 2021 —
 whom the International simply does not list. Three of the 243 look like the
 same person under another spelling on the roll; the rest have no entry there
 that our matching can find, by number or by name.
+
+## Where the "110 IAFF numbers" come from — 13 Nov 2026
+
+Joe: "How did we find 110 IAFF numbers? Thought we already had them all
+previously."
+
+We never had them all. The August work added or fixed 1,043 and left NEP with
+2,731 numbers (12 Aug export). roster-73 has 2,732 on 3,545 records — 813
+records carry none, and that has not moved since August.
+
+```
+813 records with no IAFF number
+   677  nobody of that name is on the International's roll — nothing to fill from
+   136  somebody of that name is on the roll
+        110  exactly one unclaimed roll entry of that name   <- the "110"
+```
+
+So the 110 are name matches against the roll received on 10 Nov, not numbers
+recovered from anywhere. I had listed them for the correction files as if all
+110 were ready to load. They are not:
+
+```
+ 44  backed by a second fact — the same email (22), phone (12), or an
+     address NEP already held (30)
+ 66  the name alone
+       23  NEP has no email, phone or address to compare
+       38  NEP has contact details and they differ from the roll's
+        5  suffix differs (Jr., II, V on one side only)
+        7  another NEP record carries the same name
+```
+
+Fifteen of the addresses that "agree" were loaded from this same roll on
+10 Nov, so they prove nothing and are not counted as backing.
+
+Load the 44. The 66 go on a look-first sheet: two IAFF numbers means two
+people, and a number put on the wrong man is the mistake that rule exists to
+stop. Why the August pass left the 44 is not something that can be checked —
+the August exports went in the wipes.
