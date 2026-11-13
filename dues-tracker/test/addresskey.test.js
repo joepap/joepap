@@ -49,3 +49,11 @@ test('nothing is the same as nothing', () => {
   assert.equal(compare(A('', '20020'), A('2334 Park Pl SE', '20020')), 'different');
   assert.equal(compact(''), '');
 });
+
+test('an apartment marker run into its number is still an apartment marker', () => {
+  assert.equal(compare(A('410 12Th Street SE Apt305', '20003'), A('410 12th St SE Apt 305', '20003-1234')), 'same');
+});
+
+test('a DC street missing its quadrant is near, not the same and not different', () => {
+  assert.equal(compare(A('900 Example Ave #12', '20032'), A('900 Example Ave SE Apt 12', '20032')), 'near');
+});

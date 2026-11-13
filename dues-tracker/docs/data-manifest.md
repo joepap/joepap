@@ -13,7 +13,7 @@ A write is a merge: an entry whose file is not on disk is kept, so writing
 the manifest on a freshly wiped machine loses nothing. An entry leaves only
 with `--forget <path>`.
 
-Last written: 2026-11-10 — 16 files listed, 5 on disk now, 11 not on disk
+Last written: 2026-11-13 — 17 files listed, 6 on disk now, 11 not on disk
 
 | file | from | shape | KB | sha256 (first 16) | last modified |
 |---|---|---|---|---|---|
@@ -23,6 +23,7 @@ Last written: 2026-11-10 — 16 files listed, 5 on disk now, 11 not on disk
 | `uploads/movers-1.xls` | MK Elections NCOA (USPS change-of-address) return | 71 rows × 17 columns | 42 | `e2da8fb896f1201e` | 2026-09-27 |
 | `uploads/register-2026-09-19.pdf` | DCHR payroll dues deduction register | scanned pages | 3055 | `64386cdad552e9e1` | 2026-11-10 |
 | `uploads/returns-1.csv` | MK Elections undeliverables and reprints report | 192 rows × 1 columns | 24 | `eeb35f1ed61747d0` | 2026-09-27 |
+| `uploads/returns-2.csv` | MK Elections undeliverables and reprints report | 48 rows × 1 columns | 6 | `6472056972ad3606` | 2026-11-13 |
 | `uploads/roster-65` | NEP member export — Active and Active Retired | 2392 rows × 54 columns | 345 | `648b5274da17f9e9` | 2026-09-27 |
 | `uploads/roster-66` | NEP member export — Active and Active Retired | 2392 rows × 54 columns | 349 | `12c01a3965771285` | 2026-09-27 |
 | `uploads/roster-67` | NEP member export — Active and Active Retired | 2392 rows × 54 columns | 350 | `78c01343a43b3e05` | 2026-09-27 |

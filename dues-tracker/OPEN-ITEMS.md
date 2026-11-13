@@ -2826,3 +2826,78 @@ Load the 44. The 66 go on a look-first sheet: two IAFF numbers means two
 people, and a number put on the wrong man is the mistake that rule exists to
 stop. Why the August pass left the 44 is not something that can be checked —
 the August exports went in the wipes.
+
+## Ballots returned undeliverable — MK report of 13 Nov 2026
+
+`data/uploads/returns-2.csv` (MK's "Undel_and_Reprints", election 2532601).
+38 ballots back of the 1,772 mailed — 2.1%, against 9.9% for the September
+notice. One reprint, no added voters.
+
+`scripts/ballot-returns.js` ties each to a member and asks what we hold that
+could get that member a ballot now. All 38 matched one NEP record — 34 by IAFF
+number, 4 by name with the bounced address confirming the match. 32 Active, 6
+Active Retired. Every one has a phone number in NEP; 17 have an email.
+
+```
+  1  already re-sent by MK (Antinore) — NEP still holds the old address
+  0  NEP's address has changed since the file was built
+  2  our typo: the International writes the same house correctly
+ 12  the International holds a different address — a lead, not a fact
+ 23  nothing else on hand — call or text
+```
+
+This is not the September job. Then a bounce meant "clear the address so the
+ballot does not follow it." Now the thing that bounced is the ballot, so
+nothing is cleared until the member has been tried. Run the script again on
+each new NEP export: members who fix their own address move into the second
+line, which is the list for Kenny.
+
+### Two of the eleven I left alone came back
+
+On 12 Oct eleven records had a state that disagreed with their zip. I left them
+in the file unchanged: "every one was delivered… a wrong state never bites."
+Davis and Brooke are two of the eleven, and both ballots came back.
+
+The reasoning was wrong twice. A notice that did not come back in September was
+not proof of delivery. And a state that disagrees with its zip does not mean
+the state is the wrong half: for Davis the zip had two digits transposed
+(24217 for 24127), for Brooke the zip belongs to another city altogether. USPS
+routes on the zip, so a wrong state is harmless and a wrong zip is not — and
+the mismatch cannot say which one it is looking at.
+
+Checked against the International's roll, which carries post-office ZIP+4s:
+
+- zip wrong, still out there: Walsh (28576 for 29576), Felder (20220 for
+  Middle River), Hoenig (Winchester VA with a DC zip)
+- state wrong only, zip right — harmless: Glaze, Mason, Comer, Bulman,
+  Jeffery IV, Hatcher (whose street is also misspelt)
+- Yiare's six-digit zip "200032": the roll has 20003. Open since October.
+- Montgomery Jr's street is the number "1920" and nothing else.
+
+### What the returns have in common
+
+- A DC street with no quadrant: Jones, Burkley. Fifteen more Active and Active
+  Retired records in NEP are the same.
+- Young, Howard has placeholders for an address ("00000", "?????"). The file
+  rule was "has something in the street field"; a row of zeros passed it.
+- Newby: Suitland with zip 28746, which is Lake Lure NC. One digit from 20746,
+  which is Suitland MD.
+- Bustillo bounced in September too. The duplicate second line was removed then
+  as the cause. It was not the cause.
+- Where the International has the same address and has marked it invalid
+  (Walker, Salmon, Pardlow, Cosby, and Burkley, McMillan, Wilhelm under a
+  slightly different spelling) the member has very likely moved.
+
+### 13 were marked the minute the ballots were printed
+
+MK's log shows the ballots printed 30 Oct at 16:58:08 and thirteen of the 38
+marked undeliverable between 16:58:22 and 16:59:35 the same day. Mail does not
+come back in a minute, so something other than a returned envelope flagged
+those thirteen. Kenny will know what.
+
+### The 253 addresses loaded on 10 Nov are not with MK
+
+The file MK mailed from had 1,772 rows. NEP now has 2,025 Active and Active
+Retired members with an address: the difference is exactly the 253 loaded from
+the International's roll on 10 Nov. MK's report shows no added voters. Whether
+those members are sent ballots is Joe's call and MK's deadline.

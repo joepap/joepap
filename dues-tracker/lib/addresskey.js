@@ -32,7 +32,9 @@ const zip5 = z => L(z).replace(/\D/g, '').slice(0, 5);
 // suffixes, nothing from the apartment marker onwards, no spaces. Dropping the
 // spaces is what makes "West Wood" and "Westwood" meet.
 function compact(street, keepCompass) {
-  const s = L(street).toLowerCase().replace(/\./g, '').replace(/#/g, ' # ').replace(/[,;]/g, ' ');
+  const s = L(street).toLowerCase().replace(/\./g, '').replace(/#/g, ' # ').replace(/[,;]/g, ' ')
+    // "Apt102" is "Apt 102": a marker run into its number is still a marker
+    .replace(/\b(apt|apartment|unit|suite|ste|rm|room|lot)(\d)/g, '$1 $2');
   if (/^(p\s*o\s*)?box\b/.test(s)) return 'pobox' + (s.match(/\d+/) || [''])[0];
   const out = [];
   for (const w of s.split(/\s+/).filter(Boolean)) {
