@@ -2901,3 +2901,6 @@ The file MK mailed from had 1,772 rows. NEP now has 2,025 Active and Active
 Retired members with an address: the difference is exactly the 253 loaded from
 the International's roll on 10 Nov. MK's report shows no added voters. Whether
 those members are sent ballots is Joe's call and MK's deadline.
+
+**Settled, 14 Nov.** Joe on the 253: "no, they dont need ballots." Nothing goes
+to MK for them. The addresses stay in NEP for the next mailing.
