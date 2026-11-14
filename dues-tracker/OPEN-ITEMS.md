@@ -2904,3 +2904,37 @@ those members are sent ballots is Joe's call and MK's deadline.
 
 **Settled, 14 Nov.** Joe on the 253: "no, they dont need ballots." Nothing goes
 to MK for them. The addresses stay in NEP for the next mailing.
+
+## Hoagland, David C says he received no ballot — 14 Nov 2026
+
+Joe: "did david hoagland appear on any of these sheets?" and "he says he did
+not get a ballot."
+
+He is on no action list: not among MK's 38 undeliverables, not on the DC email
+list, not in the address uploads. He is in the three-way workbook twice, on "On
+Intl roll - not in NEP" and "NEP IAFF no. not on roll", and both are one fact:
+NEP has his IAFF number with a digit too many (eight digits where the
+International has seven). One man counted as two.
+
+What NEP and the International disagree on, besides the number, is his home
+address — two different streets in NE Washington, and the International has not
+marked its copy invalid. The ballot file was built from NEP, so if his NEP
+address is an old one, the ballot went there. It has not come back to MK.
+
+Not provable from here: MK's report lists returns, not everyone mailed, and the
+October copy of the file went in the wipe. NEP had 1,772 addressed Active and
+Active Retired members on 10 Nov before the roll addresses went in — the same
+count as the 12 Oct file — and his record carries no note of a change, so he
+was very probably in it at the NEP address. Kenny can say for certain; in our
+file his MemberID is the mistyped number.
+
+To do: confirm his address with him, have MK re-send, correct NEP's address if
+it is the wrong one, and correct his IAFF number.
+
+### The other number that is a keystroke out
+
+Of the 429 IAFF numbers NEP holds that are not on the roll, eight belong to
+someone whose name also sits on an unclaimed roll entry. Two of the eight are
+typos — Hoagland, and McDonough, Michael J (Active Retired), one digit apart.
+The other six carry quite different numbers and are left alone: two numbers
+means two people.
