@@ -2938,3 +2938,17 @@ someone whose name also sits on an unclaimed roll entry. Two of the eight are
 typos — Hoagland, and McDonough, Michael J (Active Retired), one digit apart.
 The other six carry quite different numbers and are left alone: two numbers
 means two people.
+
+**Settled, 14 Nov.** Joe: "26th st is the right addy." NEP's address for
+Hoagland was the old one, so the ballot went to a house he has left and did not
+come back. Joe is asking MK to re-send it; NEP's address and IAFF number are to
+be corrected by hand (one record).
+
+He will not be the only one. Of 1,540 Active and Active Retired members who
+have an address in both places (leaving out the 238 whose NEP address came from
+the roll on 10 Nov), 993 are the same, 110 are the same house written
+differently, and **437 are different addresses** — 351 of them not marked
+invalid by the International. Nothing says which side is the newer for any one
+member; Hoagland shows it can be the International's. A ballot sent to an old
+address that still takes mail does not come back, so MK's undeliverable list
+will never show these.
