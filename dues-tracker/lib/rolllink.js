@@ -42,4 +42,26 @@ function link(N, I) {
   return { nepToRoll, how, rollClaimed, fill, numberNotOnRoll, nameAmbiguous, iByNm, iById };
 }
 
-module.exports = { link, sur, f1, mi, num };
+/*
+ * What, besides the name, says a NEP record and a roll entry are one person.
+ *
+ * A name match is a guess: fathers and sons share names, and two IAFF numbers
+ * means two people. A number goes onto a record only when something else
+ * agrees — the same email, the same phone, or the same house. An address NEP
+ * took from this same roll proves nothing, so it does not count.
+ */
+const addr = require('./addresskey');
+const ten = s => L(s).replace(/\D/g, '').slice(-10);
+function backing(r, x) {
+  const facts = [];
+  const em = L(r['Email']).toLowerCase();
+  if (em && em === L(x['Email']).toLowerCase()) facts.push('email');
+  const ph = ten(r['Phone Number']);
+  if (ph.length === 10 && ph === ten(x['Mobile Phone'])) facts.push('phone');
+  const fromRoll = /from the IAFF International roll/i.test(L(r['Notes']));
+  if (!fromRoll && L(r['Street Address']) && L(x['Home Address 1'])
+    && addr.compare({ street: r['Street Address'], zip: r['Zip'] }, { street: x['Home Address 1'], zip: x['Zip/Postal Code'] }) === 'same') facts.push('address');
+  return facts;
+}
+
+module.exports = { link, backing, sur, f1, mi, num };

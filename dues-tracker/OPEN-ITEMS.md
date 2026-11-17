@@ -2952,3 +2952,46 @@ invalid by the International. Nothing says which side is the newer for any one
 member; Hoagland shows it can be the International's. A ballot sent to an old
 address that still takes mail does not come back, so MK's undeliverable list
 will never show these.
+
+## Ballots set aside; the NEP correction files — 17 Nov 2026
+
+Joe: "not worried about the ballotts." The returned-ballot items come off the
+top of the list. The workbook and the script stay for when he wants them.
+
+`scripts/nep-corrections.js` builds every correction the comparison found, from
+the register, an NEP export, the International's roll and MK's report. Against
+roster-73 (10 Nov):
+
+```
+FIX-1  create 3 paying members with no record          key PeopleSoft Number
+FIX-2  payroll number one digit wrong — 2               key Email
+FIX-3  payroll number missing — 4                       key IAFF Member Number
+FIX-4  payroll number missing + paying flag — 1         key Email
+FIX-5  IAFF number from the roll — 31                   key Email
+FIX-6  Hoagland: IAFF number + address                  key Email
+FIX-7  paying flag — 2                                  key Email
+FIX-8  Antinore: address MK re-sent to                  key Email
+```
+
+`upload-verify.js` on them: every key picks out one record, the creates pick out
+none, nothing blank. It now knows a CREATE file is meant to match nothing.
+
+By hand — no unique key on the record: Coates, Joseph Johnson (00139634),
+Hoston, Richards, and IAFF numbers for Thomas Anthony L, Harris Jazmin and
+Rogan (plus six on Drop or Deceased records, not worth typing).
+
+### Address alone is not enough for an IAFF number
+
+The 44 "backed" matches of 13 Nov counted a shared house as backing. A father
+and son can share a name and a house, so an address-only match is now taken
+only when neither NEP nor the roll has a namesake and the suffixes agree. Four
+fell out: Bowyer and Buffa (the roll says Jr., NEP does not), Smith Christopher
+A and Johnson James A (a namesake in NEP). 40 remain; 70 are look-first.
+
+McDonough, Michael J (544247 in NEP, 0544257 on the roll) is backed by more than
+his name and is in FIX-5.
+
+**Not yet sent to Joe.** roster-73 is a week old. Each row carries the record's
+current Notes with the new line added, and a Notes upload overwrites, so the
+files must be rebuilt from a fresh export or anything written since is lost.
+A key that changed since would also make NEP create an empty record.

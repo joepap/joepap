@@ -41,6 +41,9 @@ for (const f of files) {
   for (const [i, r] of rows.entries()) {
     rowsAll++;
     const hits = N.filter(x => norm(hdr[0], x[hdr[0]]) === norm(hdr[0], r[0]));
+    // A CREATE file is the one place a key is meant to match nothing: that is
+    // what makes NEP make the record. Before the upload, nothing; after, one.
+    if (/-CREATE-/.test(f) && hits.length === 0) continue;
     if (hits.length !== 1) { problems.push(`row ${i + 2}: key "${r[0]}" matches ${hits.length} records`); continue; }
     const rec = hits[0];
     if (seen.has(rec)) problems.push(`row ${i + 2}: ${L(rec['Last Name'])}, ${L(rec['First Name'])} is also in ${seen.get(rec)}`);
